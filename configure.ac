@@ -1,0 +1,21 @@
+# Process this file with autoconf to produce `configure'
+
+AC_INIT([ereline],[0.1],[tomasi@lambrate.inaf.it])
+AC_PREREQ([2.59])
+AC_CONFIG_AUX_DIR(config)
+AM_INIT_AUTOMAKE([foreign])
+AC_PROG_CXX
+AC_PROG_CC
+
+AX_CXX_COMPILE_STDCXX_11([],[mandatory])
+AX_BOOST_BASE([1.41])
+
+AC_CHECK_LIB(cfitsio, ffopen,, AC_MSG_ERROR(Cannot find the CFITSIO library.))
+							
+# create a config.h file (Automake will add -DHAVE_CONFIG_H)
+AC_CONFIG_SRCDIR([src/ereline_test.cpp])
+AC_CONFIG_HEADER([config.h])
+
+AC_CONFIG_FILES([Makefile
+                 src/Makefile])
+AC_OUTPUT

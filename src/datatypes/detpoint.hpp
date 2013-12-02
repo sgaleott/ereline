@@ -1,0 +1,2 @@
+#ifndef DETPOINT_HPP
+#define DETPOINT_HPP
