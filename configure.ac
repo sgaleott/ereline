@@ -11,11 +11,21 @@ AX_CXX_COMPILE_STDCXX_11([],[mandatory])
 AX_BOOST_BASE([1.41])
 
 AC_CHECK_LIB(cfitsio, ffopen,, AC_MSG_ERROR(Cannot find the CFITSIO library.))
-							
+
+AC_CHECK_PROGS([DOXYGEN], [doxygen])
+if test "$DOXYGEN" == ""; then
+   AC_MSG_WARN([Doxygen not found -- the Developer's manual will not be generated])
+fi
+
+AM_CONDITIONAL([HAVE_DOXYGEN], [test -n "$DOXYGEN"])
+AM_COND_IF([HAVE_DOXYGEN], [AC_CONFIG_FILES([doc/developer_manual/Doxyfile])])
+	       
+
 # create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AC_CONFIG_SRCDIR([src/ereline_test.cpp])
 AC_CONFIG_HEADER([config.h])
 
 AC_CONFIG_FILES([Makefile
-                 src/Makefile])
+                 src/Makefile
+		 doc/developer_manual/Makefile])
 AC_OUTPUT
