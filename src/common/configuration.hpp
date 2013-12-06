@@ -1,16 +1,30 @@
 #ifndef CONFIGURATION_HPP
 #define CONFIGURATION_HPP
 
-#include <string>
 #include <map>
+#include <stdexcept>
+#include <string>
 
 #include <boost/property_tree/ptree.hpp>
+#include <boost/format.hpp>
 #include <boost/optional.hpp>
+
+////////////////////////////////////////////////////////////////////////
+
+class Configuration_error : public std::runtime_error {
+public:
+    Configuration_error(const std::string & what)
+	: std::runtime_error(what) {}
+    virtual ~Configuration_error() {}
+};
+
+////////////////////////////////////////////////////////////////////////
 
 class Configuration {
 private:
     boost::property_tree::ptree ptree;
-    std::map<std::string, std::string> associations;
+    std::map<std::string, std::string> fallbacks;
+    std::map<std::string, std::string> variables;
 
 public:
     Configuration();
@@ -18,18 +32,26 @@ public:
 
     void read_from_json(const std::string & file_name);
 
+    void set_variable(const std::string & name,
+		      const std::string & value);
+
+    std::string substitute_variables(const std::string & str);
+
     template<typename T> T get(const std::string & key) const
     {
 	boost::optional<T> value = ptree.get_optional<T>(key);
 	if(! value)
 	{
-	    auto alternative = associations.find(key);
-	    if(alternative != associations.end())
+	    auto alternative = fallbacks.find(key);
+	    if(alternative != fallbacks.end())
 	    {
+		// Recursive call
 		return get<T>(alternative->second);
 	    } else {
-		throw boost::property_tree::ptree_bad_path("Unable to find the path",
-							   boost::property_tree::ptree::path_type(key));
+		auto msg =
+		    boost::format("Unable to find the path %1%")
+		    % key;
+		throw Configuration_error(boost::str(msg));
 	    }
 	} else {
 	    return value.get();
