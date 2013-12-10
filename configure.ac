@@ -9,6 +9,7 @@ AC_PROG_CC
 
 AX_CXX_COMPILE_STDCXX_11([],[mandatory])
 AX_BOOST_BASE([1.41])
+AX_BOOST_UNIT_TEST_FRAMEWORK
 
 AC_CHECK_LIB(cfitsio, ffopen,, AC_MSG_ERROR(Cannot find the CFITSIO library.))
 
@@ -27,5 +28,6 @@ AC_CONFIG_HEADER([config.h])
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile
+		 test/Makefile
 		 doc/developer_manual/Makefile])
 AC_OUTPUT
