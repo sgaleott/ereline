@@ -48,7 +48,6 @@ Configuration::set_variable(const std::string & name,
 std::string
 Configuration::substitute_variables(const std::string & str)
 {
-    auto cur_char = str.begin();
     std::string result;
 
     for(auto cur_char = str.begin(); cur_char != str.end(); ++cur_char)
@@ -77,9 +76,11 @@ Configuration::substitute_variables(const std::string & str)
 	    }
 
 	    result += var_match->second;
-	    cur_char += end_pos - cur_pos + 1;
+	    cur_char += end_pos - cur_pos;
 	} else {
 	    result += *cur_char;
 	}
     }
+
+    return result;
 }
