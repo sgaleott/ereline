@@ -29,6 +29,14 @@ Configuration::~Configuration()
 ////////////////////////////////////////////////////////////////////////
 
 void
+Configuration::read_from_json(std::istream & input_stream)
+{
+    read_json(input_stream, ptree);
+}
+
+////////////////////////////////////////////////////////////////////////
+
+void
 Configuration::read_from_json(const std::string & file_name)
 {
     read_json(file_name, ptree);

@@ -1,6 +1,7 @@
 #ifndef CONFIGURATION_HPP
 #define CONFIGURATION_HPP
 
+#include <istream>
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -30,6 +31,7 @@ public:
     Configuration();
     virtual ~Configuration();
 
+    void read_from_json(std::istream & input_stream);
     void read_from_json(const std::string & file_name);
 
     void set_variable(const std::string & name,
