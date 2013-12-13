@@ -188,7 +188,7 @@ public:
      * log->set_log_level(old_level);
      * \endcode
      */
-    void set_log_level(Log_level new_level);
+    void set_log_level(Log_level new_level) { log_level = new_level; }
 
     Log_level get_log_level() const { return log_level; }
 };
