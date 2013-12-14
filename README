@@ -56,6 +56,22 @@ works as expected by running a number of test programs and checking
 that their results agrees with the expectations.
 
 
+How to create the documentation
+-------------------------------
+
+The User's manual has been written using Sphinx. You will need to
+install Python 2.7 and the appropriate "readthedocs" style. The latter
+can be installed using pip:
+
+    $ pip install sphinx_rtd_theme
+
+Then, enter the `doc/user_manual` and issue the command
+
+    $ make html
+
+The result will be placed in the directory `_build/html/'.
+
+
 Development status
 ------------------
 
