@@ -1,3 +1,5 @@
+AUTOMAKE_OPTIONS = subdir-objects
+
 check_PROGRAMS = \
 	test_configuration \
 	test_logger

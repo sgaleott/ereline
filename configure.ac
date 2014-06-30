@@ -3,12 +3,17 @@
 AC_INIT([ereline],[0.1],[tomasi@lambrate.inaf.it])
 AC_PREREQ([2.59])
 AC_CONFIG_AUX_DIR(config)
+AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([foreign])
 AC_PROG_CXX
 AC_PROG_CC
 
-AX_CXX_COMPILE_STDCXX_11([],[mandatory])
+AX_CXX_COMPILE_STDCXX_11
 AX_BOOST_BASE([1.41])
+if test "$HAVE_BOOST" == ""; then
+    AC_MSG_RESULT([BOOST Library found, flags are $BOOST_LDFLAGS])
+fi
+
 AX_BOOST_UNIT_TEST_FRAMEWORK
 
 AC_CHECK_LIB(cfitsio, ffopen,, AC_MSG_ERROR(Cannot find the CFITSIO library.))
