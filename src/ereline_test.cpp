@@ -1,9 +1,10 @@
 #include <string>
 #include <iostream>
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
 
-#include "common/logging.hpp"
-#include "common/configuration.hpp"
+#include "logging.hpp"
+#include "configuration.hpp"
 
 int main()
 {
@@ -14,13 +15,10 @@ int main()
   Configuration conf;
   conf.read_from_json("/home/tomasi/work/planck/ereline/configuration.json");
 
-  std::cout << "smooth_gains.run = " 
-	    << conf.get<bool>("smooth_gains.run") 
-	    << std::endl;
-
-  std::cout << "da_capo.input_gains = " 
-	    << conf.get<std::string>("da_capo.input_gains") 
-	    << std::endl;
+  log->info(boost::str(boost::format("smooth_gains.run = %1%") % 
+		       conf.get<bool>("smooth_gains.run")));
+  log->info(boost::str(boost::format("da_capo.input_gains = %1%\n") % 
+		       conf.get<std::string>("da_capo.input_gains")));
 
   return 0;
 }
