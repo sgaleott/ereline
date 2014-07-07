@@ -1,4 +1,4 @@
-#include "common/configuration.hpp"
+#include "configuration.hpp"
 
 #include <stdexcept>
 #include <sstream>
