@@ -77,7 +77,7 @@ Configuration::substitute_variables(const std::string & str)
 	    auto var_match = variables.find(var_name);
 	    if(var_match == variables.end()) {
 		auto msg =
-		    boost::format("Undefined variable %1% in \"%2%\"")
+		    boost::format("Variable %1% in \"%2%\" is undefined or has the wrong type")
 		    % var_name
 		    % str;
 		throw Configuration_error(boost::str(msg));
