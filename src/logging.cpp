@@ -53,4 +53,5 @@ Logger::log(Log_level level, const std::string & string) const
 		      % std::string(indent_level, '\t') // Indent
 		      % string)
 		  << std::endl;
+    log_stream->flush();
 }
