@@ -13,9 +13,9 @@
 	"data_storage_layout": "/datastor/ereline/data/dx10/layout.json",
 
 	// This can be referred later in strings using {base_output_dir}
-	"base_output_dir": "/datastor/{user}/my_tests/dx10",
+	"base_output_dir": "/datastor/tomasi/my_tests/dx10",
 
-	"log_file": "{base_output_dir}/ereline.log"
+	"log_file": "{common.base_output_dir}/ereline.log"
     },
 
     "apply_r": {
