@@ -12,6 +12,24 @@
 /* Define to 1 if you have the `cfitsio' library (-lcfitsio). */
 #undef HAVE_LIBCFITSIO
 
+/* Define to 1 if you have the `chealpix' library (-lchealpix). */
+#undef HAVE_LIBCHEALPIX
+
+/* Define to 1 if you have the `gsl' library (-lgsl). */
+#undef HAVE_LIBGSL
+
+/* Define to 1 if you have the `gslcblas' library (-lgslcblas). */
+#undef HAVE_LIBGSLCBLAS
+
+/* Define to 1 if you have the `m' library (-lm). */
+#undef HAVE_LIBM
+
+/* Define if you have the MPI library. */
+#undef HAVE_MPI
+
+/* Have the SQLITE3 library */
+#undef HAVE_SQLITE3
+
 /* Name of package */
 #undef PACKAGE
 

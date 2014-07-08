@@ -16,7 +16,17 @@ fi
 
 AX_BOOST_UNIT_TEST_FRAMEWORK
 
+AX_LIB_SQLITE3([3.6.0])
+
+AX_PROG_CXX_MPI(true, , [AC_MSG_FAILURE([MPI compiler needed])])
+
 AC_CHECK_LIB(cfitsio, ffopen,, AC_MSG_ERROR(Cannot find the CFITSIO library.))
+
+AC_CHECK_LIB([m],[cos])
+AC_CHECK_LIB([gslcblas],[cblas_dgemm])
+AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
+
+AC_CHECK_LIB([chealpix], [pix2ang_nest])
 
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 if test "$DOXYGEN" == ""; then
