@@ -136,4 +136,6 @@ class daCapo
 
 class Configuration;
 
+void run_da_capo(const Configuration & conf);
+
 #endif

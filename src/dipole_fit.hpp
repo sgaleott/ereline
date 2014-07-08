@@ -64,6 +64,8 @@ class dipoleFit
 
 class Configuration;
 
+void run_dipole_fit(const Configuration & conf);
+
 #endif
 
   

@@ -13,6 +13,7 @@ ereline_test_SOURCES = \
 	dipole_fit.cpp \
 	da_capo.cpp \
 	gain_table.cpp \
+	smooth_gains.cpp \
 	ringset.cpp \
 	io.cpp \
 	misc.cpp

@@ -36,8 +36,9 @@ public:
 
     void set_variable(const std::string & name,
 		      const std::string & value);
+    void fill_with_standard_variables(const std::string & start_path);
 
-    std::string substitute_variables(const std::string & str);
+    std::string substitute_variables(const std::string & str) const;
 
     template<typename T> T get(const std::string & key) const
     {
@@ -58,6 +59,11 @@ public:
 	} else {
 	    return value.get();
 	}
+    }
+
+    std::string getWithSubst(const std::string & key) const
+    {
+	return substitute_variables(get<std::string>(key));
     }
 };
 

@@ -717,3 +717,12 @@ daCapo::iterativeCalibration (vector<dipoleFit> & binnedData,
   
   return dmax;
 }
+
+void
+run_da_capo(const Configuration & conf)
+{
+  Logger * log = Logger::get_instance();
+
+  log->info("Starting module daCapo");
+  log->info("Quitting module daCapo");
+}
