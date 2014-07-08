@@ -21,8 +21,8 @@
     "apply_r": {
 	"run": true,
 	"mask": null,
-	"output_gmf": "{base_output_dir}/gmf/LFI{horn}{arm}_{od}_gmf.fits",
-	"output_tod": "{base_output_dir}/datadiff/LFI{horn}{arm}_{od}_datadiff.fits"
+	"output_gmf": "{common.base_output_dir}/gmf/LFI{horn}{arm}_{od}_gmf.fits",
+	"output_tod": "{common.base_output_dir}/datadiff/LFI{horn}{arm}_{od}_datadiff.fits"
     },
 
     "dipole_fit": {
@@ -35,14 +35,14 @@
 	},
 	"total_convolve_order": 9,
 	"mask": null,
-	"output_gains": "{base_output_dir}/gains/LFI{horn}{arm}_{od}_gains.fits",
-	"output_fit": "{base_output_dir}/gains/LFI{horn}{arm}_{od}_fit.fits"
+	"output_gains": "{common.base_output_dir}/gains/LFI{horn}{arm}_{od}_gains.fits",
+	"output_fit": "{common.base_output_dir}/gains/LFI{horn}{arm}_{od}_fit.fits"
     },
 
     "da_capo": {
 	"run": true,
 	"constraint": true,
-	"output_gains": "{base_output_dir}/da_capo/LFI{horn}{arm}_{od}_gains.fits"
+	"output_gains": "{common.base_output_dir}/da_capo/LFI{horn}{arm}_{od}_gains.fits"
     },
 
     "smooth_gains": {
