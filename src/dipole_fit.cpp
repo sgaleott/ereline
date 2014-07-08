@@ -239,3 +239,12 @@ dipoleFit::unload()
   vector<float>().swap(inputMap);
 }
 
+void
+run_dipole_fit(const Configuration & conf)
+{
+  Logger * log = Logger::get_instance();
+
+  log->info("Starting module dipoleFit");
+  log->info("Quitting module dipoleFit");
+}
+

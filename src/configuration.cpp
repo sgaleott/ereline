@@ -32,6 +32,7 @@ void
 Configuration::read_from_json(std::istream & input_stream)
 {
     read_json(input_stream, ptree);
+    fill_with_standard_variables("");
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -40,6 +41,30 @@ void
 Configuration::read_from_json(const std::string & file_name)
 {
     read_json(file_name, ptree);
+    fill_with_standard_variables("");
+}
+
+////////////////////////////////////////////////////////////////////////
+
+void
+Configuration::fill_with_standard_variables(const std::string & start_path)
+{
+    boost::property_tree::ptree children = ptree.get_child(start_path);
+
+    for(const auto & kv : children)
+    {
+	if(kv.first.empty())
+	    break;
+
+	std::string cur_path;
+	if(start_path.empty())
+	    cur_path = kv.first;
+	else
+	    cur_path = start_path + "." + kv.first;
+
+	set_variable(cur_path, ptree.get<std::string>(cur_path));
+	fill_with_standard_variables(cur_path);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -54,7 +79,7 @@ Configuration::set_variable(const std::string & name,
 ////////////////////////////////////////////////////////////////////////
 
 std::string
-Configuration::substitute_variables(const std::string & str)
+Configuration::substitute_variables(const std::string & str) const
 {
     std::string result;
 
