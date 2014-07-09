@@ -6,3 +6,4 @@ autom4te.cache
 config.h
 config/depcomp
 configure
+config.log
