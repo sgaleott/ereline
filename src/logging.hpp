@@ -2,8 +2,11 @@
 #define LOGGING_HPP
 
 #include <string>
+#include <memory>
 #include <ostream>
 #include <boost/format.hpp>
+
+class Configuration;
 
 class Logger {
 public:
@@ -21,8 +24,8 @@ public:
 	    indent_level--; 
     }
 
-    void set_stream(std::ostream * new_log_stream) { 
-	log_stream = new_log_stream; 
+    void append_stream(std::ostream * new_log_stream) { 
+	log_stream_list.push_back(std::auto_ptr<std::ostream>(new_log_stream)); 
     }
 
     void debug(const std::string & string) const { 
@@ -53,18 +56,20 @@ public:
 	error(boost::str(string_fmt)); 
     }
 
+    void configure(const Configuration & conf);
+
 private:
     static bool exist_instance_flag;
     static Logger * singleton;
 
-    std::ostream * log_stream;
+    std::vector<std::unique_ptr<std::ostream> > log_stream_list;
 
     int indent_level;
     Log_level log_level;
 
     Logger() // Private constructor
 	{
-	    log_stream = &std::cerr;
+	    append_stream(&std::cerr);
 	    indent_level = 0;
 	    log_level = Log_level::INFO;
 	}

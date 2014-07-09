@@ -1,5 +1,7 @@
 #include "logging.hpp"
+#include "configuration.hpp"
 #include <iostream>
+#include <fstream>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
@@ -36,7 +38,7 @@ current_date_and_time()
 void 
 Logger::log(Log_level level, const std::string & string) const
 {
-    if(level < log_level || log_stream == nullptr)
+    if(level < log_level || log_stream_list.empty())
 	return; // Do not log anything
 
     std::string error_type;
@@ -47,11 +49,27 @@ Logger::log(Log_level level, const std::string & string) const
     case Log_level::ERROR:   error_type = "  ERROR"; break;
     }
 
-    (*log_stream) << (boost::format("%1% %2%: %3%%4%") 
-		      % current_date_and_time() 
-		      % error_type 
-		      % std::string(indent_level, '\t') // Indent
-		      % string)
-		  << std::endl;
-    log_stream->flush();
+    auto msg = (boost::format("%1% %2%: %3%%4%") 
+		% current_date_and_time() 
+		% error_type 
+		% std::string(indent_level, '\t') // Indent
+		% string);
+
+    for(auto & log_stream : log_stream_list) {
+	if(log_stream.get() != NULL) {
+	    (*log_stream) << msg << std::endl;
+	    log_stream->flush();
+	}
+    }
 }
+
+////////////////////////////////////////////////////////////////////////
+
+void
+Logger::configure(const Configuration & conf)
+{
+    auto log_file_name = conf.getWithSubst("common.log_file");
+    std::ofstream * log_stream = new std::ofstream(log_file_name);
+    append_stream(log_stream);
+}
+
