@@ -5,8 +5,6 @@
 
 #include "planck_velocity.hpp"
 
-using namespace std;
-
 /* class calib iter*/
 class dipoleFit
 {
@@ -21,11 +19,11 @@ class dipoleFit
   double maxDipole;
   double minDipole;
 
-  vector<int> pixIndex;
-  vector<int> pixSumHits;
-  vector<double> pixSumData;
-  vector<float> pixSumDipole;
-  vector<float> inputMap;
+  std::vector<int> pixIndex;
+  std::vector<int> pixSumHits;
+  std::vector<double> pixSumData;
+  std::vector<float> pixSumDipole;
+  std::vector<float> inputMap;
 
  public:
   
@@ -33,37 +31,38 @@ class dipoleFit
 
   ~dipoleFit(){};
 
-  bool binData(const vector<double> & data, const vector<int>& flag,
-	       const vector<double> & theta, const vector<double> & phi, const vector<double> & dipole,
-	       const vector<size_t> & pidRange, const vector<double> & sidelobes);
-  bool fitData(const vector<float> & maskMap);
-  bool fit(const vector<double> & data, const vector<int> & flag,
-	   const vector<double> & theta, const vector<double> & phi, const vector<double> & dipole,
-	   const vector<size_t> & pidRange, const vector<float> & maskMap, const vector<double> & sidelobes);
+  bool binData(const std::vector<double> & data, const std::vector<int>& flag,
+	       const std::vector<double> & theta, const std::vector<double> & phi, const std::vector<double> & dipole,
+	       const std::vector<size_t> & pidRange, const std::vector<double> & sidelobes);
+  bool fitData(const std::vector<float> & maskMap);
+  bool fit(const std::vector<double> & data, const std::vector<int> & flag,
+	   const std::vector<double> & theta, const std::vector<double> & phi, const std::vector<double> & dipole,
+	   const std::vector<size_t> & pidRange, const std::vector<float> & maskMap, const std::vector<double> & sidelobes);
 
   void setGainV(double a_gainv);
   void setOffset(double a_offset);
-  void setPixSumDipole(vector<float> inpArr);
+  void setPixSumDipole(const std::vector<float> inpArr);
 
-  double getGainV();
-  double getGain();
-  double getOffset();
+  double getGainV() const;
+  double getGain() const;
+  double getOffset() const;
 
-  int getPointingID();
-  int getNSide();
+  int getPointingID() const;
+  int getNSide() const;
 
-  vector<int> & getPixIndex();
-  vector<double> & getPixSumData();
-  vector<int> & getPixSumHits();
-  vector<float> & getPixSumDipole();
+  const std::vector<int> & getPixIndex() const;
+  const std::vector<double> & getPixSumData() const;
+  const std::vector<int> & getPixSumHits() const;
+  const std::vector<float> & getPixSumDipole() const;
 
-  double getDipoleVariance();
-  double getMaxDipole();
-  double getMinDipole();
+  double getDipoleVariance() const;
+  double getMaxDipole() const;
+  double getMinDipole() const;
 
   void unload();
 };
 
+class Configuration;
 
 #endif
 

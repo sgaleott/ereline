@@ -1,3 +1,8 @@
+#include "da_capo.hpp"
+#include "misc.hpp"
+#include "configuration.hpp"
+#include "logging.hpp"
+
 #include <mpi.h>
 #include <iomanip>
 #include <cmath>
@@ -7,9 +12,6 @@
 extern "C" {
 #include "chealpix.h"
 }
-
-#include "da_capo.hpp"
-#include "misc.hpp"
 
 /**
  * Take binned data and dipolefit gains as input.
@@ -97,7 +99,7 @@ daCapo::initializeConstraint(vector<double> & constraint)
  * Output: ipix_loc, iloc 
  **/
 void 
-daCapo::initializeLocmap(vector<dipoleFit> & binnedData)
+daCapo::initializeLocmap(const vector<dipoleFit> & binnedData)
 {
   vector<int> tmpPixels;
   for (size_t ipp=0; ipp<binnedData.size(); ipp++)
@@ -206,7 +208,8 @@ daCapo::initializeFullmap()
  * Masked samples are repointed to a dummy pixel.
  **/
 void 
-daCapo::applyMask(vector<dipoleFit> & binnedData, vector<float> & mask)
+daCapo::applyMask(const vector<dipoleFit> & binnedData, 
+		  const vector<float> & mask)
 {
   int dummy_pixel = static_cast<int>(pixelIndexLocal.size());
   for (size_t ipp=0; ipp<binnedData.size(); ipp++)
@@ -223,7 +226,7 @@ daCapo::applyMask(vector<dipoleFit> & binnedData, vector<float> & mask)
  * Construct and invert the hit map.
  **/
 void 
-daCapo::constructCCmatrix(vector<dipoleFit> & binnedData)
+daCapo::constructCCmatrix(const vector<dipoleFit> & binnedData)
 {
   vector<double> ccLoc(pixelIndexFullMap.size()+1, 0.);
   
@@ -295,7 +298,7 @@ daCapo::updateDipolenorm()
  * 2: gain x gain
  **/
 void 
-daCapo::buildPreconditioner(vector<dipoleFit> & binnedData)
+daCapo::buildPreconditioner(const vector<dipoleFit> & binnedData)
 {
   for (size_t ipp=0; ipp<binnedData.size(); ipp++)
     {
@@ -320,7 +323,7 @@ daCapo::buildPreconditioner(vector<dipoleFit> & binnedData)
  * Output: locmap
  **/
 void 
-daCapo::toiToLocmap(vector<dipoleFit> & binnedData)
+daCapo::toiToLocmap(const vector<dipoleFit> & binnedData)
 {
   for (size_t ipp=0; ipp<pixelIndexLocalMap.size(); ipp++)
     {
@@ -469,7 +472,8 @@ daCapo::applyCC()
  * Output: p
  */
 void 
-daCapo::subtractMapFromTod(vector<dipoleFit> & binnedData, basevec &p)
+daCapo::subtractMapFromTod(const vector<dipoleFit> & binnedData,
+			   basevec &p)
 {
   int dummy_pixel=static_cast<int>(localMap.size())-1;
 
@@ -503,7 +507,8 @@ daCapo::subtractMapFromTod(vector<dipoleFit> & binnedData, basevec &p)
  * Output: locmap
  **/
 void 
-daCapo::baseToLocmap(vector<dipoleFit> & binnedData, const basevec &p)
+daCapo::baseToLocmap(const vector<dipoleFit> & binnedData, 
+		     const basevec &p)
 {
   for (size_t ipp=0; ipp<pixelIndexLocalMap.size(); ipp++)
     {
@@ -525,7 +530,8 @@ daCapo::baseToLocmap(vector<dipoleFit> & binnedData, const basevec &p)
  * Output: p
  **/
 void 
-daCapo::subtractMapFromBase(vector<dipoleFit> & binnedData, basevec &p)
+daCapo::subtractMapFromBase(const vector<dipoleFit> & binnedData, 
+			    basevec &p)
 {
   int dummy_pixel = static_cast<int>(localMap.size())-1;
 
@@ -593,7 +599,8 @@ daCapo::updateSignal(vector<dipoleFit> & binnedData)
  * Run Iterative calibration
  **/
 double
-daCapo::iterativeCalibration (vector<dipoleFit> & binnedData, bool firstLoop)
+daCapo::iterativeCalibration (vector<dipoleFit> & binnedData, 
+			      bool firstLoop)
 {
   constructCCmatrix(binnedData);
   updateDipolenorm();

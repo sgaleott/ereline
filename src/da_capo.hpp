@@ -106,30 +106,34 @@ class daCapo
 
   void initializeConstraint(bool constraint);
   void initializeConstraint(vector<double> & constraint);
-  void initializeLocmap(vector<dipoleFit> & binnedData);
+  void initializeLocmap(const vector<dipoleFit> & binnedData);
   void initializeFullmap();
-  void applyMask(vector<dipoleFit> & binnedData, vector<float> & mask);
+  void applyMask(const vector<dipoleFit> & binnedData, 
+		 const vector<float> & mask);
 
  public:
   daCapo(vector<dipoleFit> & binnedData, vector<float> & mask, bool constraint);
   daCapo (vector<dipoleFit> & binnedData, vector<float> & mask, vector<double> & constraint);
 
-  void constructCCmatrix(vector<dipoleFit> & binnedData);
+  void constructCCmatrix(const vector<dipoleFit> & binnedData);
   void updateDipolenorm();
-  void buildPreconditioner(vector<dipoleFit> & binnedData);
-  void toiToLocmap(vector<dipoleFit> & binnedData);
+  void buildPreconditioner(const vector<dipoleFit> & binnedData);
+  void toiToLocmap(const vector<dipoleFit> & binnedData);
   void locToFullmap();
   void ccMultiply();
   void applyConstraint();
   void fullToLocmap();
   void applyCC();
-  void subtractMapFromTod(vector<dipoleFit> & binnedData, basevec &p);
-  void baseToLocmap(vector<dipoleFit> & binnedData, const basevec &p);
-  void subtractMapFromBase(vector<dipoleFit> & binnedData, basevec &p);
+  void subtractMapFromTod(const vector<dipoleFit> & binnedData, basevec &p);
+  void baseToLocmap(const vector<dipoleFit> & binnedData, const basevec &p);
+  void subtractMapFromBase(const vector<dipoleFit> & binnedData, basevec &p);
   void applyPreconditioner(const basevec &r, basevec &z);
   void updateSignal(vector<dipoleFit> & binnedData);
 
-  double iterativeCalibration(vector<dipoleFit> & binnedData, bool firstLoop);
+  double iterativeCalibration(vector<dipoleFit> & binnedData, 
+			      bool firstLoop);
 };
+
+class Configuration;
 
 #endif

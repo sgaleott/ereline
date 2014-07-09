@@ -1,3 +1,9 @@
+#include "dipole_fit.hpp"
+#include "misc.hpp"
+#include "configuration.hpp"
+#include "logging.hpp"
+#include "ringset.hpp"
+
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_multifit.h>
@@ -12,9 +18,6 @@
 extern "C" {
 #include "chealpix.h"
 }
-
-#include "dipole_fit.hpp"
-#include "misc.hpp"
 
 dipoleFit::dipoleFit(const int a_qualityFlag, const int a_nSide, const int a_pointingID)
 {
@@ -149,79 +152,79 @@ dipoleFit::setOffset(double a_offset)
 }
 
 void
-dipoleFit::setPixSumDipole(vector<float> inpArr)
+dipoleFit::setPixSumDipole(const vector<float> & inpArr)
 {
   pixSumDipole = inpArr;
 }
 
 double 
-dipoleFit::getGainV()
+dipoleFit::getGainV() const
 {
   return gainv;
 }
 
 double 
-dipoleFit::getGain()
+dipoleFit::getGain() const
 {
   return 1./gainv;
 }
  
 double 
-dipoleFit::getOffset()
+dipoleFit::getOffset() const
 {
   return offset;
 }
 
 int 
-dipoleFit::getPointingID()
+dipoleFit::getPointingID() const
 {
   return pointingID;
 }
  
 int 
-dipoleFit::getNSide()
+dipoleFit::getNSide() const
 {
   return nSide;
 }
 
-vector<int> & 
-dipoleFit::getPixIndex()
+const vector<int> & 
+dipoleFit::getPixIndex() const
 {
   return pixIndex;
 }
 
-vector<double> & 
-dipoleFit::getPixSumData()
+const vector<double> & 
+dipoleFit::getPixSumData() const
 {
   return pixSumData;
 }
 
-vector<int> & 
-dipoleFit::getPixSumHits()
+const vector<int> & 
+dipoleFit::getPixSumHits() const
 {
   return pixSumHits;
 }
 
-vector<float> & 
-dipoleFit::getPixSumDipole()
+const vector<float> & 
+dipoleFit::getPixSumDipole() const
 {
   return pixSumDipole;
 }
 
 double 
-dipoleFit::getDipoleVariance()
+dipoleFit::getDipoleVariance() const
 {
   return maxDipole-minDipole;
 }
 
 double 
-dipoleFit::getMaxDipole()
+dipoleFit::getMaxDipole() const
 {
   return maxDipole;
 }
 
 double 
-dipoleFit::getMinDipole()
+dipoleFit::getMinDipole() const
 {
   return minDipole;
 }
@@ -235,3 +238,4 @@ dipoleFit::unload()
   vector<int>().swap(pixSumHits);
   vector<float>().swap(inputMap);
 }
+
