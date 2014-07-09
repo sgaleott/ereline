@@ -152,7 +152,7 @@ dipoleFit::setOffset(double a_offset)
 }
 
 void
-dipoleFit::setPixSumDipole(const vector<float> & inpArr)
+dipoleFit::setPixSumDipole(const std::vector<float> & inpArr)
 {
   pixSumDipole = inpArr;
 }
