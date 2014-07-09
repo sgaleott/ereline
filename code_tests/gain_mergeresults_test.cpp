@@ -217,13 +217,16 @@ do_test(callback_t *fn)
     if(rankMPI == 0) {
 	std::cout << "Results:\n\n";
 	print_results(rankMPI);
+	// Tell the next process to call "print_results"
 	MPI::COMM_WORLD.Send(&rankMPI, 1, MPI::INT, rankMPI + 1, 0);
     } else {
-	int dummy;
-	MPI::COMM_WORLD.Recv(&dummy, 1, MPI::INT, rankMPI - 1, 0);
+	int awake;
+	MPI::COMM_WORLD.Recv(&awake, 1, MPI::INT, rankMPI - 1, 0);
 	print_results(rankMPI);
-	if(rankMPI < sizeMPI - 1)
+	if(rankMPI < sizeMPI - 1) {
+	    // Tell the next process to call "print_results"
 	    MPI::COMM_WORLD.Send(&rankMPI, 1, MPI::INT, rankMPI + 1, 0);
+	}
     }
 
     return 0;
