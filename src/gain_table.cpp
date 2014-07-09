@@ -3,8 +3,9 @@
 
 #include <algorithm>
 #include <iomanip>
+#include <numeric>
+
 #include <mpi.h>
-#include <math.h>
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_fft_real.h>
@@ -149,7 +150,9 @@ gainTable::mergeResults()
 }
 
 vector<double> 
-gainTable::wma(int windowLen, vector<double> weights, vector<double> raw)
+gainTable::wma(int windowLen, 
+	       const std::vector<double> weights, 
+	       const std::vector<double> raw)
 {
   // Moving window smoothing
   vector<double> windowVec;
@@ -190,8 +193,11 @@ gainTable::wma(int windowLen, vector<double> weights, vector<double> raw)
 }
 
 vector<int>
-gainTable::createWindowsVector(int windowLen1, int windowLen2,
-			       double minRangeDipole, double maxRangeDipole, vector<double> & dipole)
+gainTable::createWindowsVector(int windowLen1, 
+			       int windowLen2,
+			       double minRangeDipole, 
+			       double maxRangeDipole, 
+			       const std::vector<double> & dipole)
 {
   vector<int> result;
   size_t count = 0;
@@ -294,7 +300,8 @@ gainTable::createWindowsVector(int windowLen1, int windowLen2,
 }
 
 vector<double> 
-gainTable::variableWMA(vector<int> & windowLen, vector<double> & dipole)
+gainTable::variableWMA(const vector<int> & windowLen, 
+		       const vector<double> & dipole)
 {  
   // Moving window smoothing
   vector<double> windowVec;
@@ -342,7 +349,9 @@ gainTable::variableWMA(vector<int> & windowLen, vector<double> & dipole)
 }
 
 vector<double> 
-gainTable::variableWMAlocal(vector<int> & windowLen, vector<double> & dipole, vector<double> & sectorGain)
+gainTable::variableWMAlocal(const vector<int> & windowLen, 
+			    const vector<double> & dipole, 
+			    const vector<double> & sectorGain)
 {  
   // Moving window smoothing
   vector<double> windowVec;
@@ -627,7 +636,11 @@ gainTable::zeroing(int windowLen, double percent, vector<double> & dipole)
 }
 
 vector<double>
-gainTable::offsetSmoothing(int windowLenMinima, int windowLenMaxima, double minRangeDipole, double maxRangeDipole, vector<double> & dipole)
+gainTable::offsetSmoothing(int windowLenMinima, 
+			   int windowLenMaxima, 
+			   double minRangeDipole, 
+			   double maxRangeDipole, 
+			   vector<double> & dipole)
 {
   vector<int> dipoleWindowVector = createWindowsVector(windowLenMinima, windowLenMaxima, minRangeDipole, maxRangeDipole, dipole);
   vector<double> retVec = variableWMAlocal(dipoleWindowVector, dipole, offset);
@@ -635,26 +648,33 @@ gainTable::offsetSmoothing(int windowLenMinima, int windowLenMaxima, double minR
 }
 
 void
-gainTable::selectRadiometerGains(int detectorIdIdx, size_t detectorIdsSize, 
-				 vector<int> nIdsRange)
+gainTable::selectRadiometerGains(int detectorIdIdx, 
+				 size_t detectorIdsSize, 
+				 const vector<int> & nIdsRange)
 {
-  // Select values
-  vector<int> tmpPointingIds;
-  vector<double> tmpGain;
-  vector<double> tmpOffset;
-  for (size_t idx=0; idx<nIdsRange.size(); ++idx)
+    // Select values
+    vector<int> tmpPointingIds;
+    vector<double> tmpGain;
+    vector<double> tmpOffset;
+    for (size_t idx = 0; idx < nIdsRange.size(); ++idx)
     {
-      int offsetIdx=detectorIdIdx*nIdsRange[idx];
-      int startPoint=0;
-      for (size_t intIdx=0; intIdx<idx; ++intIdx)
-	startPoint += nIdsRange[intIdx]*static_cast<int>(detectorIdsSize);
+	int startPoint = detectorIdIdx * nIdsRange[idx];
 
-      for (int intIdx=0; intIdx<nIdsRange[idx]; ++intIdx)
-	{
-	  tmpPointingIds.push_back(pointingIds[startPoint+intIdx+offsetIdx]);
-	  tmpGain.push_back(gain[startPoint+intIdx+offsetIdx]);
-	  tmpOffset.push_back(offset[startPoint+intIdx+offsetIdx]);	  
+	if(idx > 0) {
+	    startPoint +=
+		detectorIdsSize *
+		std::accumulate(nIdsRange.begin(), nIdsRange.begin() + idx, 0);
 	}
+
+	tmpPointingIds.insert(tmpPointingIds.end(),
+			      pointingIds.begin() + startPoint,
+			      pointingIds.begin() + startPoint + nIdsRange[idx]);
+	tmpGain.insert(tmpGain.end(),
+		       gain.begin() + startPoint,
+		       gain.begin() + startPoint + nIdsRange[idx]);
+	tmpOffset.insert(tmpOffset.end(),
+			 offset.begin() + startPoint,
+			 offset.begin() + startPoint + nIdsRange[idx]);
     }
 
   // Swap vectors
@@ -665,8 +685,9 @@ gainTable::selectRadiometerGains(int detectorIdIdx, size_t detectorIdsSize,
 
 void
 gainTable::selectDiodeGains(int detectorIdIdx, size_t detectorIdsSize, 
-			    vector<int> nIdsRange, vector<double> & outGain,
-			    vector<double> & outOffset)
+			    const std::vector<int> nIdsRange, 
+			    std::vector<double> & outGain,
+			    std::vector<double> & outOffset)
 {
   // Select values
   vector<int> tmpPointingIds;
