@@ -85,68 +85,63 @@ gainTable::setWindowVector (vector<int> & a_windowVector)
 void
 gainTable::mergeResults()
 {
-  // Get MPI infos
-  int rankMPI = MPI::COMM_WORLD.Get_rank();
-  int sizeMPI = MPI::COMM_WORLD.Get_size();
+    int rankMPI = MPI::COMM_WORLD.Get_rank();
+    int sizeMPI = MPI::COMM_WORLD.Get_size();
 
-  // Set gain and pid arrays
-  int length = static_cast<int>(pointingIds.size());
-  int * lengths = new int[sizeMPI];
-  fill (lengths,lengths+sizeMPI,0);
-  for (int jj=0; jj<sizeMPI; ++jj)
-    {
-      if (jj==rankMPI)
-	lengths[jj]=length;
-      else
-	lengths[jj]=0.0;
+    // Collect the number of pointing periods processed by each MPI
+    // process into the "lengths" vector, and the total number of
+    // periods into "overallLength".
+    int length = static_cast<int>(pointingIds.size());
+    int overallLength;
+    MPI::COMM_WORLD.Allreduce(&length, &overallLength, 1, MPI::INT, MPI::SUM);
+
+    std::vector<int> lengths(sizeMPI);
+    MPI::COMM_WORLD.Gather(&length, 1, MPI::INT, 
+			   lengths.data(), 1, MPI::INT, 0);
+    MPI::COMM_WORLD.Bcast(lengths.data(), lengths.size(), MPI::INT, 0);
+
+    // Now use MPI's "gatherv" function to concatenate pIDs, gains, and
+    // offsets into "overallPointings, overallGains, and overallOffsets.
+    std::vector<int> displacement(sizeMPI);
+    for(int i = 0; i < sizeMPI; ++i) {
+	if(i == 0)
+	    displacement[i] = 0;
+	else
+	    displacement[i] = displacement.at(i - 1) + lengths.at(i - 1);
     }
 
-  MPI::COMM_WORLD.Allreduce(MPI::IN_PLACE, lengths, sizeMPI, MPI::INT, MPI::SUM);
-  MPI::COMM_WORLD.Barrier();
+    std::vector<int> overallPointings(overallLength);
+    std::vector<double> overallGains(overallLength);
+    std::vector<double> overallOffsets(overallLength);
 
-  MPI::COMM_WORLD.Allreduce(&length, &length, 1, MPI::INT, MPI::SUM);
-  MPI::COMM_WORLD.Barrier();
+    MPI::COMM_WORLD.Gatherv(pointingIds.data(), pointingIds.size(), MPI::INT,
+			    overallPointings.data(), lengths.data(),
+			    displacement.data(), MPI::INT, 0);
 
-  // Retrieve data from other processes
-  int startPid=0;
-  for (int jj=0; jj<rankMPI; ++jj)
-    startPid+=lengths[jj];
+    MPI::COMM_WORLD.Gatherv(gain.data(), gain.size(), MPI::DOUBLE,
+			    overallGains.data(), lengths.data(),
+			    displacement.data(), MPI::DOUBLE, 0);
 
-  int * pids = new int[length];
-  fill (pids, pids+length, 0);
-  double * gainArr = new double[length];
-  fill (gainArr, gainArr+length, 0.0);
-  double * offsetArr = new double[length];
-  fill (offsetArr, offsetArr+length, 0);
+    MPI::COMM_WORLD.Gatherv(offset.data(), offset.size(), MPI::DOUBLE,
+			    overallOffsets.data(), lengths.data(), 
+			    displacement.data(), MPI::DOUBLE, 0);
 
-  for (unsigned int jj=0; jj<pointingIds.size(); ++jj)
-    {
-      pids[startPid+jj]=pointingIds[jj];
-      gainArr[startPid+jj]=gain[jj];
-      offsetArr[startPid+jj]=offset[jj];
+    if(rankMPI == 0) {
+	pointingIds = overallPointings;
+	gain = overallGains;
+	offset = overallOffsets;
+    } else {
+	pointingIds.resize(overallLength);
+	gain.resize(overallLength);
+	offset.resize(overallLength);
     }
 
-  MPI::COMM_WORLD.Allreduce(MPI::IN_PLACE, pids, length, MPI::INT, MPI::SUM);
-  MPI::COMM_WORLD.Barrier();
-
-  MPI::COMM_WORLD.Allreduce(MPI::IN_PLACE, gainArr, length, MPI::DOUBLE, MPI::SUM);
-  MPI::COMM_WORLD.Barrier();
-
-  MPI::COMM_WORLD.Allreduce(MPI::IN_PLACE, offsetArr, length, MPI::DOUBLE, MPI::SUM);
-  MPI::COMM_WORLD.Barrier();
-
-  vector<int>().swap(pointingIds);
-  vector<double>().swap(gain);
-  vector<double>().swap(offset);
-
-  pointingIds.assign(pids, pids+length);
-  gain.assign(gainArr, gainArr+length);
-  offset.assign(offsetArr, offsetArr+length);
-
-  delete [] lengths;
-  delete [] gainArr;
-  delete [] pids;
-  delete [] offsetArr;
+    // So far overallPointings, overallGains, and overallOffsets have
+    // been set up in the root process only. Broadcast them to every
+    // other process.
+    MPI::COMM_WORLD.Bcast(pointingIds.data(), pointingIds.size(), MPI::INT, 0);
+    MPI::COMM_WORLD.Bcast(gain.data(), gain.size(), MPI::DOUBLE, 0);
+    MPI::COMM_WORLD.Bcast(offset.data(), offset.size(), MPI::DOUBLE, 0);
 }
 
 vector<double> 
