@@ -10,12 +10,14 @@
 
 	/* This .json file describes how standard data files (e.g.
 	   pointings) should be retrieved */
-	"data_storage_layout": "/datastor/ereline/data/dx10/layout.json",
+	"data_storage_layout": "./data_storage_dx11.json",
 
 	// This can be referred later in strings using {base_output_dir}
 	"base_output_dir": "/datastor/tomasi/my_tests/dx10",
 
-	"log_file": "{common.base_output_dir}/ereline.log"
+	"log_file": "ereline.log",
+
+	"log_level": 4 // 1: ERROR, 2: WARNING, 3: INFO, 4: DEBUG
     },
 
     "apply_r": {

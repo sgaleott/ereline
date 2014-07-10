@@ -1,0 +1,5 @@
+{
+    "ucds_file_path" : "./test/ucds.db",
+    "pointings_base_path" : "/datastor/tomasi/dx11_delta/pointings",
+    "datadiff_base_path" : "/datastor/tomasi/dx11_delta/datadiff"
+}
