@@ -10,7 +10,7 @@ BOOST_AUTO_TEST_CASE(logging_test)
     Logger * log = Logger::get_instance();
     std::stringstream log_stream;
 
-    log->set_stream(&log_stream);
+    log->append_stream(&log_stream);
     log->set_log_level(Logger::Log_level::INFO);
 
     const std::string debug_str("This is a debug message");
