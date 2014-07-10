@@ -16,6 +16,9 @@ ereline_test_SOURCES = \
 	smooth_gains.cpp \
 	ringset.cpp \
 	io.cpp \
+	datatypes.cpp \
+	sqlite3xx.cpp \
 	misc.cpp
 
-AM_CXXFLAGS = $(BOOST_CPPFLAGS)
+AM_CPPFLAGS = $(BOOST_CPPFLAGS) $(SQLITE3_CFLAGS)
+LDADD = $(SQLITE3_LDFLAGS)
