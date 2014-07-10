@@ -65,6 +65,8 @@ public:
     {
 	return substitute_variables(get<std::string>(key));
     }
+
+    void configure_logging() const;
 };
 
 #endif

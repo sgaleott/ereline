@@ -1,4 +1,5 @@
 #include "configuration.hpp"
+#include "logging.hpp"
 
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/format.hpp>
@@ -116,4 +117,26 @@ Configuration::substitute_variables(const std::string & str) const
     }
 
     return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+Configuration::configure_logging() const
+{
+    Logger * log = Logger::get_instance();
+
+    auto log_file_name = getWithSubst("common.log_file");
+    std::ofstream * log_stream = new std::ofstream(log_file_name);
+    log->append_stream(log_stream);
+
+    Logger::Log_level log_level;
+    switch(get<int>("common.log_level")) {
+    case 1: log_level = Logger::Log_level::ERROR; break;
+    case 2: log_level = Logger::Log_level::WARNING; break;
+    case 3: log_level = Logger::Log_level::INFO; break;
+    default: log_level = Logger::Log_level::DEBUG;
+    }
+
+    log->set_log_level(log_level);
 }

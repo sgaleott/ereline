@@ -62,14 +62,3 @@ Logger::log(Log_level level, const std::string & string) const
 	}
     }
 }
-
-////////////////////////////////////////////////////////////////////////
-
-void
-Logger::configure(const Configuration & conf)
-{
-    auto log_file_name = conf.getWithSubst("common.log_file");
-    std::ofstream * log_stream = new std::ofstream(log_file_name);
-    append_stream(log_stream);
-}
-

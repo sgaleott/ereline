@@ -6,8 +6,6 @@
 #include <ostream>
 #include <boost/format.hpp>
 
-class Configuration;
-
 class Logger {
 public:
     enum class Log_level { DEBUG, INFO, WARNING, ERROR };
@@ -55,8 +53,6 @@ public:
     void error(const boost::format & string_fmt) const { 
 	error(boost::str(string_fmt)); 
     }
-
-    void configure(const Configuration & conf);
 
 private:
     static bool exist_instance_flag;
