@@ -94,15 +94,15 @@ dipoleFit::fitData(const vector<float> & maskMap)
       ++maskedLen;
 
   // Build masked array
-  double * dipole = new double[maskedLen];
-  double * data = new double[maskedLen];
+  std::vector<double> dipole(maskedLen);
+  std::vector<double> data(maskedLen);
   size_t maskedIdx = 0;
   for (size_t idx=0; idx<pixSumDipole.size(); ++idx)
     {
       if (maskMap[pixIndex[idx]] != 0) 
 	{
-	  dipole[maskedIdx] = static_cast<double>(pixSumDipole[idx]);
-	  data[maskedIdx] = pixSumData[idx]/pixSumHits[idx];
+	  dipole[maskedIdx] = pixSumDipole[idx];
+	  data[maskedIdx] = pixSumData[idx] / pixSumHits[idx];
 	  ++maskedIdx;
 	}
     }
@@ -114,10 +114,6 @@ dipoleFit::fitData(const vector<float> & maskMap)
   // Set gain and offset
   gainv = c1;
   offset = c0;
-  
-  // Delete tmp arrays
-  delete [] data;
-  delete [] dipole;
 
   if (gainv < 0)
     return false;
