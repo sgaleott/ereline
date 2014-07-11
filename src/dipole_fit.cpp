@@ -109,7 +109,9 @@ dipoleFit::fitData(const vector<float> & maskMap)
 
   // Un-weighted linear fit
   double c0, c1, cov00, cov01, cov11, chisq;
-  gsl_fit_linear (dipole, 1, data, 1, maskedLen, &c0, &c1, &cov00, &cov01, &cov11, &chisq);
+  gsl_fit_linear (dipole.data(), 1, 
+		  data.data(), 1, 
+		  maskedLen, &c0, &c1, &cov00, &cov01, &cov11, &chisq);
 
   // Set gain and offset
   gainv = c1;

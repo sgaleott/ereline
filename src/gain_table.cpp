@@ -655,7 +655,7 @@ gainTable::selectRadiometerGains(int armNumber,
     size_t startPoint = 0;
     for (auto chunkSize : nIdsRange)
     {
-	size_t chunkOffset = detectorIdIdx * chunkSize;
+	size_t chunkOffset = armNumber * chunkSize;
 	size_t chunkStart = startPoint + chunkOffset;
 
 	tmpPointingIds.insert(tmpPointingIds.end(),
