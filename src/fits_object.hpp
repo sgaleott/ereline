@@ -122,8 +122,8 @@ public:
   { getColumn (columnName, outData, 0, -1); };
 
   /* Write data in a column in the current HDU */
-  template <typename T> void writeColumn (const string& columnName, vector<T>& data, const int64& offset);
-  template <typename T> void writeColumn (const int& columnNumber, vector<T>& data, const int64& offset);
+  template <typename T> void writeColumn (const string& columnName, const vector<T>& data, const int64& offset);
+  template <typename T> void writeColumn (const int& columnNumber, const vector<T>& data, const int64& offset);
 
   /* Template function to get keyName of any type */
   template <typename T> void getKey(const string& keyName, T& keyValue);
@@ -194,7 +194,7 @@ FitsObject::getColumn (const string &columnName, vector<T>& outData, const int64
 
 /* Write data in a column in the current HDU */
 template <typename T> void 
-FitsObject::writeColumn (const string &columnName, vector<T>& data, const int64& offset=1)
+FitsObject::writeColumn (const string &columnName, const vector<T>& data, const int64& offset=1)
 {
   int status = 0;
   // get column number from name
@@ -207,19 +207,14 @@ FitsObject::writeColumn (const string &columnName, vector<T>& data, const int64&
 
 
 template <typename T> void 
-FitsObject::writeColumn (const int& colNum, vector<T>& data, const int64& offset=1)
+FitsObject::writeColumn (const int& colNum, const vector<T>& data, const int64& offset=1)
 {
   int status = 0;
   int firstElem=1;
   
-  T* tdata = new T[data.size()];
-  for (size_t i=0; i<data.size(); i++)
-    tdata[i]=data[i];
-  
-  if (fits_write_col (ptr, fitsType<T>(), colNum, offset, firstElem, data.size(), tdata, &status))
+  if (fits_write_col (ptr, fitsType<T>(), colNum, offset, firstElem, data.size(), 
+		      const_cast<T *>(data.data()), &status))
     fits_report_error (stderr, status);
-  
-  delete [] tdata;  
 }
 
 
