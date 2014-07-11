@@ -25,5 +25,11 @@ void loadPointingInformation(SQLite3Connection & ucds,
 			     int first_od,
 			     int last_od,
 			     std::vector<Pointing_t> & pointings);
+// Wrapper around the previous definition, with the assumption that
+// first_od == last_od == od.
+void loadPointingInformation(SQLite3Connection & ucds,
+			     int od,
+			     std::vector<Pointing_t> & pointings);
+
 
 #endif

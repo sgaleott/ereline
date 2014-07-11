@@ -95,3 +95,13 @@ loadPointingInformation(SQLite3Connection & db,
         result = statement.step();
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+loadPointingInformation(SQLite3Connection & ucds,
+			int od,
+			std::vector<Pointing_t> & pointings)
+{
+    loadPointingInformation(ucds, od, od, pointings);
+}
