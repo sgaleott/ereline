@@ -10,6 +10,7 @@
 
 class PlanckVelocity;
 class SQLite3Connection;
+class gainTable;
 class LfiRadiometer;
 
 void loadConvolutionParametersFromUCDS(SQLite3Connection & ucds,
@@ -18,8 +19,9 @@ void loadConvolutionParametersFromUCDS(SQLite3Connection & ucds,
 
 void saveGainTable(const std::string & file_name,
 		   signed short od,
-		   const std::string & detectorId,
-		   const std::string & instrument);
+		   const LfiRadiometer & radiometer,
+		   const gainTable & gain_table,
+		   const std::string & comment = "");
 
 void loadPointingInformation(SQLite3Connection & ucds,
 			     int first_od,

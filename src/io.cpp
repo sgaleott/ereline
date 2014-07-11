@@ -1,5 +1,7 @@
 #include "io.hpp"
 #include "planck_velocity.hpp"
+#include "fits_object.hpp"
+#include "gain_table.hpp"
 #include "logging.hpp"
 #include "datatypes.hpp"
 #include "sqlite3xx.hpp"
@@ -53,9 +55,30 @@ loadConvolutionParametersFromUCDS(SQLite3Connection & ucds,
 void
 saveGainTable(const std::string & file_name,
 	      signed short od,
-	      const std::string & detectorId,
-	      const std::string & instrument)
+	      const LfiRadiometer & radiometer,
+	      const gainTable & gain_table,
+	      const std::string & comment)
 {
+    FitsObject gain_file;
+
+    gain_file.create(file_name, true);
+
+    std::vector<fitscolumn> columns {
+	{ "PID", "", fitsTypeC<int32_t>(), 1 },
+	{ "GAIN", "", fitsTypeC<double>(), 1 },
+	{ "OFFSET", "", fitsTypeC<double>(), 1 } };
+    gain_file.insertBINtable(columns, radiometer.shortName());
+    gain_file.writeColumn(1, gain_table.pointingIds);
+    gain_file.writeColumn(2, gain_table.gain);
+    gain_file.writeColumn(3, gain_table.offset);
+
+    gain_file.setKey("HORN", radiometer.horn);
+    gain_file.setKey("RAD", radiometer.radiometer);
+    gain_file.setKey("OD", od);
+
+    if(! comment.empty()) {
+	gain_file.setComment(comment);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
