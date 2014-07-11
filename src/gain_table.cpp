@@ -643,7 +643,7 @@ gainTable::offsetSmoothing(int windowLenMinima,
 }
 
 void
-gainTable::selectRadiometerGains(int detectorIdIdx, 
+gainTable::selectRadiometerGains(int armNumber, 
 				 size_t detectorIdsSize, 
 				 const vector<int> & nIdsRange)
 {
@@ -651,25 +651,24 @@ gainTable::selectRadiometerGains(int detectorIdIdx,
     vector<int> tmpPointingIds;
     vector<double> tmpGain;
     vector<double> tmpOffset;
-    for (size_t idx = 0; idx < nIdsRange.size(); ++idx)
-    {
-	int startPoint = detectorIdIdx * nIdsRange[idx];
 
-	if(idx > 0) {
-	    startPoint +=
-		detectorIdsSize *
-		std::accumulate(nIdsRange.begin(), nIdsRange.begin() + idx, 0);
-	}
+    size_t startPoint = 0;
+    for (auto chunkSize : nIdsRange)
+    {
+	size_t chunkOffset = detectorIdIdx * chunkSize;
+	size_t chunkStart = startPoint + chunkOffset;
 
 	tmpPointingIds.insert(tmpPointingIds.end(),
-			      pointingIds.begin() + startPoint,
-			      pointingIds.begin() + startPoint + nIdsRange[idx]);
+			      pointingIds.begin() + chunkStart,
+			      pointingIds.begin() + chunkStart + chunkSize);
 	tmpGain.insert(tmpGain.end(),
-		       gain.begin() + startPoint,
-		       gain.begin() + startPoint + nIdsRange[idx]);
+		       gain.begin() + chunkStart,
+		       gain.begin() + chunkStart + chunkSize);
 	tmpOffset.insert(tmpOffset.end(),
-			 offset.begin() + startPoint,
-			 offset.begin() + startPoint + nIdsRange[idx]);
+			 offset.begin() + chunkStart,
+			 offset.begin() + chunkStart + chunkSize);
+
+	startPoint += detectorIdsSize * chunkSize;
     }
 
   // Swap vectors

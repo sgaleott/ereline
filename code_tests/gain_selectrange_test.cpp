@@ -70,26 +70,24 @@ new_selectRadiometerGains(int detectorIdIdx,
     std::vector<int> tmpPointingIds;
     std::vector<double> tmpGain;
     std::vector<double> tmpOffset;
-    for (size_t idx = 0; idx < nIdsRange.size(); ++idx)
-    {
-	int startPoint =
-	    detectorIdIdx * nIdsRange[idx];
 
-	if(idx > 0) {
-	    startPoint +=
-		detectorIdsSize *
-		std::accumulate(nIdsRange.begin(), nIdsRange.begin() + idx, 0);
-	}
+    size_t startPoint = 0;
+    for (auto chunkSize : nIdsRange)
+    {
+	size_t chunkOffset = detectorIdIdx * chunkSize;
+	size_t chunkStart = startPoint + chunkOffset;
 
 	tmpPointingIds.insert(tmpPointingIds.end(),
-			      pointingIds.begin() + startPoint,
-			      pointingIds.begin() + startPoint + nIdsRange[idx]);
+			      pointingIds.begin() + chunkStart,
+			      pointingIds.begin() + chunkStart + chunkSize);
 	tmpGain.insert(tmpGain.end(),
-		       gain.begin() + startPoint,
-		       gain.begin() + startPoint + nIdsRange[idx]);
+		       gain.begin() + chunkStart,
+		       gain.begin() + chunkStart + chunkSize);
 	tmpOffset.insert(tmpOffset.end(),
-			 offset.begin() + startPoint,
-			 offset.begin() + startPoint + nIdsRange[idx]);
+			 offset.begin() + chunkStart,
+			 offset.begin() + chunkStart + chunkSize);
+
+	startPoint += detectorIdsSize * chunkSize;
     }
 
     std::cout << "detectorIdIdx = " << detectorIdIdx << std::endl;
