@@ -14,9 +14,8 @@
 #include <cstdlib>
 #include <vector>
 
-class gainTable
+struct gainTable
 {
-private:
   std::vector<int> pointingIds;
   std::vector<double> gain;
   std::vector<double> offset;
@@ -32,7 +31,7 @@ private:
 				       const std::vector<double> & sectorGain);
   std::vector<double> variableWMA(const std::vector<int> & windowLen, 
 				  const std::vector<double> & dipole);
-public:
+
   gainTable();
 
   std::vector<int> & getPids();
