@@ -18,6 +18,7 @@ ereline_test_SOURCES = \
 	io.cpp \
 	datatypes.cpp \
 	sqlite3xx.cpp \
+	squeezer.cpp \
 	misc.cpp
 
 AM_CPPFLAGS = $(BOOST_CPPFLAGS) $(SQLITE3_CFLAGS)

@@ -51,4 +51,23 @@ struct LfiRadiometer {
     LfiRadiometer twinRadiometer() const;
 };
 
+////////////////////////////////////////////////////////////////////////////////
+
+struct Pointings {
+    std::vector<uint64_t> obt_time;
+    std::vector<double> scet_time;
+    std::vector<double> theta;
+    std::vector<double> phi;
+    std::vector<double> psi;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+struct DifferencedData {
+    std::vector<uint64_t> obt_time;
+    std::vector<double> scet_time;
+    std::vector<double> sky_load;
+    std::vector<uint32_t> flags;
+};
+
 #endif
