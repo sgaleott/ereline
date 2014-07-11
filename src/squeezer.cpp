@@ -620,10 +620,10 @@ decompress_file(const std::string & file_name,
 ////////////////////////////////////////////////////////////////////////////////
 
 struct Process_pointing_chunk {
-    Pointings & pnt;
+    PointingData & pnt;
     std::string file_name;
 
-    Process_pointing_chunk(Pointings & a_pnt, std::string a_file_name)
+    Process_pointing_chunk(PointingData & a_pnt, std::string a_file_name)
 	: pnt(a_pnt), file_name(a_file_name) { }
 
     void operator()(size_t chunk_idx,
@@ -671,7 +671,7 @@ struct Process_pointing_chunk {
 
 void
 decompress_pointings(const std::string & file_name,
-		     Pointings & pointings)
+		     PointingData & pointings)
 {
     Process_pointing_chunk process_fn(pointings, file_name);
     decompress_file(file_name, process_fn, SQZ_DETECTOR_POINTINGS);

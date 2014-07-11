@@ -53,7 +53,7 @@ struct LfiRadiometer {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-struct Pointings {
+struct PointingData {
     std::vector<uint64_t> obt_time;
     std::vector<double> scet_time;
     std::vector<double> theta;

@@ -5,7 +5,7 @@
 #include <exception>
 #include <boost/format.hpp>
 
-struct Pointings;
+struct PointingData;
 struct DifferencedData;
 
 class SqueezerError : public std::exception {
@@ -21,7 +21,7 @@ public:
 };
 
 void decompress_pointings(const std::string & file_name,
-			  Pointings & pointings);
+			  PointingData & pointings);
 
 void decompress_differenced_data(const std::string & file_name,
 				 DifferencedData & datadiff);
