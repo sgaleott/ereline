@@ -106,7 +106,7 @@ loadPointingInformation(SQLite3Connection & db,
     while(result == SQLITE_ROW) {
 	Pointing_t cur_pointing;
 
-        cur_pointing.pointing_id    = statement.column_int   (0);
+        cur_pointing.id             = statement.column_int   (0);
         cur_pointing.start_pointing = statement.column_double(1);
         cur_pointing.start_time     = statement.column_double(2);
         cur_pointing.end_time       = statement.column_double(3);
