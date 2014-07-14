@@ -8,6 +8,7 @@ ereline_test_SOURCES = \
 	logging.cpp \
 	configuration.cpp \
 	ahf_info.cpp \
+	mpi_processes.cpp \
 	rotmatrix.cpp \
 	planck_velocity.cpp \
 	fits_object.cpp \

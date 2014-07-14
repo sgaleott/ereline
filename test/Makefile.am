@@ -4,7 +4,8 @@ check_PROGRAMS = \
 	test_configuration \
 	test_logger \
 	test_datatypes \
-	test_io
+	test_io \
+	test_misc
 EXTRA_DIST = ./test_data
 
 test_configuration_SOURCES = \
@@ -22,6 +23,11 @@ test_datatypes_SOURCES = \
 	test_datatypes.cpp \
 	../src/datatypes.cpp
 test_datatypes_LDADD =  $(BOOST_UNIT_TEST_FRAMEWORK_LIB)
+
+test_misc_SOURCES = \
+	test_misc.cpp \
+	../src/mpi_processes.cpp
+test_misc_LDADD =  $(BOOST_UNIT_TEST_FRAMEWORK_LIB)
 
 test_io_SOURCES = \
 	test_io.cpp \
