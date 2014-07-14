@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(load_pointings)
 
     BOOST_CHECK_EQUAL(pointings.size(), 5);
 
-    BOOST_CHECK_EQUAL(pointings[0].pointing_id, 25619);
+    BOOST_CHECK_EQUAL(pointings[0].id, 25619);
     BOOST_CHECK_EQUAL(pointings[0].start_pointing, 111568338130683);
     BOOST_CHECK_EQUAL(pointings[0].start_time, 111568338294523);
     BOOST_CHECK_EQUAL(pointings[0].end_time, 111570160752379);
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(load_pointings)
     BOOST_CHECK_CLOSE(pointings[0].spin_ecl_lat, 0.0024, 1e-7);
     BOOST_CHECK_EQUAL(pointings[0].od, 943);
 
-    BOOST_CHECK_EQUAL(pointings[1].pointing_id, 25620);
+    BOOST_CHECK_EQUAL(pointings[1].id, 25620);
     BOOST_CHECK_EQUAL(pointings[1].start_pointing, 111570160752379);
     BOOST_CHECK_EQUAL(pointings[1].start_time, 111570278770430);
     BOOST_CHECK_EQUAL(pointings[1].end_time, 111570278770430);
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(load_pointings)
     BOOST_CHECK_CLOSE(pointings[1].spin_ecl_lat, 0, 1e-7);
     BOOST_CHECK_EQUAL(pointings[1].od, 943);
 
-    BOOST_CHECK_EQUAL(pointings[2].pointing_id, 25621);
+    BOOST_CHECK_EQUAL(pointings[2].id, 25621);
     BOOST_CHECK_EQUAL(pointings[2].start_pointing, 111570278770430);
     BOOST_CHECK_EQUAL(pointings[2].start_time, 111570390734587);
     BOOST_CHECK_EQUAL(pointings[2].end_time, 111573961135874);
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(load_pointings)
     BOOST_CHECK_CLOSE(pointings[2].spin_ecl_lat, 0.0048, 1e-7);
     BOOST_CHECK_EQUAL(pointings[2].od, 943);
 
-    BOOST_CHECK_EQUAL(pointings[3].pointing_id, 25622);
+    BOOST_CHECK_EQUAL(pointings[3].id, 25622);
     BOOST_CHECK_EQUAL(pointings[3].start_pointing, 111573961135874);
     BOOST_CHECK_EQUAL(pointings[3].start_time, 111573961283330);
     BOOST_CHECK_EQUAL(pointings[3].end_time, 111579584059131);
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE(load_pointings)
     BOOST_CHECK_CLOSE(pointings[3].spin_ecl_lat, 0.0108, 1e-7);
     BOOST_CHECK_EQUAL(pointings[3].od, 944);
 
-    BOOST_CHECK_EQUAL(pointings[4].pointing_id, 25623);
+    BOOST_CHECK_EQUAL(pointings[4].id, 25623);
     BOOST_CHECK_EQUAL(pointings[4].start_pointing, 111579584059131);
     BOOST_CHECK_EQUAL(pointings[4].start_time, 111579584272123);
     BOOST_CHECK_EQUAL(pointings[4].end_time, 111585207047931);
