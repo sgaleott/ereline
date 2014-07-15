@@ -257,14 +257,14 @@ find_range_of_indexes(std::vector<T> vec,
 		      int & first_idx, 
 		      int & last_idx)
 {
-    auto start_ptr = std::upper_bound(vec.begin(), vec.end(), first);
-    auto end_ptr = std::lower_bound(vec.begin(), vec.end(), last);
+    auto start_ptr = std::lower_bound(vec.begin(), vec.end(), first);
+    auto end_ptr = std::upper_bound(vec.begin(), vec.end(), last);
     if(start_ptr == vec.end() || end_ptr == vec.end()) {
 	first_idx = last_idx = -1;
     } else {
-	first_idx = start_ptr - vec.begin();
+	first_idx = std::distance(vec.begin(), start_ptr);
 	if(end_ptr != vec.begin())
-	    last_idx = end_ptr - vec.begin() - 1;
+	    last_idx = std::distance(vec.begin(), end_ptr) - 1;
 	else
 	    last_idx = first_idx;
     }

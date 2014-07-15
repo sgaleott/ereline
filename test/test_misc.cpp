@@ -52,14 +52,18 @@ BOOST_AUTO_TEST_CASE(OdList)
 
 BOOST_AUTO_TEST_CASE(FindRange)
 {
-    std::vector<double> vec { 0., 1., 2., 3., 4., 5., 6. };
+    std::vector<int> vec { 0, 10, 20, 30, 40, 50, 60 };
     int first_idx, last_idx;
 
-    find_range_of_indexes(vec, 1.5, 3.5, first_idx, last_idx);
+    find_range_of_indexes(vec, 15, 35, first_idx, last_idx);
     BOOST_CHECK_EQUAL(first_idx, 2);
     BOOST_CHECK_EQUAL(last_idx, 3);
 
-    find_range_of_indexes(vec, 100.0, 101.0, first_idx, last_idx);
+    find_range_of_indexes(vec, 40, 50, first_idx, last_idx);
+    BOOST_CHECK_EQUAL(first_idx, 4);
+    BOOST_CHECK_EQUAL(last_idx, 5);
+
+    find_range_of_indexes(vec, 100, 101, first_idx, last_idx);
     BOOST_CHECK_EQUAL(first_idx, -1);
     BOOST_CHECK_EQUAL(last_idx, -1);
 }
