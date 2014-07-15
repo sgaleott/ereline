@@ -30,7 +30,7 @@ SQLite3Connection::SQLite3Connection(const char * a_file_name)
 
     log->debug(boost::format("Opening connection to SQLite3 database %1%")
 	       % a_file_name);
-    int result = sqlite3_open(a_file_name, &conn);
+    int result = sqlite3_open_v2(a_file_name, &conn, SQLITE_OPEN_READONLY, NULL);
     if(result != SQLITE_OK) {
 	signalSqlite3ErrorAndThrow(a_file_name, result);
     }
