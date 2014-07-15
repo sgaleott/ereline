@@ -12,6 +12,11 @@ public:
 
     static Logger * get_instance();
 
+    void set_mpi_rank(int rank, int size) {
+	mpi_rank = rank;
+	mpi_size = size;
+    }
+
     void log(Log_level level, const std::string & string) const;
 
     void increase_indent() { 
@@ -57,6 +62,8 @@ public:
 private:
     static bool exist_instance_flag;
     static Logger * singleton;
+    int mpi_rank;
+    int mpi_size;
 
     std::vector<std::unique_ptr<std::ostream> > log_stream_list;
 
@@ -68,6 +75,7 @@ private:
 	    append_stream(&std::cerr);
 	    indent_level = 0;
 	    log_level = Log_level::INFO;
+	    mpi_rank = mpi_size = -1;
 	}
 
 public:

@@ -49,11 +49,24 @@ Logger::log(Log_level level, const std::string & string) const
     case Log_level::ERROR:   error_type = "  ERROR"; break;
     }
 
-    auto msg = (boost::format("%1% %2%: %3%%4%") 
-		% current_date_and_time() 
-		% error_type 
-		% std::string(indent_level, '\t') // Indent
-		% string);
+    boost::format msg;
+    if(mpi_rank > 0 && mpi_size > 0) {
+	// Include the MPI rank of this process and the number of
+	// processes in the log message
+	msg = (boost::format("%1% %2%: [%5%/%6%] %3%%4%") 
+	       % current_date_and_time() 
+	       % error_type 
+	       % std::string(indent_level, '\t') // Indent
+	       % string
+	       % (mpi_rank + 1)
+	       % mpi_size);
+    } else {
+	msg = (boost::format("%1% %2%: %3%%4%") 
+	       % current_date_and_time() 
+	       % error_type 
+	       % std::string(indent_level, '\t') // Indent
+	       % string);
+    }
 
     for(auto & log_stream : log_stream_list) {
 	if(log_stream.get() != NULL) {
