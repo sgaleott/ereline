@@ -1,4 +1,5 @@
 #include "ahf_info.hpp"
+#include "misc.hpp"
 #include "mpi_processes.hpp"
 
 #include <stdexcept>
@@ -45,6 +46,22 @@ BOOST_AUTO_TEST_CASE(OdList)
     BOOST_CHECK_EQUAL(od_list[3].first_pointing_id, 8);
     BOOST_CHECK_EQUAL(od_list[3].last_pointing_id, 8);
     BOOST_CHECK_EQUAL(od_list[3].num_of_pointings, 1);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+BOOST_AUTO_TEST_CASE(FindRange)
+{
+    std::vector<double> vec { 0., 1., 2., 3., 4., 5., 6. };
+    int first_idx, last_idx;
+
+    find_range_of_indexes(vec, 1.5, 3.5, first_idx, last_idx);
+    BOOST_CHECK_EQUAL(first_idx, 2);
+    BOOST_CHECK_EQUAL(last_idx, 3);
+
+    find_range_of_indexes(vec, 100.0, 101.0, first_idx, last_idx);
+    BOOST_CHECK_EQUAL(first_idx, -1);
+    BOOST_CHECK_EQUAL(last_idx, -1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

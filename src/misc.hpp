@@ -240,4 +240,34 @@ template<typename T> vector<T> mulVectors (vector<T> add1, vector<T> add2)
   return retVec;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+/* Save in "first_idx" and "last_idx" the indexes of the first and
+ * last element in "vec" that is between "first" and "last". 
+ *
+ * If the range defined by [first, last] is not within "vec", both
+ * "first_idx" and "last_idx" are initialized to -1.
+ *
+ * Vector "vec" must be in sorted order. */
+
+template<typename T> void
+find_range_of_indexes(std::vector<T> vec, 
+		      T first, 
+		      T last,
+		      int & first_idx, 
+		      int & last_idx)
+{
+    auto start_ptr = std::upper_bound(vec.begin(), vec.end(), first);
+    auto end_ptr = std::lower_bound(vec.begin(), vec.end(), last);
+    if(start_ptr == vec.end() || end_ptr == vec.end()) {
+	first_idx = last_idx = -1;
+    } else {
+	first_idx = start_ptr - vec.begin();
+	if(end_ptr != vec.begin())
+	    last_idx = end_ptr - vec.begin() - 1;
+	else
+	    last_idx = first_idx;
+    }
+}
+
 #endif
