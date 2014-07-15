@@ -5,7 +5,8 @@ check_PROGRAMS = \
 	test_logger \
 	test_datatypes \
 	test_io \
-	test_misc
+	test_misc \
+	test_project_tod
 EXTRA_DIST = ./test_data
 
 test_configuration_SOURCES = \
@@ -23,6 +24,13 @@ test_datatypes_SOURCES = \
 	test_datatypes.cpp \
 	../src/datatypes.cpp
 test_datatypes_LDADD =  $(BOOST_UNIT_TEST_FRAMEWORK_LIB)
+
+test_project_tod_SOURCES = \
+	test_project_tod.cpp \
+	../src/datatypes.cpp \
+	../src/logging.cpp \
+	../src/project_tod.cpp
+test_project_tod_LDADD =  $(BOOST_UNIT_TEST_FRAMEWORK_LIB)
 
 test_misc_SOURCES = \
 	test_misc.cpp \
