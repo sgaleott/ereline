@@ -2,9 +2,9 @@
 
 AUTOMAKE_OPTIONS = gnu subdir-objects
 
-bin_PROGRAMS = ereline_test
-ereline_test_SOURCES = \
-	ereline_test.cpp \
+bin_PROGRAMS = dx11d_pipeline
+dx11d_pipeline_SOURCES = \
+	dx11d_pipeline.cpp \
 	logging.cpp \
 	configuration.cpp \
 	ahf_info.cpp \
