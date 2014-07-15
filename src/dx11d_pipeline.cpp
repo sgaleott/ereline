@@ -9,6 +9,8 @@
 
 #include <iostream>
 
+#include <mpi.h>
+
 ////////////////////////////////////////////////////////////////////////////////
 
 void
@@ -40,8 +42,11 @@ read_configuration_and_set_up(const std::string & configuration_file_name,
 
     // Configure the logger according to the settings found in the
     // configuration file
-    Logger * log = Logger::get_instance();
     program_config.configure_logging();
+
+    Logger * log = Logger::get_instance();
+    log->set_mpi_rank(MPI::COMM_WORLD.Get_rank(),
+		      MPI::COMM_WORLD.Get_size());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -64,8 +69,11 @@ read_ahf_info(SQLite3Connection & ucds,
 int
 main(int argc, const char ** argv)
 {
+    MPI::Init(); 
+
     if(argc != 2) {
-	print_help();
+	if(MPI::COMM_WORLD.Get_rank() == 0)
+	    print_help();
 	return 1;
     }
 
@@ -95,6 +103,8 @@ main(int argc, const char ** argv)
     run_dipole_fit(program_config);
     run_da_capo(program_config);
     run_smooth_gains(program_config);
+
+    MPI::Finalize();
 
     return 0;
 }
