@@ -9,8 +9,6 @@
 
 #include "rotmatrix.hpp"
 
-using namespace std;
-
 rotmatrix::rotmatrix ()
 {
 }
@@ -53,7 +51,7 @@ rotmatrix::makeAxisRotationTransform (const std::vector<double> &axis,
     entry[2][1] = t1 + t2;
 }
 
-vector<double>
+std::vector<double>
 rotmatrix::transform (const std::vector<double> &vec)
 {
     std::vector<double> outVec;
@@ -76,11 +74,12 @@ operator* (const rotmatrix &a, const rotmatrix &b)
     return res;
 }
 
-ostream &operator<< (ostream &os, const rotmatrix &mat)
+std::ostream &operator<< (std::ostream &os, const rotmatrix &mat)
 {
-    for (int i=0;i<3;++i)
+    for (int i=0;i<3;++i) {
 	os << '[' << mat.entry[i][0] << ','
 	   << mat.entry[i][1] << ','
-	   << mat.entry[i][2] << ']' << endl;
+	   << mat.entry[i][2] << ']' << std::endl;
+    }
     return os;
 }

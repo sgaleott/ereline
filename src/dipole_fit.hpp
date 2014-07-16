@@ -6,9 +6,8 @@
 #include "planck_velocity.hpp"
 
 /* class calib iter*/
-class dipoleFit
+struct dipoleFit
 {
-private:
     int qualityFlag;
     int nSide;
     int pointingID;
@@ -24,8 +23,6 @@ private:
     std::vector<double> pixSumData;
     std::vector<float> pixSumDipole;
     std::vector<float> inputMap;
-
-public:
 
     dipoleFit(const int a_qualityFlag, const int a_nSide, const int a_pointingID);
 

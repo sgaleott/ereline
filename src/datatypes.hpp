@@ -57,7 +57,19 @@ template<typename T>
 struct Range_t {
     T start;
     T end;
+
+    // This is useful for unit tests
+    bool operator!=(const Range_t<T> & other) const {
+	return (start != other.start) || (end != other.end);
+    }
 };
+
+template<typename T>
+std::ostream & operator<<(std::ostream & os, Range_t<T> const & yt)
+{
+    os << "(" << yt.start << " - " << yt.end << ")";
+    return os;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 

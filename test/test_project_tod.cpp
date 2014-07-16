@@ -29,10 +29,11 @@ BOOST_AUTO_TEST_CASE(ProjectTOD)
     Projected_tod_t proj_tod;
     proj_tod.pointing_id = 1;
     proj_tod.nside = 64;
-    project_tod(2, Range_t<uint64_t> { 1, 7 }, pnt_data, diff_data, proj_tod);
+    Range_t<double> extrema;
+    project_tod(2, Range_t<uint64_t> { 1, 7 }, pnt_data, diff_data, extrema, proj_tod);
 
     BOOST_CHECK_EQUAL(proj_tod.pixel_idx.size(), 5);
-    BOOST_CHECK_EQUAL(proj_tod.value.size(), 5);
+    BOOST_CHECK_EQUAL(proj_tod.sum.size(), 5);
     BOOST_CHECK_EQUAL(proj_tod.hits.size(), 5);
 
     BOOST_CHECK_EQUAL(proj_tod.pixel_idx.at(0), 4078);
@@ -41,11 +42,11 @@ BOOST_AUTO_TEST_CASE(ProjectTOD)
     BOOST_CHECK_EQUAL(proj_tod.pixel_idx.at(3), 4094);
     BOOST_CHECK_EQUAL(proj_tod.pixel_idx.at(4), 4095);
 
-    BOOST_CHECK_EQUAL(proj_tod.value.at(0), 80.0);
-    BOOST_CHECK_EQUAL(proj_tod.value.at(1), 70.0);
-    BOOST_CHECK_EQUAL(proj_tod.value.at(2), 110.0);
-    BOOST_CHECK_EQUAL(proj_tod.value.at(3), 30.0);
-    BOOST_CHECK_EQUAL(proj_tod.value.at(4), 20.0);
+    BOOST_CHECK_EQUAL(proj_tod.sum.at(0), 80.0);
+    BOOST_CHECK_EQUAL(proj_tod.sum.at(1), 70.0);
+    BOOST_CHECK_EQUAL(proj_tod.sum.at(2), 110.0);
+    BOOST_CHECK_EQUAL(proj_tod.sum.at(3), 30.0);
+    BOOST_CHECK_EQUAL(proj_tod.sum.at(4), 20.0);
 
     BOOST_CHECK_EQUAL(proj_tod.hits.at(0), 1);
     BOOST_CHECK_EQUAL(proj_tod.hits.at(1), 1);

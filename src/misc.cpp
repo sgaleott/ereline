@@ -40,27 +40,6 @@ string trim (const string &orig)
   return orig.substr(p1,p2-p1+1);
 }
 
-/*
- * Module startup message
- */
-void module_startup (string name, int argc, 
-		     int argc_expected, string process_name)
-{
-  cout << endl << "+-";
-  for (uint m=0; m<name.length(); ++m) cout << "-";
-  cout << "-+" << endl;
-  cout << "| " << name << " |" << endl;
-  cout << "+-";
-  for (uint m=0; m<name.length(); ++m) cout << "-";
-  cout << "-+" << endl << endl;
-  
-  if (argc==argc_expected) 
-    return;
-
-  cerr << "Usage: " << process_name << " parameter_file" << endl;
-  exit(EXIT_FAILURE);
-}
-
 vector<double> angToCart(double theta, double phi)
 {
   vector<double> temp(3,0.0);
@@ -432,34 +411,34 @@ unsigned int intRandUniform(unsigned int x, unsigned int y,
 }
 
 /* Get the Temperature termometer given the horn */
-string getTFem (int horn)
+std::string getTFem (int horn)
 {
   switch(horn)
     {
     case 18:
-      return string("LM302332");
+      return std::string("LM302332");
     case 19:
-      return string("LM302332");
+      return std::string("LM302332");
     case 20:
-      return string("LM302332");
+      return std::string("LM302332");
     case 21:
-      return string("LM206332");
+      return std::string("LM206332");
     case 22:
-      return string("LM206332");
+      return std::string("LM206332");
     case 23:
-      return string("LM206332");
+      return std::string("LM206332");
     case 24:
-      return string("LM203332");
+      return std::string("LM203332");
     case 25:
-      return string("LM204332");
+      return std::string("LM204332");
     case 26:
-      return string("LM306332");
+      return std::string("LM306332");
     case 27:
-      return string("LM202332");
+      return std::string("LM202332");
     case 28:
-      return string("LM203332");
+      return std::string("LM203332");
     default:
-      cout << "Invalid horn" << endl;
+      std::cout << "Invalid horn" << std::endl;
     }
-  return string("");
+  return std::string("");
 }

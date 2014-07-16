@@ -8,8 +8,6 @@
 #include <vector>
 #include <algorithm>
 
-using namespace std;
-
 typedef signed char int8;
 typedef unsigned char uint8;
 typedef signed short int16;
@@ -94,49 +92,46 @@ template<> inline PDT pipeType<uint64> () { return PIPE_UINT64; }
 template<> inline PDT pipeType<float>  () { return PIPE_FLOAT32;}
 template<> inline PDT pipeType<double> () { return PIPE_FLOAT64;}
 template<> inline PDT pipeType<bool>   () { return PIPE_BOOL;   }
-template<> inline PDT pipeType<string> () { return PIPE_STRING; }
+template<> inline PDT pipeType<std::string> () { return PIPE_STRING; }
 
-string getDate (void);
+std::string getDate (void);
 
-string trim (const string &orig);
+std::string trim (const std::string &orig);
 
-void module_startup (string name, int argc, 
-		     int argc_expected, string process_name);
+std::vector<double> angToCart(double theta, double phi);
 
-vector<double> angToCart(double theta, double phi);
+std::vector<double> cartToAng(std::vector<double> cart);
 
-vector<double> cartToAng(vector<double> cart);
+std::vector<std::string> getDetectorIds(int frequency);
+std::string getDetectorId(int diode);
+std::vector<std::string> getAllDetectorIds();
+std::vector<std::string> getAllDiodes();
+int getDetectorIdasInt(std::string detectorId);
 
-vector<string> getDetectorIds(int frequency);
-string getDetectorId(int diode);
-vector<string> getAllDetectorIds();
-vector<string> getAllDiodes();
-int getDetectorIdasInt(string detectorId);
-
-double computeMean(vector<double> & input);
-double computeVariance(vector<double> & input);
+double computeMean(std::vector<double> & input);
+double computeVariance(std::vector<double> & input);
 
 /*
  * Template function to transform a number
  * of any type to a string.
  */
-template<typename T> string dataToString (const T &x)
+template<typename T> std::string dataToString (const T &x)
 {
-  ostringstream strstrm;
+  std::ostringstream strstrm;
   strstrm.precision(20);
   strstrm << x;
   return trim(strstrm.str());
 }
 
-string intToString(int64 x, unsigned int width);
+std::string intToString(int64 x, unsigned int width);
 
 /*
  * Template function to transform a string
  * to a number of any type
  */
-template<typename T> T stringToData (const string &x)
+template<typename T> T stringToData (const std::string &x)
 {
-  istringstream strstrm(x);
+  std::istringstream strstrm(x);
   T value;
   strstrm >> value;
   return value;
@@ -145,7 +140,7 @@ template<typename T> T stringToData (const string &x)
 /*
  * Merge two vectors. The resulting vector is vector_dest.
  */
-template <typename T> inline void fillVector (vector<T> & vector_dest, const vector<T> &arr_orig)
+template <typename T> inline void fillVector (std::vector<T> & vector_dest, const std::vector<T> &arr_orig)
 {
   for (uint i=0; i<arr_orig.size(); ++i)
     vector_dest.push_back(arr_orig[i]);
@@ -155,7 +150,7 @@ template <typename T> inline void fillVector (vector<T> & vector_dest, const vec
  * Search an element in an ordered array
  */
 template <class T>
-inline int searchArr(const vector<T> &array, T value)
+inline int searchArr(const std::vector<T> &array, T value)
 {
   if (array.empty())
     return -1;
@@ -171,7 +166,7 @@ inline int searchArr(const vector<T> &array, T value)
  * Search an element in an ordered array
  */
 template <class T>
-inline int searchIdx(const vector<T> &array, T value)
+inline int searchIdx(const std::vector<T> &array, T value)
 {
   if (array.empty())
     return -1;
@@ -186,7 +181,7 @@ inline int searchIdx(const vector<T> &array, T value)
 }
 
 template <typename T>
-inline int linearSearch(vector<T> array, T value)
+inline int linearSearch(std::vector<T> array, T value)
 {  
   for (unsigned int idx=0; idx<array.size(); idx++)
     {  
@@ -196,26 +191,27 @@ inline int linearSearch(vector<T> array, T value)
   return -1;
 }
 
-string getExchangeName (const string prefix, const string od, 
-			const string suffix);
+std::string getExchangeName (const std::string prefix, const std::string od, 
+			     const std::string suffix);
 
-void flagConversion (vector<int> inputFlag, vector<int> & outFlag, 
-		     vector<int> & commonFlag, bool isHk=false);
+void flagConversion (std::vector<int> inputFlag, std::vector<int> & outFlag, 
+		     std::vector<int> & commonFlag, bool isHk=false);
 
 void mpiError (int rankMPI, int start, int stop);
 
-void invert2_eig (vector<double> & cc);
-vector<int> sortAndCount(vector<int> & pixels);
+void invert2_eig (std::vector<double> & cc);
+std::vector<int> sortAndCount(std::vector<int> & pixels);
 void twiddle (unsigned int &v);
 unsigned int intRandUniform(unsigned int x, unsigned int y, unsigned int z, unsigned int w);
-string getTFem (int horn);
+std::string getTFem (int horn);
 
-template<typename T> vector<T> sumVectors (vector<T> add1, vector<T> add2)
+template<typename T> std::vector<T> sumVectors (std::vector<T> add1, std::vector<T> add2)
 {
-  vector<T> retVec;
+  std::vector<T> retVec;
   if (add1.size() != add2.size())
     {
-      cout << "Error: the vectors must have the same size: " << add1.size() << " " << add2.size() << endl;
+      std::cout << "Error: the vectors must have the same size: " 
+		<< add1.size() << " " << add2.size() << std::endl;
       return retVec;
     }
 
@@ -225,12 +221,13 @@ template<typename T> vector<T> sumVectors (vector<T> add1, vector<T> add2)
   return retVec;
 }
 
-template<typename T> vector<T> mulVectors (vector<T> add1, vector<T> add2)
+template<typename T> std::vector<T> mulVectors (std::vector<T> add1, std::vector<T> add2)
 {
-  vector<T> retVec;
+  std::vector<T> retVec;
   if (add1.size() != add2.size())
     {
-      cout << "Error: the vectors must have the same size: " << add1.size() << " " << add2.size() << endl;
+      std::cout << "Error: the vectors must have the same size: "
+		<< add1.size() << " " << add2.size() << std::endl;
       return retVec;
     }
 

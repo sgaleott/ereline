@@ -15,25 +15,25 @@ gainTable::gainTable()
 {
 }
 
-vector<int> & 
+std::vector<int> & 
 gainTable::getPids()
 {
   return pointingIds;
 }
 
-vector<double> & 
+std::vector<double> & 
 gainTable::getGains()
 {
   return gain;
 }
 
-vector<double> & 
+std::vector<double> & 
 gainTable::getOffsets()
 {
   return offset;
 }
 
-vector<int> & 
+std::vector<int> & 
 gainTable::getWindowVector()
 {
   return windowVector;
@@ -42,7 +42,7 @@ gainTable::getWindowVector()
 int
 gainTable::getPidIndex (int pid)
 {
-  unsigned int res = static_cast<unsigned int>(lower_bound(pointingIds.begin(), pointingIds.end(), pid) - pointingIds.begin());
+  unsigned int res = static_cast<unsigned int>(std::lower_bound(pointingIds.begin(), pointingIds.end(), pid) - pointingIds.begin());
   return res;
 }
 
@@ -77,7 +77,7 @@ gainTable::setOffsetValue (double a_offset)
 }
 
 void 
-gainTable::setWindowVector (vector<int> & a_windowVector)
+gainTable::setWindowVector (std::vector<int> & a_windowVector)
 {
   windowVector = a_windowVector;
 }
@@ -144,15 +144,15 @@ gainTable::mergeResults()
     MPI::COMM_WORLD.Bcast(offset.data(), offset.size(), MPI::DOUBLE, 0);
 }
 
-vector<double> 
+std::vector<double> 
 gainTable::wma(int windowLen, 
 	       const std::vector<double> weights, 
 	       const std::vector<double> raw)
 {
   // Moving window smoothing
-  vector<double> windowVec;
-  vector<double> paddedRaw;
-  vector<double> paddedWeights;
+  std::vector<double> windowVec;
+  std::vector<double> paddedRaw;
+  std::vector<double> paddedWeights;
   for (size_t idx=windowLen/2; idx>0; --idx)
     {
       paddedRaw.push_back(raw[idx]);
@@ -187,14 +187,14 @@ gainTable::wma(int windowLen,
   return windowVec;
 }
 
-vector<int>
+std::vector<int>
 gainTable::createWindowsVector(int windowLen1, 
 			       int windowLen2,
 			       double minRangeDipole, 
 			       double maxRangeDipole, 
 			       const std::vector<double> & dipole)
 {
-  vector<int> result;
+  std::vector<int> result;
   size_t count = 0;
   size_t beginCount = 0;
   bool inTheMiddle = false;
@@ -294,14 +294,14 @@ gainTable::createWindowsVector(int windowLen1,
   return result;
 }
 
-vector<double> 
-gainTable::variableWMA(const vector<int> & windowLen, 
-		       const vector<double> & dipole)
+std::vector<double> 
+gainTable::variableWMA(const std::vector<int> & windowLen, 
+		       const std::vector<double> & dipole)
 {  
   // Moving window smoothing
-  vector<double> windowVec;
-  vector<double> paddedRaw;
-  vector<double> paddedWeights;
+  std::vector<double> windowVec;
+  std::vector<double> paddedRaw;
+  std::vector<double> paddedWeights;
   int maxWindow = (*std::max_element(windowLen.begin(), windowLen.end()))/2;
   for (size_t idx=maxWindow; idx>0; --idx)
     {
@@ -343,15 +343,15 @@ gainTable::variableWMA(const vector<int> & windowLen,
   return windowVec;
 }
 
-vector<double> 
-gainTable::variableWMAlocal(const vector<int> & windowLen, 
-			    const vector<double> & dipole, 
-			    const vector<double> & sectorGain)
+std::vector<double> 
+gainTable::variableWMAlocal(const std::vector<int> & windowLen, 
+			    const std::vector<double> & dipole, 
+			    const std::vector<double> & sectorGain)
 {  
   // Moving window smoothing
-  vector<double> windowVec;
-  vector<double> paddedRaw;
-  vector<double> paddedWeights;
+  std::vector<double> windowVec;
+  std::vector<double> paddedRaw;
+  std::vector<double> paddedWeights;
 
   int maxWindow = (*max_element(windowLen.begin(), windowLen.end()))/2;
   for (size_t idx=maxWindow; idx>0; --idx)
@@ -394,19 +394,19 @@ gainTable::variableWMAlocal(const vector<int> & windowLen,
   return windowVec;
 }
 
-vector<double>
+std::vector<double>
 gainTable::gainSmoothing(int windowLenMinima, int windowLenMaxima, 
 			 int windowLenSlowSmoothing, double percentSlowVariations,
 			 double minRangeDipole, double maxRangeDipole,
-			 vector<double> & dipole)
+			 std::vector<double> & dipole)
 {
-  vector<int> dipoleWindowVector = createWindowsVector(windowLenMinima, windowLenMaxima, minRangeDipole, maxRangeDipole, dipole);
+  std::vector<int> dipoleWindowVector = createWindowsVector(windowLenMinima, windowLenMaxima, minRangeDipole, maxRangeDipole, dipole);
 
   // Rough Smoothing of the Raw Gains
-  vector<double> windowedSlowSmoothing = wma(windowLenSlowSmoothing, dipole, gain);
+  std::vector<double> windowedSlowSmoothing = wma(windowLenSlowSmoothing, dipole, gain);
 
   // Padding
-  vector<double> paddedRaw;
+  std::vector<double> paddedRaw;
   for (size_t idx=windowLenSlowSmoothing/2; idx>0; --idx)
     {
       paddedRaw.push_back(windowedSlowSmoothing[idx]);
@@ -421,10 +421,10 @@ gainTable::gainSmoothing(int windowLenMinima, int windowLenMaxima,
     }
   
   // Compute variance every windowLenSlowSmoothing samples and multiply by dipole
-  vector<double> locVariance;
+  std::vector<double> locVariance;
   for (size_t extIdx=0; extIdx<windowedSlowSmoothing.size(); extIdx++)
     { 
-      vector<double> localGain;
+      std::vector<double> localGain;
       for (int intIdx=-windowLenSlowSmoothing/2; intIdx<=windowLenSlowSmoothing/2; intIdx++)
 	  if ((paddedRaw[extIdx+windowLenSlowSmoothing/2+intIdx]!=0)&&(!std::isinf(paddedRaw[extIdx+windowLenSlowSmoothing/2+intIdx])))
 	  {
@@ -435,19 +435,19 @@ gainTable::gainSmoothing(int windowLenMinima, int windowLenMaxima,
     }
   
   // Sort Variance and find the percentile percentSlowVariations
-  vector<double> sortedVariance = locVariance;
+  std::vector<double> sortedVariance = locVariance;
   sort(sortedVariance.begin(),sortedVariance.end());
   double percentileSlowVariations = sortedVariance[static_cast<int>(percentSlowVariations*static_cast<double>(sortedVariance.size()))];
 
   // Find sudden jumps using variances
-  vector<size_t> startIdx;
-  vector<size_t> endIdx;
+  std::vector<size_t> startIdx;
+  std::vector<size_t> endIdx;
   startIdx.push_back(0);
   for (size_t idx=0; idx<locVariance.size(); idx++)
     { 
       if (locVariance[idx]>percentileSlowVariations)
 	{
-	  vector<double> upVariance;
+	  std::vector<double> upVariance;
 	  size_t rangeStartIdx = idx;
 	  while ((locVariance[idx]>percentileSlowVariations)||(locVariance[idx]==0)||(idx==locVariance.size()))
 	    {
@@ -469,14 +469,14 @@ gainTable::gainSmoothing(int windowLenMinima, int windowLenMaxima,
   endIdx.push_back(gain.size()-1);
 
   // Smooth gains for each interval between jumps
-  vector<double> windowedG = vector<double>(dipoleWindowVector.size(), 0.);
+  std::vector<double> windowedG = std::vector<double>(dipoleWindowVector.size(), 0.);
   for (size_t idx=0; idx<startIdx.size(); idx++)
     {
       size_t len = endIdx[idx]-startIdx[idx]+1;
 
-      vector<int> sectorWinVector = vector<int>(len, 0);
-      vector<double> sectorDipole = vector<double>(len, 0.);
-      vector<double> sectorRaw = vector<double>(len, 0.);
+      std::vector<int> sectorWinVector = std::vector<int>(len, 0);
+      std::vector<double> sectorDipole = std::vector<double>(len, 0.);
+      std::vector<double> sectorRaw = std::vector<double>(len, 0.);
 
       // Fill sector windows, dipole and raw gains vectors
       size_t secIdx = 0;
@@ -503,9 +503,9 @@ gainTable::gainSmoothing(int windowLenMinima, int windowLenMaxima,
 	}
 
       // Interpolate raw gains for zeros
-      vector<int> p2i;
-      vector<int> pC;
-      vector<double> g2i;
+      std::vector<int> p2i;
+      std::vector<int> pC;
+      std::vector<double> g2i;
       for (size_t lIdx=0; lIdx<sectorRaw.size(); lIdx++)
 	{ 
 	  pC.push_back(pointingIds[startIdx[idx]+lIdx]);
@@ -564,12 +564,12 @@ gainTable::gainSmoothing(int windowLenMinima, int windowLenMaxima,
       gsl_fft_halfcomplex_wavetable_free (hc);      
       gsl_fft_real_workspace_free (work);
 
-      vector<double> sectorGain;
+      std::vector<double> sectorGain;
       for(size_t sectorIdx=0; sectorIdx<len; ++sectorIdx)
 	sectorGain.push_back(data[sectorIdx]);
       
       // Smooth gains using filtered gains, variable windows and dipole variance
-      vector<double> sectorWMA = variableWMAlocal(sectorWinVector, sectorDipole, sectorGain);
+      std::vector<double> sectorWMA = variableWMAlocal(sectorWinVector, sectorDipole, sectorGain);
 
       // Store smoothed gains
       for(size_t sectorIdx=0; sectorIdx<len; ++sectorIdx)
@@ -579,10 +579,10 @@ gainTable::gainSmoothing(int windowLenMinima, int windowLenMaxima,
   return windowedG;
 }
 
-vector<double> 
-gainTable::zeroing(int windowLen, double percent, vector<double> & dipole)
+std::vector<double> 
+gainTable::zeroing(int windowLen, double percent, std::vector<double> & dipole)
 {
-  vector<double> paddedRaw;
+  std::vector<double> paddedRaw;
   for (size_t idx=windowLen/2; idx>0; --idx)
     {
       paddedRaw.push_back(gain[idx]);
@@ -596,17 +596,17 @@ gainTable::zeroing(int windowLen, double percent, vector<double> & dipole)
       paddedRaw.push_back(gain[gain.size()-idx-2]);
     }
 
-  vector<double> locVariance;
+  std::vector<double> locVariance;
   for (size_t extIdx=0; extIdx<gain.size(); extIdx++)
     { 
-      vector<double> localGain;
+      std::vector<double> localGain;
       for (int intIdx=-windowLen/2; intIdx<=windowLen/2; intIdx++)
 	localGain.push_back(paddedRaw[extIdx+windowLen/2+intIdx]);
       
       locVariance.push_back(computeVariance(localGain));
     }
 
-  vector<double> sortedVariance = locVariance;
+  std::vector<double> sortedVariance = locVariance;
   sort(sortedVariance.begin(),sortedVariance.end());
   double mulFactor = sortedVariance[static_cast<int>(percent*static_cast<double>(sortedVariance.size()))]*windowLen;
 
@@ -620,37 +620,37 @@ gainTable::zeroing(int windowLen, double percent, vector<double> & dipole)
     }
 
   // Weighted Moving Average
-  vector<double> windowedG = variableWMA(windowVector, dipole);
+  std::vector<double> windowedG = variableWMA(windowVector, dipole);
 
   // Subtract windowed
-  vector<double> retVec;
+  std::vector<double> retVec;
   for (size_t idx=0; idx<windowedG.size(); ++idx)
     retVec.push_back(gain[idx]-windowedG[idx]);
 
   return retVec;
 }
 
-vector<double>
+std::vector<double>
 gainTable::offsetSmoothing(int windowLenMinima, 
 			   int windowLenMaxima, 
 			   double minRangeDipole, 
 			   double maxRangeDipole, 
-			   vector<double> & dipole)
+			   std::vector<double> & dipole)
 {
-  vector<int> dipoleWindowVector = createWindowsVector(windowLenMinima, windowLenMaxima, minRangeDipole, maxRangeDipole, dipole);
-  vector<double> retVec = variableWMAlocal(dipoleWindowVector, dipole, offset);
+  std::vector<int> dipoleWindowVector = createWindowsVector(windowLenMinima, windowLenMaxima, minRangeDipole, maxRangeDipole, dipole);
+  std::vector<double> retVec = variableWMAlocal(dipoleWindowVector, dipole, offset);
   return retVec;
 }
 
 void
 gainTable::selectRadiometerGains(int armNumber, 
 				 size_t detectorIdsSize, 
-				 const vector<int> & nIdsRange)
+				 const std::vector<int> & nIdsRange)
 {
     // Select values
-    vector<int> tmpPointingIds;
-    vector<double> tmpGain;
-    vector<double> tmpOffset;
+    std::vector<int> tmpPointingIds;
+    std::vector<double> tmpGain;
+    std::vector<double> tmpOffset;
 
     size_t startPoint = 0;
     for (auto chunkSize : nIdsRange)
@@ -684,9 +684,9 @@ gainTable::selectDiodeGains(int detectorIdIdx, size_t detectorIdsSize,
 			    std::vector<double> & outOffset)
 {
   // Select values
-  vector<int> tmpPointingIds;
-  vector<double> tmpGain;
-  vector<double> tmpOffset;
+  std::vector<int> tmpPointingIds;
+  std::vector<double> tmpGain;
+  std::vector<double> tmpOffset;
   for (size_t idx=0; idx<nIdsRange.size(); ++idx)
     {
       int offsetIdx=detectorIdIdx*nIdsRange[idx];

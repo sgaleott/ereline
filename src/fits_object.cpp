@@ -13,10 +13,10 @@
   * Create a new fits file 
   */
 void 
-FitsObject::create (const string& fileName, bool overwrite)
+FitsObject::create (const std::string& fileName, bool overwrite)
 {
   int status=0;
-  string name=fileName;
+  std::string name=fileName;
   if (overwrite == true && name[0] != '!')
     name.insert(0,"!");
   
@@ -41,7 +41,7 @@ FitsObject::writeChecksum ()
  * Open fits file at the first HDU with a table 
  */
 void 
-FitsObject::openTable (const string& name)
+FitsObject::openTable (const std::string& name)
 {
   int status=0;
   if (fits_open_table (&ptr, name.c_str(), READONLY, &status))
@@ -83,9 +83,10 @@ FitsObject::gotoHDU(const int& hduNumber)
  * Insert a new table 
  */
 void 
-FitsObject::insertTable(vector<fitscolumn>& columns, const string& extname, const int& type)
+FitsObject::insertTable(const std::vector<fitscolumn>& columns, 
+			const std::string& extname, 
+			int type)
 {
-  cout << "Inserting table '" << extname << "'" << endl;
   int status=0;
   
   // string to c-arrays
@@ -123,10 +124,9 @@ FitsObject::insertTable(vector<fitscolumn>& columns, const string& extname, cons
  * Add a comment in the current HDU header
  */
 void 
-FitsObject::setComment(const string& comment)
+FitsObject::setComment(const std::string& comment)
 {
   int status=0;
-  cout << "Setting comment:'"<< comment << "'" << endl;
 
   if (fits_write_comment (ptr, const_cast<char*>(comment.c_str()), &status))
     fits_report_error(stderr, status);
@@ -155,13 +155,14 @@ FitsObject::getChunkSize()
  * Set keyword (string keyword case)
  */
 template <> void 
-FitsObject::setKey <string> (const string& keyName, const string& keyValue, const string& comment) 
+FitsObject::setKey <std::string> (const std::string& keyName, 
+				  const std::string& keyValue, 
+				  const std::string& comment) 
 {
-  cout << "Setting key '"<< left << setw(20) << keyName << "' to " << keyValue <<endl;
   int status=0;
   
   fits_update_key (ptr, 
-		   fitsType<string>(),
+		   fitsType<std::string>(),
 		   const_cast <char*> (keyName.c_str()),
 		   const_cast <char*> (keyValue.c_str()),
 		   const_cast <char*> (comment.c_str()),

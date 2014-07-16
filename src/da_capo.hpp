@@ -6,15 +6,13 @@
 
 #include "dipole_fit.hpp"
 
-using namespace std;
-
 //Class for holding a set of 4 baseline vectors,
 //two of which represent the usual destriping baselines, and the remaining two the gain.
 class basevec
 {
 public:
-  vector<double> base;
-  vector<double> gain;
+  std::vector<double> base;
+  std::vector<double> gain;
   int nbase;
   
 public:
@@ -23,8 +21,8 @@ public:
   {
     nbase=npp;
 
-    base = vector<double> (npp, 0.);
-    gain = vector<double> (npp, 0.);
+    base = std::vector<double> (npp, 0.);
+    gain = std::vector<double> (npp, 0.);
   }
   
   void SetValues(double g, double b, int index)
@@ -91,46 +89,46 @@ class daCapo
 
   double rzinit;
 
-  vector<double> constraintMap;
-  vector<double> localMap;
-  vector<double> fullMap;
-  vector<double> dipolenorm;
-  vector<double> ccFull;
-  vector< vector<double> > preconditioner;
+  std::vector<double> constraintMap;
+  std::vector<double> localMap;
+  std::vector<double> fullMap;
+  std::vector<double> dipolenorm;
+  std::vector<double> ccFull;
+  std::vector< std::vector<double> > preconditioner;
 
-  vector<int> pixelIndexLocal;
-  vector< vector<int> > pixelIndexLocalMap;
-  vector<int> pixelIndexFull;
-  vector<int> pixelIndexFullMap;
-  vector<int> sendcnt;
+  std::vector<int> pixelIndexLocal;
+  std::vector< std::vector<int> > pixelIndexLocalMap;
+  std::vector<int> pixelIndexFull;
+  std::vector<int> pixelIndexFullMap;
+  std::vector<int> sendcnt;
 
   void initializeConstraint(bool constraint);
-  void initializeConstraint(vector<double> & constraint);
-  void initializeLocmap(const vector<dipoleFit> & binnedData);
+  void initializeConstraint(std::vector<double> & constraint);
+  void initializeLocmap(const std::vector<dipoleFit> & binnedData);
   void initializeFullmap();
-  void applyMask(const vector<dipoleFit> & binnedData, 
-		 const vector<float> & mask);
+  void applyMask(const std::vector<dipoleFit> & binnedData, 
+		 const std::vector<float> & mask);
 
  public:
-  daCapo(vector<dipoleFit> & binnedData, vector<float> & mask, bool constraint);
-  daCapo (vector<dipoleFit> & binnedData, vector<float> & mask, vector<double> & constraint);
+  daCapo(std::vector<dipoleFit> & binnedData, std::vector<float> & mask, bool constraint);
+  daCapo (std::vector<dipoleFit> & binnedData, std::vector<float> & mask, std::vector<double> & constraint);
 
-  void constructCCmatrix(const vector<dipoleFit> & binnedData);
+  void constructCCmatrix(const std::vector<dipoleFit> & binnedData);
   void updateDipolenorm();
-  void buildPreconditioner(const vector<dipoleFit> & binnedData);
-  void toiToLocmap(const vector<dipoleFit> & binnedData);
+  void buildPreconditioner(const std::vector<dipoleFit> & binnedData);
+  void toiToLocmap(const std::vector<dipoleFit> & binnedData);
   void locToFullmap();
   void ccMultiply();
   void applyConstraint();
   void fullToLocmap();
   void applyCC();
-  void subtractMapFromTod(const vector<dipoleFit> & binnedData, basevec &p);
-  void baseToLocmap(const vector<dipoleFit> & binnedData, const basevec &p);
-  void subtractMapFromBase(const vector<dipoleFit> & binnedData, basevec &p);
+  void subtractMapFromTod(const std::vector<dipoleFit> & binnedData, basevec &p);
+  void baseToLocmap(const std::vector<dipoleFit> & binnedData, const basevec &p);
+  void subtractMapFromBase(const std::vector<dipoleFit> & binnedData, basevec &p);
   void applyPreconditioner(const basevec &r, basevec &z);
-  void updateSignal(vector<dipoleFit> & binnedData);
+  void updateSignal(std::vector<dipoleFit> & binnedData);
 
-  double iterativeCalibration(vector<dipoleFit> & binnedData, 
+  double iterativeCalibration(std::vector<dipoleFit> & binnedData, 
 			      bool firstLoop);
 };
 

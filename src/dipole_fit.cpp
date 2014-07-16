@@ -1,7 +1,10 @@
 #include "dipole_fit.hpp"
-#include "misc.hpp"
+
 #include "configuration.hpp"
+#include "healpix_map.hpp"
+#include "io.hpp"
 #include "logging.hpp"
+#include "misc.hpp"
 #include "ringset.hpp"
 
 #include <gsl/gsl_vector.h>
@@ -34,15 +37,19 @@ dipoleFit::dipoleFit(const int a_qualityFlag, const int a_nSide, const int a_poi
  * bin the data checkin flags using galactic sidelobes
  */
 bool
-dipoleFit::binData(const vector<double> & data, const vector<int>& flag,		  
-		   const vector<double> & theta, const vector<double> & phi, const vector<double> & dipole, 
-		   const vector<size_t> & pidRange, const vector<double> & sidelobes)
+dipoleFit::binData(const std::vector<double> & data, 
+		   const std::vector<int>& flag,		  
+		   const std::vector<double> & theta, 
+		   const std::vector<double> & phi, 
+		   const std::vector<double> & dipole, 
+		   const std::vector<size_t> & pidRange, 
+		   const std::vector<double> & sidelobes)
 {
-  int numPixs=12*nSide*nSide;
-  vector<int> tmpHits (numPixs,0);
-  vector<double> tmpData (numPixs,0);
-  vector<float> tmpDipole (numPixs,0);
-  vector<double> tmpDipoleConstraint (numPixs,0);
+  const int numPixs=12*nSide*nSide;
+  std::vector<int> tmpHits (numPixs,0);
+  std::vector<double> tmpData (numPixs,0);
+  std::vector<float> tmpDipole (numPixs,0);
+  std::vector<double> tmpDipoleConstraint (numPixs,0);
 
   // bin the samples and calculate the "binned" dipole
   for (size_t sampleNum = pidRange[0]; sampleNum <= pidRange[1]; sampleNum++)
@@ -85,7 +92,7 @@ dipoleFit::binData(const vector<double> & data, const vector<int>& flag,
 }
 
 bool
-dipoleFit::fitData(const vector<float> & maskMap)
+dipoleFit::fitData(const std::vector<float> & maskMap)
 { 
   // Compute size of the masked vectors
   size_t maskedLen = 0;
@@ -127,9 +134,14 @@ dipoleFit::fitData(const vector<float> & maskMap)
  * fit the dipole using galactic sidelobes
  */
 bool
-dipoleFit::fit(const vector<double> & data, const vector<int> & flag,
-	       const vector<double> & theta, const vector<double> & phi, const vector<double> & dipole, 
-	       const vector<size_t> & pidRange, const vector<float> & maskMap, const vector<double> & sidelobes)
+dipoleFit::fit(const std::vector<double> & data, 
+	       const std::vector<int> & flag,
+	       const std::vector<double> & theta, 
+	       const std::vector<double> & phi, 
+	       const std::vector<double> & dipole, 
+	       const std::vector<size_t> & pidRange, 
+	       const std::vector<float> & maskMap, 
+	       const std::vector<double> & sidelobes)
 {
   if (binData(data, flag, theta, phi, dipole, pidRange, sidelobes))
     return fitData(maskMap);
@@ -185,25 +197,25 @@ dipoleFit::getNSide() const
   return nSide;
 }
 
-const vector<int> & 
+const std::vector<int> & 
 dipoleFit::getPixIndex() const
 {
   return pixIndex;
 }
 
-const vector<double> & 
+const std::vector<double> & 
 dipoleFit::getPixSumData() const
 {
   return pixSumData;
 }
 
-const vector<int> & 
+const std::vector<int> & 
 dipoleFit::getPixSumHits() const
 {
   return pixSumHits;
 }
 
-const vector<float> & 
+const std::vector<float> & 
 dipoleFit::getPixSumDipole() const
 {
   return pixSumDipole;
@@ -230,12 +242,14 @@ dipoleFit::getMinDipole() const
 void
 dipoleFit::unload()
 {
-  vector<double>().swap(pixSumData);
-  vector<float>().swap(pixSumDipole);
-  vector<int>().swap(pixIndex);
-  vector<int>().swap(pixSumHits);
-  vector<float>().swap(inputMap);
+  std::vector<double>().swap(pixSumData);
+  std::vector<float>().swap(pixSumDipole);
+  std::vector<int>().swap(pixIndex);
+  std::vector<int>().swap(pixSumHits);
+  std::vector<float>().swap(inputMap);
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 void
 run_dipole_fit(const Configuration & program_conf,
@@ -244,6 +258,10 @@ run_dipole_fit(const Configuration & program_conf,
   Logger * log = Logger::get_instance();
 
   log->info("Starting module dipoleFit");
+
+  Healpix::Map_t<int> mask;
+  load_map(program_conf.getWithSubst("dipole_fit.mask"), 1, mask);
+
   log->info("Quitting module dipoleFit");
 }
 

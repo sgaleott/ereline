@@ -1,12 +1,14 @@
 #include "ahf_info.hpp"
 #include "misc.hpp"
 #include "mpi_processes.hpp"
+#include "datatypes.hpp"
 
 #include <stdexcept>
 #include <sstream>
 
 #define BOOST_TEST_MODULE "Miscellaneous"
 #include <boost/test/unit_test.hpp>
+#include <boost/test/test_tools.hpp>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -70,6 +72,7 @@ BOOST_AUTO_TEST_CASE(FindRange)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
 BOOST_AUTO_TEST_CASE(MpiProcesses)
 {
     const std::vector<Od_t> list_of_ods {
@@ -77,20 +80,40 @@ BOOST_AUTO_TEST_CASE(MpiProcesses)
 	{   1,        1,     10,         10 },
 	{   2,       11,     24,         14 },
 	{   3,       25,     33,          9 },
-	{   4,       34,     45,         11 },
-	{   5,       46,     56,         11 },
-	{   6,       57,     66,          8 },
-	{   7,       67,     79,         13 },
-	{   8,       80,     96,         17 },
-	{   9,       97,    108,         12 }
+	{   4,       34,     44,         11 },
+	{   5,       45,     55,         11 },
+	{   6,       56,     65,          8 },
+	{   7,       66,     78,         13 },
+	{   8,       79,     95,         17 },
+	{   9,       96,    107,         12 }
     };
 
-    BOOST_CHECK((splitOdsIntoMpiProcesses(2, list_of_ods) == 
-		 std::vector<int>{ 105 }));
-    BOOST_CHECK((splitOdsIntoMpiProcesses(4, list_of_ods) == 
-		 std::vector<int>{ 55, 50 }));
-    BOOST_CHECK((splitOdsIntoMpiProcesses(6, list_of_ods) == 
-		 std::vector<int>{ 44, 49, 12 }));
-    BOOST_CHECK((splitOdsIntoMpiProcesses(8, list_of_ods) == 
-		 std::vector<int>{ 33, 30, 42, 0 }));
+    std::vector<Data_range_t> result;
+    std::vector<Data_range_t> expected;
+
+    result = splitOdsIntoMpiProcesses(2, list_of_ods);
+    expected = std::vector<Data_range_t> { { { 1, 9 }, { 1, 107 }, 9, 105 } };
+    BOOST_CHECK_EQUAL_COLLECTIONS(result.begin(), result.end(),
+				  expected.begin(), expected.end());
+
+    result = splitOdsIntoMpiProcesses(4, list_of_ods);
+    expected = std::vector<Data_range_t>{ { { 1, 5 }, { 1, 55 }, 5, 55 },
+					  { { 6, 9 }, { 56, 107 }, 4, 50 } };
+    BOOST_CHECK_EQUAL_COLLECTIONS(result.begin(), result.end(),
+				  expected.begin(), expected.end());
+
+    result = splitOdsIntoMpiProcesses(6, list_of_ods);
+    expected = std::vector<Data_range_t>{ { { 1, 4 }, { 1, 44 }, 4, 44 },
+					  { { 5, 8 }, { 45, 95 }, 4, 49 },
+					  { { 9, 9 }, { 96, 107 }, 1, 12 } };
+    BOOST_CHECK_EQUAL_COLLECTIONS(result.begin(), result.end(),
+				  expected.begin(), expected.end());
+
+    result = splitOdsIntoMpiProcesses(8, list_of_ods);
+    expected = std::vector<Data_range_t>{ { { 1, 3 }, { 1, 33 }, 3, 33 },
+					  { { 4, 6 }, { 34, 65 }, 3, 30 },
+					  { { 7, 9 }, { 66, 107 }, 3, 42 },
+					  { { -1, -1 }, { -1, -11 }, 0, 0 } };
+    BOOST_CHECK_EQUAL_COLLECTIONS(result.begin(), result.end(),
+				  expected.begin(), expected.end());
 }

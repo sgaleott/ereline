@@ -36,7 +36,7 @@
 	    "speed_m_s": 369000.0
 	},
 	"total_convolve_order": 9,
-	"mask": null,
+	"mask": "/datastor/tomasi/maps/mask_70GHz.fits.gz",
 	"output_gains": "{common.base_output_dir}/gains/LFI{horn}{arm}_{od}_gains.fits",
 	"output_fit": "{common.base_output_dir}/gains/LFI{horn}{arm}_{od}_fit.fits"
     },
