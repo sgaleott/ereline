@@ -64,6 +64,7 @@ public:
 
 class Configuration;
 
-void run_dipole_fit(const Configuration & conf);
+void run_dipole_fit(const Configuration & program_conf,
+		    const Configuration & storage_conf);
 
 #endif

@@ -719,7 +719,8 @@ daCapo::iterativeCalibration (vector<dipoleFit> & binnedData,
 }
 
 void
-run_da_capo(const Configuration & conf)
+run_da_capo(const Configuration & program_conf,
+	    const Configuration & storage_conf)
 {
   Logger * log = Logger::get_instance();
 

@@ -62,6 +62,16 @@ read_ahf_info(SQLite3Connection & ucds,
 			    program_config.get<int>("common.last_od"),
 			    list_of_pointings);
     list_of_ods = build_od_list(list_of_pointings);
+
+    Logger * log = Logger::get_instance();
+    log->info(boost::format("Number of pointings to process: %1% (%2%-%3%), number of "
+			    "ODs to process: %4% (%5%-%6%)")
+	      % list_of_pointings.size()
+	      % list_of_pointings.front().id
+	      % list_of_pointings.back().id
+	      % list_of_ods.size()
+	      % list_of_ods.front().od
+	      % list_of_ods.back().od);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -77,32 +87,27 @@ main(int argc, const char ** argv)
 	return 1;
     }
 
+    // Load the JSON files containing the configuration and set up a
+    // few structures
     Configuration program_config;
     Configuration storage_config;
     read_configuration_and_set_up(argv[1], program_config, storage_config);
 
     Logger * log = Logger::get_instance();
 
+    // Open a connection with the UCDS database
     std::string ucds_file_path = storage_config.getWithSubst("ucds_file_path");
     log->info(boost::format("UCDS file path: %1%") % ucds_file_path);
     SQLite3Connection ucds(ucds_file_path.c_str());
 
+    // Convert pointing information into appropriate C++ structures
     std::vector<Pointing_t> list_of_pointings;
     std::vector<Od_t> list_of_ods;
-
     read_ahf_info(ucds, program_config, list_of_pointings, list_of_ods);
-    log->info(boost::format("Number of pointings to process: %1% (%2%-%3%), number of "
-			    "ODs to process: %4% (%5%-%6%)")
-	      % list_of_pointings.size()
-	      % list_of_pointings.front().id
-	      % list_of_pointings.back().id
-	      % list_of_ods.size()
-	      % list_of_ods.front().od
-	      % list_of_ods.back().od);
 
-    run_dipole_fit(program_config);
-    run_da_capo(program_config);
-    run_smooth_gains(program_config);
+    run_dipole_fit(program_config, storage_config);
+    run_da_capo(program_config, storage_config);
+    run_smooth_gains(program_config, storage_config);
 
     MPI::Finalize();
 

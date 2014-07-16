@@ -238,7 +238,8 @@ dipoleFit::unload()
 }
 
 void
-run_dipole_fit(const Configuration & conf)
+run_dipole_fit(const Configuration & program_conf,
+	       const Configuration & storage_conf)
 {
   Logger * log = Logger::get_instance();
 

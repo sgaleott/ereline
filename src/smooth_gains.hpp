@@ -3,6 +3,7 @@
 
 class Configuration;
 
-void run_smooth_gains(const Configuration & conf);
+void run_smooth_gains(const Configuration & program_conf,
+		      const Configuration & storage_conf);
 
 #endif

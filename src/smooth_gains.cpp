@@ -3,7 +3,8 @@
 #include "logging.hpp"
 
 void
-run_smooth_gains(const Configuration & conf)
+run_smooth_gains(const Configuration & program_conf,
+		 const Configuration & storage_conf)
 {
   Logger * log = Logger::get_instance();
 
