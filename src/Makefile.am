@@ -16,6 +16,7 @@ dx11d_pipeline_SOURCES = \
 	da_capo.cpp \
 	gain_table.cpp \
 	smooth_gains.cpp \
+	project_tod.cpp \
 	ringset.cpp \
 	io.cpp \
 	datatypes.cpp \
