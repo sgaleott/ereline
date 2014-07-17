@@ -50,7 +50,7 @@ Logger::log(Log_level level, const std::string & string) const
     }
 
     boost::format msg;
-    if(mpi_rank > 0 && mpi_size > 0) {
+    if(mpi_rank >= 0 && mpi_size >= 0) {
 	// Include the MPI rank of this process and the number of
 	// processes in the log message
 	msg = (boost::format("%1% %2%: [%5%/%6%] %3%%4%") 

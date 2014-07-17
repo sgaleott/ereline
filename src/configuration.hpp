@@ -21,13 +21,11 @@ public:
 
 ////////////////////////////////////////////////////////////////////////
 
-class Configuration {
-private:
+struct Configuration {
     boost::property_tree::ptree ptree;
     std::map<std::string, std::string> fallbacks;
     std::map<std::string, std::string> variables;
 
-public:
     Configuration();
     virtual ~Configuration();
 
@@ -68,5 +66,12 @@ public:
 
     void configure_logging() const;
 };
+
+void setup_od_variable(int od, Configuration & conf);
+
+struct LfiRadiometer;
+void setup_variables_for_radiometer(const LfiRadiometer & rad,
+				    Configuration & conf);
+
 
 #endif

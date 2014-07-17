@@ -45,6 +45,7 @@ struct LfiRadiometer {
     void assign(const std::string & name);
     void assign(int a_horn, int a_radiometer);
 
+    int frequencyInGhz() const;
     std::string shortName() const; // E.g. LFI28M
     std::string fullNameWithDetector(int detector = 0) const; // E.g. LFI28M-00
     std::string armName() const;
@@ -67,7 +68,7 @@ struct Range_t {
 template<typename T>
 std::ostream & operator<<(std::ostream & os, Range_t<T> const & yt)
 {
-    os << "(" << yt.start << " - " << yt.end << ")";
+    os << "(" << yt.start << ", " << yt.end << ")";
     return os;
 }
 

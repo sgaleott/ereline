@@ -91,29 +91,29 @@ BOOST_AUTO_TEST_CASE(MpiProcesses)
     std::vector<Data_range_t> result;
     std::vector<Data_range_t> expected;
 
-    result = splitOdsIntoMpiProcesses(2, list_of_ods);
+    splitOdsIntoMpiProcesses(2, list_of_ods, result);
     expected = std::vector<Data_range_t> { { { 1, 9 }, { 1, 107 }, 9, 105 } };
     BOOST_CHECK_EQUAL_COLLECTIONS(result.begin(), result.end(),
 				  expected.begin(), expected.end());
 
-    result = splitOdsIntoMpiProcesses(4, list_of_ods);
+    splitOdsIntoMpiProcesses(4, list_of_ods, result);
     expected = std::vector<Data_range_t>{ { { 1, 5 }, { 1, 55 }, 5, 55 },
 					  { { 6, 9 }, { 56, 107 }, 4, 50 } };
     BOOST_CHECK_EQUAL_COLLECTIONS(result.begin(), result.end(),
 				  expected.begin(), expected.end());
 
-    result = splitOdsIntoMpiProcesses(6, list_of_ods);
+    splitOdsIntoMpiProcesses(6, list_of_ods, result);
     expected = std::vector<Data_range_t>{ { { 1, 4 }, { 1, 44 }, 4, 44 },
 					  { { 5, 8 }, { 45, 95 }, 4, 49 },
 					  { { 9, 9 }, { 96, 107 }, 1, 12 } };
     BOOST_CHECK_EQUAL_COLLECTIONS(result.begin(), result.end(),
 				  expected.begin(), expected.end());
 
-    result = splitOdsIntoMpiProcesses(8, list_of_ods);
+    splitOdsIntoMpiProcesses(8, list_of_ods, result);
     expected = std::vector<Data_range_t>{ { { 1, 3 }, { 1, 33 }, 3, 33 },
 					  { { 4, 6 }, { 34, 65 }, 3, 30 },
 					  { { 7, 9 }, { 66, 107 }, 3, 42 },
-					  { { -1, -1 }, { -1, -11 }, 0, 0 } };
+					  { { -1, -1 }, { -1, -1 }, 0, 0 } };
     BOOST_CHECK_EQUAL_COLLECTIONS(result.begin(), result.end(),
 				  expected.begin(), expected.end());
 }

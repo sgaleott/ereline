@@ -5,7 +5,11 @@
 #include "io.hpp"
 #include "logging.hpp"
 #include "misc.hpp"
+#include "mpi_processes.hpp"
 #include "ringset.hpp"
+#include "squeezer.hpp"
+
+#include <boost/filesystem.hpp>
 
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
@@ -251,17 +255,80 @@ dipoleFit::unload()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/* Important note: variables like "horn" and "arm" need to be already
+ * set in "program_conf" before calling "run_dipole_fit". */
 void
-run_dipole_fit(const Configuration & program_conf,
-	       const Configuration & storage_conf)
+run_dipole_fit(const LfiRadiometer & rad,
+	       Configuration & program_conf,
+	       Configuration & storage_conf,
+	       const std::vector<Od_t> list_of_ods)
 {
-  Logger * log = Logger::get_instance();
+    Logger * log = Logger::get_instance();
+    const int mpi_size = MPI::COMM_WORLD.Get_size();
+    const int mpi_rank = MPI::COMM_WORLD.Get_rank();
 
-  log->info("Starting module dipoleFit");
+    log->info("Starting module dipoleFit");
 
-  Healpix::Map_t<int> mask;
-  load_map(program_conf.getWithSubst("dipole_fit.mask"), 1, mask);
+    /* The way MPI processes are split in dipoleFit is the following: 
+     *
+     * 1. Processes with even rank analyze the "main" radiometer;
+     *
+     * 2. Processes with odd rank analyze the "side" radiometer.
+     *
+     * (Of course, if the user specified a "side" radiometer in the
+     * JSON file, things are reversed.) */
+    LfiRadiometer real_radiometer;
+    if(mpi_rank % 2 == 0)
+	real_radiometer = rad;
+    else
+	real_radiometer = rad.twinRadiometer();
+    setup_variables_for_radiometer(real_radiometer, program_conf);
+    setup_variables_for_radiometer(real_radiometer, storage_conf);
 
-  log->info("Quitting module dipoleFit");
+    Healpix::Map_t<int> mask;
+    load_map(program_conf.getWithSubst("dipole_fit.mask"), 1, mask);
+
+    ringset galactic_pickup(program_conf.getWithSubst("dipole_fit.galactic_pickup"),
+			    program_conf.get<int>("dipole_fit.total_convolve_order"),
+			    false);
+
+    std::vector<Data_range_t> list_of_data_ranges;
+    splitOdsIntoMpiProcesses(mpi_size, list_of_ods, list_of_data_ranges);
+    log->info(boost::format("The data to analyze will be split in %1% chunks "
+			    "(there are %2% MPI jobs running)")
+	      % list_of_data_ranges.size()
+	      % mpi_size);
+
+    const Data_range_t data_range = list_of_data_ranges.at(mpi_rank);
+    log->info(boost::format("Range of data for dipoleFit: ODs [%1%, %2%] "
+			    "(pointings [%3%, %4%]), number of pointings: %5%")
+	      % data_range.od_range.start
+	      % data_range.od_range.end
+	      % data_range.pid_range.start
+	      % data_range.pid_range.end
+	      % data_range.num_of_pids);
+
+    for(int od = data_range.od_range.start; od <= data_range.od_range.end; ++od) {
+	setup_od_variable(od, program_conf);
+	setup_od_variable(od, storage_conf);
+
+	boost::filesystem::path file_path(storage_conf.getWithSubst("pointings.base_path"));
+	file_path /= storage_conf.getWithSubst("pointings.file_name_mask");
+	PointingData pointings;
+	log->info(boost::format("Loading pointings for OD %1% from file %2%")
+		  % od % file_path);
+	try {
+	    decompress_pointings(file_path.string(), pointings);
+	}
+	catch(SqueezerError & err) {
+	    log->error(err.what());
+	    continue;
+	}
+
+	//DifferencedData datadiff;
+	//decompress_differenced_data();
+    }
+
+    log->info("Quitting module dipoleFit");
 }
 

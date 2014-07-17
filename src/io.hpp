@@ -3,6 +3,7 @@
 
 #include "ahf_info.hpp"
 #include "healpix_map.hpp"
+#include "logging.hpp"
 #include "fits_object.hpp"
 
 #include <string>
@@ -21,12 +22,16 @@ void load_map(const std::string & file_name,
 	      int column, 
 	      Healpix::Map_t<T> & map)
 {
+    Logger * log = Logger::get_instance();
+
     FitsObject file;
-    size_t num_of_pixels;
+
+    log->info(boost::format("Opening Healpix FITS file %1%") % file_name);
     file.openTable(file_name);
 
-    file.getKey("NAXIS2", num_of_pixels);
-    map.pixels.resize(num_of_pixels);
+    size_t nside;
+    file.getKey("NSIDE", nside);
+    const size_t num_of_pixels = 12 * nside * nside;
 
     std::string ordering_str;
     file.getKey("ORDERING", ordering_str);
@@ -41,7 +46,14 @@ void load_map(const std::string & file_name,
 	throw std::runtime_error(msg.str());
     }
 
+    log->debug(boost::format("The map has %1% pixels (NSIDE=%2%) and order %3%")
+	       % num_of_pixels
+	       % nside
+	       % ordering_str);
     file.getColumn(column, map.pixels, 1, num_of_pixels);
+    log->info(boost::format("%1% pixels read from %2%")
+	      % num_of_pixels
+	      % file_name);
 }
 
 void loadConvolutionParametersFromUCDS(SQLite3Connection & ucds,

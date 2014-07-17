@@ -2,16 +2,17 @@
 #include <mpi.h>
 #include <cstddef>
 
-std::vector<Data_range_t>
+void
 splitOdsIntoMpiProcesses(int numOfMpiProcesses,
-			 const std::vector<Od_t> & list_of_ods)
+			 const std::vector<Od_t> & list_of_ods,
+			 std::vector<Data_range_t> & data_range)
 {
     const int detectorsPerRadiometer = 2;
-    std::vector<Data_range_t> result;
 
     // Compute ranges
     const int numOfOds = list_of_ods.size();
 
+    data_range.clear();
     for (size_t prox = 0;
 	 prox < numOfMpiProcesses / detectorsPerRadiometer;
 	 ++prox)
@@ -39,10 +40,8 @@ splitOdsIntoMpiProcesses(int numOfMpiProcesses,
 	    cur_range.num_of_pids += list_of_ods.at(od_idx).num_of_pointings;
 	}
 
-	result.push_back(cur_range);
+	data_range.push_back(cur_range);
     }
-
-    return result;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -53,7 +52,8 @@ range_of_ods_for_this_process(const std::vector<Od_t> & list_of_ods)
     const int rank = MPI::COMM_WORLD.Get_rank();
     const int size = MPI::COMM_WORLD.Get_size();
 
-    auto pids_per_process = splitOdsIntoMpiProcesses(size, list_of_ods);
+    std::vector<Data_range_t> pids_per_process;
+    splitOdsIntoMpiProcesses(size, list_of_ods, pids_per_process);
 
     return Range_t<int> { pids_per_process.at(rank).od_range.start,
 	    pids_per_process.at(rank).od_range.end };

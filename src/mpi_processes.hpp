@@ -32,9 +32,10 @@ operator<<(std::ostream & os, Data_range_t const & yt)
     return os;
 }
 
-std::vector<Data_range_t>
+void
 splitOdsIntoMpiProcesses(int numOfMpiProcesses,
-			 const std::vector<Od_t> & list_of_ods);
+			 const std::vector<Od_t> & list_of_ods,
+			 std::vector<Data_range_t> & data_range);
 
 Range_t<int>
 range_of_ods_for_this_process(const std::vector<Od_t> & list_of_ods);

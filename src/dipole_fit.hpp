@@ -3,7 +3,10 @@
 
 #include <vector>
 
+#include "ahf_info.hpp"
 #include "planck_velocity.hpp"
+
+struct LfiRadiometer;
 
 /* class calib iter*/
 struct dipoleFit
@@ -61,7 +64,9 @@ struct dipoleFit
 
 class Configuration;
 
-void run_dipole_fit(const Configuration & program_conf,
-		    const Configuration & storage_conf);
+void run_dipole_fit(const LfiRadiometer & rad,
+		    Configuration & program_conf,
+		    Configuration & storage_conf,
+		    const std::vector<Od_t> list_of_ods);
 
 #endif

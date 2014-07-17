@@ -2,6 +2,7 @@
 #include "logging.hpp"
 #include "dipole_fit.hpp"
 #include "da_capo.hpp"
+#include "datatypes.hpp"
 #include "smooth_gains.hpp"
 #include "sqlite3xx.hpp"
 #include "ahf_info.hpp"
@@ -77,13 +78,20 @@ read_ahf_info(SQLite3Connection & ucds,
 ////////////////////////////////////////////////////////////////////////////////
 
 int
-main(int argc, const char ** argv)
+inner_main(int argc, const char ** argv)
 {
-    MPI::Init(); 
+    if(MPI::COMM_WORLD.Get_size() % 2 != 0) {
+	if(MPI::COMM_WORLD.Get_rank() == 0) {
+	    std::cerr << "Error: the program expects to be run on "
+		"an even number of MPI processes.\n";
+	}
+	return 1;
+    }
 
     if(argc != 2) {
 	if(MPI::COMM_WORLD.Get_rank() == 0)
 	    print_help();
+
 	return 1;
     }
 
@@ -105,11 +113,33 @@ main(int argc, const char ** argv)
     std::vector<Od_t> list_of_ods;
     read_ahf_info(ucds, program_config, list_of_pointings, list_of_ods);
 
-    run_dipole_fit(program_config, storage_config);
-    run_da_capo(program_config, storage_config);
-    run_smooth_gains(program_config, storage_config);
+    const auto radiometer_nodes =
+	program_config.ptree.get_child("common.radiometer");
+    for(const auto & cur_node : radiometer_nodes) {
+	LfiRadiometer radiometer(cur_node.second.get<std::string>(""));
 
-    MPI::Finalize();
+	log->info(boost::format("Processing radiometer %1%")
+		  % radiometer.shortName());
+
+	run_dipole_fit(radiometer, 
+		       program_config, 
+		       storage_config, 
+		       list_of_ods);
+	run_da_capo(program_config, storage_config);
+	run_smooth_gains(program_config, storage_config);
+    }
 
     return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int
+main(int argc, const char ** argv)
+{
+    MPI::Init(); 
+    int return_code = inner_main(argc, argv);
+    MPI::Finalize();
+
+    return return_code;
 }

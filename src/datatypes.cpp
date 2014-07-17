@@ -69,6 +69,16 @@ LfiRadiometer::assign(int a_horn, int a_radiometer)
     radiometer = a_radiometer;
 }
 
+int LfiRadiometer::frequencyInGhz() const
+{
+    if(horn <= 23)
+	return 70;
+    else if(horn <= 26)
+	return 44;
+    else
+	return 30;
+}
+
 std::string LfiRadiometer::shortName() const
 {
     auto f = boost::format("LFI%1%%2%") % horn % armName();

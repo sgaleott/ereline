@@ -7,6 +7,7 @@
  */
 
 #include "ringset.hpp"
+#include "logging.hpp"
 
 #include <fitsio.h>
 #include <math.h>
@@ -48,9 +49,20 @@ ringset::init (std::string fileName, int order, bool feedback_flag)
 			 0.494116468, -0.110993846,  0.862281440,
 			-0.867661702, -0.000346354,  0.497154957);
 
+    Logger * log = Logger::get_instance();
+    log->info(boost::format("Reading ringsets from FITS file %1%")
+	      % fileName);
+
     fitsfile * fptr;
     int status = 0;
     fits_open_file(&fptr, fileName.c_str(), READONLY, &status);
+    if(status != 0) {
+	char msg[30];
+	fits_get_errstatus(status, msg);
+	throw std::runtime_error((boost::format("Error reading %1%: %2%") 
+				  % fileName % msg).str());
+    }
+
     fits_read_key(fptr, TINT, "beam_mmax", &beammMax, NULL, &status);
     fits_read_key(fptr, TINT, "nphi", &nPhi, NULL, &status);
 
@@ -137,6 +149,8 @@ ringset::init (std::string fileName, int order, bool feedback_flag)
     }
 
     initializeWeights(order);
+    log->info(boost::format("Ringsets loaded from %1% successfully")
+	      % fileName);
 
     loaded = true;
     ok = true;

@@ -1,4 +1,6 @@
 #include "configuration.hpp"
+
+#include "datatypes.hpp"
 #include "logging.hpp"
 
 #include <boost/property_tree/json_parser.hpp>
@@ -139,4 +141,28 @@ Configuration::configure_logging() const
     }
 
     log->set_log_level(log_level);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void setup_od_variable(int od, Configuration & conf)
+{
+    conf.set_variable("od", (boost::format("%d") % od).str());
+    conf.set_variable("odNNNN", (boost::format("%04d") % od).str());
+    conf.set_variable("odNNNNNN", (boost::format("%06d") % od).str());
+    conf.set_variable("odNNNNNNNN", (boost::format("%08d") % od).str());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+setup_variables_for_radiometer(const LfiRadiometer & rad,
+			       Configuration & conf)
+{
+    conf.set_variable("horn", 
+		      (boost::format("%1%") % rad.horn).str());
+    conf.set_variable("arm", 
+		      rad.armName());
+    conf.set_variable("frequency_GHz", 
+		      (boost::format("%1%") % rad.frequencyInGhz()).str());
 }
