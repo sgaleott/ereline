@@ -34,10 +34,38 @@ print_help()
 ////////////////////////////////////////////////////////////////////////////////
 
 void
+set_mpi_variables_in_configuration(int mpi_rank, 
+				   int mpi_size, 
+				   Configuration & conf)
+{
+    conf.set_variable("mpi_rank", 
+		      (boost::format("%d") % (mpi_rank + 1)).str());
+    conf.set_variable("mpi_rankNN", 
+		      (boost::format("%02d") % (mpi_rank + 1)).str());
+    conf.set_variable("mpi_rankNNNN", 
+		      (boost::format("%04d") % (mpi_rank + 1)).str());
+
+    conf.set_variable("mpi_size", 
+		      (boost::format("%d") % mpi_size).str());
+    conf.set_variable("mpi_sizeNN", 
+		      (boost::format("%02d") % mpi_size).str());
+    conf.set_variable("mpi_sizeNNNN", 
+		      (boost::format("%04d") % mpi_size).str());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
 read_configuration_and_set_up(const std::string & configuration_file_name,
 			      Configuration & program_config,
 			      Configuration & storage_config)
 {
+    const int mpi_rank = MPI::COMM_WORLD.Get_rank();
+    const int mpi_size = MPI::COMM_WORLD.Get_size();
+
+    set_mpi_variables_in_configuration(mpi_rank, mpi_size, program_config);
+    set_mpi_variables_in_configuration(mpi_rank, mpi_size, storage_config);
+
     program_config.read_from_json(configuration_file_name);
     storage_config.read_from_json(program_config.getWithSubst("common.data_storage_layout"));
 
@@ -46,8 +74,7 @@ read_configuration_and_set_up(const std::string & configuration_file_name,
     program_config.configure_logging();
 
     Logger * log = Logger::get_instance();
-    log->set_mpi_rank(MPI::COMM_WORLD.Get_rank(),
-		      MPI::COMM_WORLD.Get_size());
+    log->set_mpi_rank(mpi_rank, mpi_size);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,24 +82,22 @@ read_configuration_and_set_up(const std::string & configuration_file_name,
 void
 read_ahf_info(SQLite3Connection & ucds,
 	      const Configuration & program_config,
-	      std::vector<Pointing_t> & list_of_pointings,
-	      std::vector<Od_t> & list_of_ods)
+	      std::vector<Pointing_t> & list_of_pointings)
 {
-    loadPointingInformation(ucds,
-			    program_config.get<int>("common.first_od"),
-			    program_config.get<int>("common.last_od"),
-			    list_of_pointings);
-    list_of_ods = build_od_list(list_of_pointings);
+    int first_od, last_od;
+    first_od = program_config.get<int>("common.first_od");
+    last_od = program_config.get<int>("common.last_od");
+
+    loadPointingInformation(ucds, first_od, last_od, list_of_pointings);
 
     Logger * log = Logger::get_instance();
-    log->info(boost::format("Number of pointings to process: %1% (%2%-%3%), number of "
-			    "ODs to process: %4% (%5%-%6%)")
+    log->info(boost::format("Number of pointings to process: %1% (%2%-%3%), "
+			    "ODs to process are in the range %5% - %6%")
 	      % list_of_pointings.size()
 	      % list_of_pointings.front().id
 	      % list_of_pointings.back().id
-	      % list_of_ods.size()
-	      % list_of_ods.front().od
-	      % list_of_ods.back().od);
+	      % first_od
+	      % last_od);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -110,8 +135,7 @@ inner_main(int argc, const char ** argv)
 
     // Convert pointing information into appropriate C++ structures
     std::vector<Pointing_t> list_of_pointings;
-    std::vector<Od_t> list_of_ods;
-    read_ahf_info(ucds, program_config, list_of_pointings, list_of_ods);
+    read_ahf_info(ucds, program_config, list_of_pointings);
 
     const auto radiometer_nodes =
 	program_config.ptree.get_child("common.radiometer");
@@ -124,7 +148,7 @@ inner_main(int argc, const char ** argv)
 	run_dipole_fit(radiometer, 
 		       program_config, 
 		       storage_config, 
-		       list_of_ods);
+		       list_of_pointings);
 	run_da_capo(program_config, storage_config);
 	run_smooth_gains(program_config, storage_config);
     }

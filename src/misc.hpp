@@ -239,6 +239,12 @@ template<typename T> std::vector<T> mulVectors (std::vector<T> add1, std::vector
 
 ////////////////////////////////////////////////////////////////////////////////
 
+const std::string &
+join_paths(const std::string & a,
+	   const std::string & b);
+
+////////////////////////////////////////////////////////////////////////////////
+
 /* Save in "first_idx" and "last_idx" the indexes of the first and
  * last element in "vec" that is between "first" and "last". 
  *

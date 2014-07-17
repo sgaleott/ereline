@@ -37,7 +37,7 @@ read_uint8(std::istream & in)
     char result;
     in.read(&result, sizeof(result));
     if(in.bad() || in.fail())
-	throw std::runtime_error("unexpected end of file");
+	throw SqueezerError("unexpected end of file");
 
     return (uint8_t) result;
 }
@@ -83,7 +83,7 @@ read_double(std::istream & in)
     double value;
     in.read(reinterpret_cast<char *>(&value), sizeof(value));
     if(in.bad() || in.fail()) {
-	throw std::runtime_error("unexpected end of file");
+	throw SqueezerError("unexpected end of file");
     }
 
     return value;
@@ -582,6 +582,8 @@ decompress_file(const std::string & file_name,
 		Process_chunk_data_fn_t process_chunk_data_fn,
 		Squeezer_file_type_t expected_type)
 {
+    Logger * log = Logger::get_instance();
+
     std::ifstream input_stream(file_name);
     if(input_stream.bad()) {
 	throw SqueezerError(boost::format("Unable to open file %1%")
@@ -594,6 +596,9 @@ decompress_file(const std::string & file_name,
 					  "created by Squeezer")
 			    % file_name);
     }
+    LfiRadiometer rad(file_header.horn, file_header.arm);
+    log->debug(boost::format("File %1% contains data for %2%, OD %3%")
+	       % file_name % rad.shortName() % file_header.od);
 
     if(file_header.get_type() != expected_type) {
 	switch(expected_type) {

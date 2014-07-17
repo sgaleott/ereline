@@ -7,6 +7,9 @@
 #include <numeric>
 #include <iomanip>
 #include <mpi.h>
+
+#include <boost/filesystem.hpp>
+
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_multifit.h>
@@ -442,3 +445,15 @@ std::string getTFem (int horn)
     }
   return std::string("");
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+const std::string &
+join_paths(const std::string & a,
+	   const std::string & b)
+{
+    boost::filesystem::path file_path(a);
+    file_path /= b;
+    return file_path.string();
+}
+

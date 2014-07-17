@@ -67,6 +67,6 @@ class Configuration;
 void run_dipole_fit(const LfiRadiometer & rad,
 		    Configuration & program_conf,
 		    Configuration & storage_conf,
-		    const std::vector<Od_t> list_of_ods);
+		    const std::vector<Pointing_t> & list_of_pointings);
 
 #endif
