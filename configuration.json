@@ -35,6 +35,7 @@
 	    "phi_ecl_rad": 2.995840906,
 	    "speed_m_s": 369000.0
 	},
+	"galactic_pickup": "/datastor/tomasi/ringsets/ringset_LFI{horn}{arm}_{od}.fits",
 	"total_convolve_order": 9,
 	"mask": "/datastor/tomasi/maps/mask_70GHz.fits.gz",
 	"output_gains": "{common.base_output_dir}/gains/LFI{horn}{arm}_{od}_gains.fits",
