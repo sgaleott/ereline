@@ -14,6 +14,8 @@ if test "$HAVE_BOOST" == ""; then
     AC_MSG_RESULT([BOOST Library found, flags are $BOOST_LDFLAGS])
 fi
 
+AX_BOOST_SYSTEM
+AX_BOOST_FILESYSTEM
 AX_BOOST_UNIT_TEST_FRAMEWORK
 
 AX_LIB_SQLITE3([3.6.0])
@@ -38,7 +40,7 @@ AM_COND_IF([HAVE_DOXYGEN], [AC_CONFIG_FILES([doc/developer_manual/Doxyfile])])
 	       
 
 # create a config.h file (Automake will add -DHAVE_CONFIG_H)
-AC_CONFIG_SRCDIR([src/ereline_test.cpp])
+AC_CONFIG_SRCDIR([src/dx11d_pipeline.cpp])
 AC_CONFIG_HEADER([config.h])
 
 AC_CONFIG_FILES([Makefile

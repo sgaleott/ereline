@@ -19,6 +19,7 @@
  */
 
 #include "squeezer.hpp"
+#include "logging.hpp"
 #include "datatypes.hpp"
 
 #include <algorithm>
@@ -151,8 +152,8 @@ struct Squeezer_file_header_t {
 	if((strcmp((char *) file_type_mark, "PDP") != 0 && 
 	    strcmp((char *) file_type_mark, "PDD") != 0) ||
 	   date_year < 2013 ||
-	   date_month < 1 || date_month > 12 ||
-	   date_day < 1 || date_day > 31 ||
+	   (date_month < 1 || date_month > 12) ||
+	   (date_day < 1 || date_day > 31) ||
 	   time_hour > 23 ||
 	   time_minute > 59 ||
 	   time_second > 59 ||
@@ -163,6 +164,8 @@ struct Squeezer_file_header_t {
 	   first_scet_in_ms >= last_scet_in_ms ||
 	   number_of_chunks == 0)
 	    return false;
+	else
+	    return true;
     }
 };
 

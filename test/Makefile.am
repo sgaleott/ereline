@@ -6,12 +6,14 @@ check_PROGRAMS = \
 	test_datatypes \
 	test_io \
 	test_misc \
-	test_project_tod
+	test_project_tod \
+	test_squeezer
 EXTRA_DIST = ./test_data
 
 test_configuration_SOURCES = \
 	test_configuration.cpp \
 	../src/logging.cpp \
+	../src/datatypes.cpp \
 	../src/configuration.cpp
 test_configuration_LDADD =  $(BOOST_UNIT_TEST_FRAMEWORK_LIB)
 
@@ -48,6 +50,12 @@ test_io_SOURCES = \
 	../src/planck_velocity.cpp \
 	../src/sqlite3xx.cpp
 test_io_LDADD = $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(SQLITE3_LDFLAGS)
+
+test_squeezer_SOURCES = \
+	test_squeezer.cpp \
+	../src/datatypes.cpp \
+	../src/squeezer.cpp
+test_squeezer_LDADD =  $(BOOST_UNIT_TEST_FRAMEWORK_LIB)
 
 AM_CPPFLAGS = -I$(top_srcdir)/src -DTEST_DATA_DIR=\"${srcdir}/test_data/\"
 AM_CXXFLAGS = $(BOOST_CPPFLAGS) -DBOOST_TEST_DYN_LINK
