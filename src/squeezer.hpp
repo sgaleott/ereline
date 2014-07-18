@@ -8,16 +8,12 @@
 struct PointingData;
 struct DifferencedData;
 
-class SqueezerError : public std::exception {
-    std::string description;
-
+class SqueezerError : public std::runtime_error {
 public:
     SqueezerError(const std::string & a_description) noexcept
-        : description(a_description) { }
+    : std::runtime_error(a_description) { }
     SqueezerError(const boost::format & a_description) noexcept
-	: description(a_description.str()) { }
-
-    const char * what() noexcept { return description.c_str(); }
+    : std::runtime_error(a_description.str()) { }
 };
 
 void decompress_pointings(const std::string & file_name,

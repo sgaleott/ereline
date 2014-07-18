@@ -92,7 +92,7 @@ read_ahf_info(SQLite3Connection & ucds,
 
     Logger * log = Logger::get_instance();
     log->info(boost::format("Number of pointings to process: %1% (%2%-%3%), "
-			    "ODs to process are in the range %5% - %6%")
+			    "ODs to process are in the range %4% - %5%")
 	      % list_of_pointings.size()
 	      % list_of_pointings.front().id
 	      % list_of_pointings.back().id

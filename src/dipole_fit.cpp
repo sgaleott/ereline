@@ -286,9 +286,9 @@ radiometer_to_use(int mpi_rank,
 ////////////////////////////////////////////////////////////////////////////////
 
 static Data_range_t
-local_data_range(int mpi_rank, 
-		 int mpi_size,
-		 const std::vector<Pointing_t> & list_of_pointings)
+get_local_data_range(int mpi_rank, 
+		     int mpi_size,
+		     const std::vector<Pointing_t> & list_of_pointings)
 {
     Logger * log = Logger::get_instance();
 
@@ -302,7 +302,7 @@ local_data_range(int mpi_rank,
 	      % mpi_size);
 
     Data_range_t data_range = list_of_data_ranges.at(mpi_rank / 2);
-    log->info(boost::format("Range of data for dipoleFit: ODs [%1%, %2%] "
+    log->info(boost::format("Data range for dipoleFit: ODs [%1%, %2%] "
 			    "(pointings [%3%, %4%]), number of pointings: %5%")
 	      % data_range.od_range.start
 	      % data_range.od_range.end
@@ -351,6 +351,59 @@ assert_consistency(const PointingData & pointings,
 
 ////////////////////////////////////////////////////////////////////////////////
 
+inline std::string
+pointings_file_path(const Configuration & storage_conf)
+{
+    return storage_conf.getWithSubst("pointings.base_path") + "/" +
+	storage_conf.getWithSubst("pointings.file_name_mask");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+inline std::string
+datadiff_file_path(const Configuration & storage_conf)
+{
+    return storage_conf.getWithSubst("differenced_data.base_path") + "/" +
+	storage_conf.getWithSubst("differenced_data.file_name_mask");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+static void
+process_one_od(const Configuration & program_conf,
+	       const Configuration & storage_conf,
+	       std::vector<Pointing_t>::const_iterator first_pid, 
+	       std::vector<Pointing_t>::const_iterator last_pid)
+{
+    Logger * log = Logger::get_instance();
+
+    const std::string pnt_file_path(pointings_file_path(storage_conf));
+    const std::string ddf_file_path(datadiff_file_path(storage_conf));
+
+    PointingData pointings;
+    DifferencedData datadiff;
+
+    // Load pointing information and differenced data for this OD
+    decompress_pointings(pnt_file_path, pointings);
+    decompress_differenced_data(ddf_file_path, datadiff);
+
+    assert_consistency(pointings, datadiff);
+
+    // Loop over each pointing period that belongs to the current OD
+    for(auto cur_pid = first_pid; cur_pid != last_pid + 1; cur_pid++) {
+	log->info(boost::format("Processing pointing with ID %1%")
+		  % cur_pid->id);
+	log->increase_indent();
+
+	PointingData pid_pointings(pointings, cur_pid->start_time, cur_pid->end_time);
+	DifferencedData pid_datadiff(datadiff, cur_pid->start_time, cur_pid->end_time);
+
+	log->decrease_indent();
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 run_dipole_fit(const LfiRadiometer & rad,
 	       Configuration & program_conf,
@@ -375,41 +428,53 @@ run_dipole_fit(const LfiRadiometer & rad,
 			    program_conf.get<int>("dipole_fit.total_convolve_order"),
 			    false);
 
-    auto data_range = local_data_range(mpi_rank, mpi_size, list_of_pointings);
+    auto data_range(get_local_data_range(mpi_rank, mpi_size, list_of_pointings));
 
+    /* We should now iterate over each pointing period in the range.
+     * The problem is that data are saved in larger chunks, each of
+     * them spanning one OD (operational day). Therefore we need two
+     * nested loops: the first loops over the range of OD, and within
+     * each step loads data one OD long; the second loop iterates over
+     * the subset of pointing periods falling within the OD. */
     for(int od = data_range.od_range.start; od <= data_range.od_range.end; ++od) {
+	log->info(boost::format("Processing OD %1%") % od);
+	log->increase_indent();
+
 	setup_od_variable(od, program_conf);
 	setup_od_variable(od, storage_conf);
 
-	const std::string pnt_file_path(
-	    join_paths(storage_conf.getWithSubst("pointings.base_path"),
-		       storage_conf.getWithSubst("pointings.file_name_mask")));
-	const std::string ddf_file_path(
-	    join_paths(storage_conf.getWithSubst("differenced_data.base_path"),
-		       storage_conf.getWithSubst("differenced_data.file_name_mask")));
-
-	PointingData pointings;
-	DifferencedData datadiff;
-	try {
-	    decompress_pointings(pnt_file_path, pointings);
-	    decompress_differenced_data(ddf_file_path, datadiff);
-
-	    assert_consistency(pointings, datadiff);
-	}
-	catch(SqueezerError & err) {
-	    log->error(boost::format("Error: %1%. Skipping OD %2%")
-		       % err.what() % od);
+	// Determine the extents of each pointings within this OD
+	std::vector<Pointing_t>::const_iterator first_pid, last_pid;
+	get_pid_iterators_for_range(list_of_pointings, data_range.pid_range, 
+				    first_pid, last_pid);
+	if(first_pid == list_of_pointings.end() ||
+	   last_pid == list_of_pointings.end() ||
+	   first_pid->id != data_range.pid_range.start ||
+	   last_pid->id != data_range.pid_range.end) 
+	{
+	    log->warning("Mismatch in the pointing IDs, skipping this OD");
 	    continue;
+	}
+
+	try {
+	    process_one_od(program_conf, storage_conf, first_pid, last_pid);
 	}
 	catch(std::runtime_error & exc) {
 	    log->error(boost::format("Error: %1%. Skipping OD %2%")
 		       % exc.what() % od);
 	    continue;
 	}
+	catch(std::bad_alloc & exc) {
+	    log->error("I'm not able to allocate memory for pointings"
+		       "and/or differenced data, so I'm aborting");
+	    break;
+	}
 
+	log->decrease_indent();
+	log->info(boost::format("Nothing more to do with OD %1%.") % od);
     }
 
     log->decrease_indent();
-    log->info("Quitting module dipoleFit");
+    log->info("Module dipoleFit completed.");
 }
 

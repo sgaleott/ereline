@@ -80,6 +80,11 @@ struct PointingData {
     std::vector<double> theta;
     std::vector<double> phi;
     std::vector<double> psi;
+
+    PointingData() {}
+    PointingData(const PointingData & obj, 
+		 uint64_t first_time, 
+		 uint64_t last_time);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -89,6 +94,11 @@ struct DifferencedData {
     std::vector<double> scet_time;
     std::vector<double> sky_load;
     std::vector<uint32_t> flags;
+
+    DifferencedData() {}
+    DifferencedData(const DifferencedData & obj, 
+		    uint64_t first_time, 
+		    uint64_t last_time);
 };
 
 #endif

@@ -110,3 +110,65 @@ LfiRadiometer LfiRadiometer::twinRadiometer() const
 {
     return LfiRadiometer(horn, radiometer == 0 ? 1 : 0);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+static Range_t<long>
+find_boundaries_in_obt_times(const std::vector<uint64_t> & source,
+			     uint64_t first_time, 
+			     uint64_t last_time,
+			     std::vector<uint64_t> & dest)
+{
+    const auto first_element = std::lower_bound(source.begin(),
+						source.end(),
+						first_time);
+    auto last_element = std::upper_bound(source.begin(),
+					 source.end(),
+					 last_time);
+
+    dest.assign(first_element, last_element);
+
+    return Range_t<long> {
+	std::distance(source.begin(), first_element),
+        std::distance(source.begin(), last_element) };
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+PointingData::PointingData(const PointingData & obj, 
+			   uint64_t first_time, 
+			   uint64_t last_time)
+{
+    const Range_t<long> index(find_boundaries_in_obt_times(obj.obt_time,
+							   first_time,
+							   last_time,
+							   obt_time));
+
+    scet_time.assign(obj.scet_time.begin() + index.start, 
+		     obj.scet_time.begin() + index.end);
+    theta.assign(obj.theta.begin() + index.start, 
+		 obj.theta.begin() + index.end);
+    phi.assign(obj.phi.begin() + index.start, 
+	       obj.phi.begin() + index.end);
+    psi.assign(obj.psi.begin() + index.start, 
+	       obj.psi.begin() + index.end);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+DifferencedData::DifferencedData(const DifferencedData & obj, 
+				 uint64_t first_time, 
+				 uint64_t last_time)
+{
+    const Range_t<long> index(find_boundaries_in_obt_times(obj.obt_time,
+							   first_time,
+							   last_time,
+							   obt_time));
+
+    scet_time.assign(obj.scet_time.begin() + index.start, 
+		     obj.scet_time.begin() + index.end);
+    sky_load.assign(obj.sky_load.begin() + index.start, 
+		    obj.sky_load.begin() + index.end);
+    flags.assign(obj.flags.begin() + index.start, 
+		 obj.flags.begin() + index.end);
+}

@@ -49,11 +49,15 @@ test_io_SOURCES = \
 	../src/misc.cpp \
 	../src/planck_velocity.cpp \
 	../src/sqlite3xx.cpp
-test_io_LDADD = $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(SQLITE3_LDFLAGS)
+test_io_LDADD = $(BOOST_UNIT_TEST_FRAMEWORK_LIB) \
+	$(BOOST_SYSTEM_LIB) \
+	$(BOOST_FILESYSTEM_LIB) \
+	$(SQLITE3_LDFLAGS)
 
 test_squeezer_SOURCES = \
 	test_squeezer.cpp \
 	../src/datatypes.cpp \
+	../src/logging.cpp \
 	../src/squeezer.cpp
 test_squeezer_LDADD =  $(BOOST_UNIT_TEST_FRAMEWORK_LIB)
 
