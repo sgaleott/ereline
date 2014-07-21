@@ -16,7 +16,7 @@ class Configuration_error : public std::runtime_error {
 public:
     Configuration_error(const std::string & what)
 	: std::runtime_error(what) {}
-    virtual ~Configuration_error() {}
+    virtual ~Configuration_error() throw() {}
 };
 
 ////////////////////////////////////////////////////////////////////////

@@ -3,12 +3,12 @@
 
 #include <string>
 #include <memory>
-#include <ostream>
+#include <iostream>
 #include <boost/format.hpp>
 
 class Logger {
 public:
-    enum class Log_level { DEBUG, INFO, WARNING, ERROR };
+    enum Log_level { DEBUG, INFO, WARNING, ERROR };
 
     static Logger * get_instance();
 
@@ -25,10 +25,6 @@ public:
     void decrease_indent() { 
 	if(indent_level > 0) 
 	    indent_level--; 
-    }
-
-    void append_stream(std::ostream * new_log_stream) { 
-	log_stream_list.push_back(std::auto_ptr<std::ostream>(new_log_stream)); 
     }
 
     void debug(const std::string & string) const { 
@@ -65,7 +61,7 @@ private:
     int mpi_rank;
     int mpi_size;
 
-    std::vector<std::unique_ptr<std::ostream> > log_stream_list;
+    std::vector<std::ostream *> log_stream_list;
 
     int indent_level;
     Log_level log_level;
@@ -79,6 +75,10 @@ private:
 	}
 
 public:
+    void append_stream(std::ostream * new_log_stream) { 
+	log_stream_list.push_back(new_log_stream); 
+    }
+
     void set_log_level(Log_level new_level) { 
 	log_level = new_level; 
     }

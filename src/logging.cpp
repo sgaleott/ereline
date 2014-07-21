@@ -8,7 +8,7 @@
 #include <boost/format.hpp>
 
 bool Logger::exist_instance_flag = false;
-Logger * Logger::singleton = nullptr;
+Logger * Logger::singleton = NULL;
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -68,8 +68,8 @@ Logger::log(Log_level level, const std::string & string) const
 	       % string);
     }
 
-    for(auto & log_stream : log_stream_list) {
-	if(log_stream.get() != NULL) {
+    for(auto log_stream : log_stream_list) {
+	if(log_stream != NULL) {
 	    (*log_stream) << msg << std::endl;
 	    log_stream->flush();
 	}

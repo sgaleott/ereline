@@ -8,12 +8,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 static int
-signalSqlite3ErrorAndThrow(const char * file_name, int code)
+signalSqlite3ErrorAndThrow(const char * file_name, sqlite3 * connection)
 {
     auto message = boost::format("Error operating on SQLite3 "
 				 "database %1%: \"%2%\"")
 	% file_name
-	% sqlite3_errstr(code);
+	% sqlite3_errmsg(connection);
 
     Logger * log = Logger::get_instance();
     log->error(message);
@@ -32,7 +32,7 @@ SQLite3Connection::SQLite3Connection(const char * a_file_name)
 	       % a_file_name);
     int result = sqlite3_open_v2(a_file_name, &conn, SQLITE_OPEN_READONLY, NULL);
     if(result != SQLITE_OK) {
-	signalSqlite3ErrorAndThrow(a_file_name, result);
+	signalSqlite3ErrorAndThrow(a_file_name, conn);
     }
 
     sqlite3_extended_result_codes(conn, 1);
@@ -64,7 +64,7 @@ SQLite3Statement::SQLite3Statement(SQLite3Connection & a_db,
 				 &ptr,
 				 NULL);
     if(result != SQLITE_OK) {
-	signalSqlite3ErrorAndThrow(db.file_name.c_str(), result);
+	signalSqlite3ErrorAndThrow(db.file_name.c_str(), db.conn);
     }
 }
 
@@ -95,7 +95,7 @@ SQLite3Statement::step()
 	break;
     }
     default:
-	signalSqlite3ErrorAndThrow(db.file_name.c_str(), result);
+	signalSqlite3ErrorAndThrow(db.file_name.c_str(), db.conn);
     }
 
     return result;
