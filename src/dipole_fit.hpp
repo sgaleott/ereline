@@ -27,17 +27,26 @@ struct dipoleFit
     std::vector<float> pixSumDipole;
     std::vector<float> inputMap;
 
-    dipoleFit(const int a_qualityFlag, const int a_nSide, const int a_pointingID);
+    dipoleFit(uint32_t a_qualityFlag, int a_nSide, int a_pointingID);
 
     ~dipoleFit(){};
 
-    bool binData(const std::vector<double> & data, const std::vector<int>& flag,
-		 const std::vector<double> & theta, const std::vector<double> & phi, const std::vector<double> & dipole,
-		 const std::vector<size_t> & pidRange, const std::vector<double> & sidelobes);
+    bool binData(const std::vector<double> & data, 
+		 const std::vector<uint32_t>& flag,
+		 const std::vector<double> & theta, 
+		 const std::vector<double> & phi, 
+		 const std::vector<double> & dipole,
+		 const std::vector<size_t> & pidRange, 
+		 const std::vector<double> & sidelobes);
     bool fitData(const std::vector<float> & maskMap);
-    bool fit(const std::vector<double> & data, const std::vector<int> & flag,
-	     const std::vector<double> & theta, const std::vector<double> & phi, const std::vector<double> & dipole,
-	     const std::vector<size_t> & pidRange, const std::vector<float> & maskMap, const std::vector<double> & sidelobes);
+    bool fit(const std::vector<double> & data, 
+	     const std::vector<uint32_t> & flag,
+	     const std::vector<double> & theta, 
+	     const std::vector<double> & phi, 
+	     const std::vector<double> & dipole,
+	     const std::vector<size_t> & pidRange, 
+	     const std::vector<float> & maskMap, 
+	     const std::vector<double> & sidelobes);
 
     void setGainV(double a_gainv);
     void setOffset(double a_offset);

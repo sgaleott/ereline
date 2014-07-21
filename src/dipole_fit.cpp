@@ -24,7 +24,9 @@ extern "C" {
 #include "chealpix.h"
 }
 
-dipoleFit::dipoleFit(const int a_qualityFlag, const int a_nSide, const int a_pointingID)
+dipoleFit::dipoleFit(uint32_t a_qualityFlag, 
+		     int a_nSide, 
+		     int a_pointingID)
 {
   gainv = 0.0;
   offset = 0.0;
@@ -40,7 +42,7 @@ dipoleFit::dipoleFit(const int a_qualityFlag, const int a_nSide, const int a_poi
  */
 bool
 dipoleFit::binData(const std::vector<double> & data, 
-		   const std::vector<int>& flag,		  
+		   const std::vector<uint32_t>& flag,		  
 		   const std::vector<double> & theta, 
 		   const std::vector<double> & phi, 
 		   const std::vector<double> & dipole, 
@@ -137,7 +139,7 @@ dipoleFit::fitData(const std::vector<float> & maskMap)
  */
 bool
 dipoleFit::fit(const std::vector<double> & data, 
-	       const std::vector<int> & flag,
+	       const std::vector<uint32_t> & flag,
 	       const std::vector<double> & theta, 
 	       const std::vector<double> & phi, 
 	       const std::vector<double> & dipole, 
@@ -369,13 +371,18 @@ datadiff_file_path(const Configuration & storage_conf)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static void
+static std::vector<dipoleFit>
 process_one_od(const Configuration & program_conf,
 	       const Configuration & storage_conf,
-	       std::vector<Pointing_t>::const_iterator first_pid, 
-	       std::vector<Pointing_t>::const_iterator last_pid)
+	       int od,
+	       const Healpix::Map_t<float> & mask,
+	       const ringset & galactic_pickup,
+	       const PlanckVelocity & planck_velocity,
+	       Range_t<std::vector<Pointing_t>::const_iterator> pid_range)
 {
     Logger * log = Logger::get_instance();
+    const uint32_t quality_flag = 
+	program_conf.get<uint32_t>("dipole_fit.quality_flag");
 
     const std::string pnt_file_path(pointings_file_path(storage_conf));
     const std::string ddf_file_path(datadiff_file_path(storage_conf));
@@ -384,22 +391,74 @@ process_one_od(const Configuration & program_conf,
     DifferencedData datadiff;
 
     // Load pointing information and differenced data for this OD
+    log->debug(boost::format("Going to read pointings and differenced "
+			     "data for OD %1%") % od);
     decompress_pointings(pnt_file_path, pointings);
     decompress_differenced_data(ddf_file_path, datadiff);
 
+    if(pointings.obt_time.empty()) {
+	log->warning(boost::format("No data for OD %1%, skipping it")
+		     % pid_range.start->od);
+	return std::vector<dipoleFit> {};
+    }
+
     assert_consistency(pointings, datadiff);
+    log->debug(boost::format("Pointings and differenced data "
+			     "look consistent. There are %d samples, "
+			     "going from OBT time %.0f to %.0f")
+	       % pointings.obt_time.size()
+	       % pointings.obt_time.front()
+	       % pointings.obt_time.back());
 
     // Loop over each pointing period that belongs to the current OD
-    for(auto cur_pid = first_pid; cur_pid != last_pid + 1; cur_pid++) {
-	log->info(boost::format("Processing pointing with ID %1%")
-		  % cur_pid->id);
-	log->increase_indent();
+    std::vector<dipoleFit> fits;
+    for(auto cur_pid = pid_range.start; 
+	cur_pid != pid_range.end + 1; 
+	cur_pid++) 
+    {
+	if(cur_pid->od != od)
+	    continue;
 
-	PointingData pid_pointings(pointings, cur_pid->start_time, cur_pid->end_time);
-	DifferencedData pid_datadiff(datadiff, cur_pid->start_time, cur_pid->end_time);
+	log->debug(boost::format("Processing pointing with ID %d "
+		       "(OBT times go from %.0f to %0.f)")
+		   % cur_pid->id
+		   % cur_pid->start_time
+		   % cur_pid->end_time);
 
-	log->decrease_indent();
+	PointingData pid_pointings(pointings, 
+				   cur_pid->start_time, cur_pid->end_time);
+	DifferencedData pid_datadiff(datadiff, 
+				     cur_pid->start_time, cur_pid->end_time);
+
+	if(pid_pointings.obt_time.empty()) {
+	    log->info("No data for this pointing, skipping it");
+	    continue;
+	}
+
+	std::vector<double> sidelobes(
+	    galactic_pickup.getIntensities(pid_pointings.theta,
+					   pid_pointings.phi,
+					   pid_pointings.psi));
+
+	std::vector<double> convolved_dipole(
+	    planck_velocity.getConvolvedDipole(pid_datadiff.scet_time,
+					       pid_pointings.theta,
+					       pid_pointings.phi,
+					       pid_pointings.psi));
+
+	dipoleFit fitter(quality_flag, mask.nside, cur_pid->id);
+	if(fitter.fit(pid_datadiff.sky_load,
+		      pid_datadiff.flags,
+		      pid_pointings.theta,
+		      pid_pointings.phi,
+		      convolved_dipole,
+		      std::vector<size_t> { 0, pid_datadiff.sky_load.size() - 1 },
+		      mask.pixels,
+		      sidelobes))
+	    fits.push_back(fitter);
     }
+
+    return fits;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -421,43 +480,53 @@ run_dipole_fit(const LfiRadiometer & rad,
 	radiometer_to_use(mpi_rank, rad, program_conf, storage_conf));
 
     // Load all the inputs needed by this module
-    Healpix::Map_t<int> mask;
+    Healpix::Map_t<float> mask;
     load_map(program_conf.getWithSubst("dipole_fit.mask"), 1, mask);
 
     ringset galactic_pickup(program_conf.getWithSubst("dipole_fit.galactic_pickup"),
 			    program_conf.get<int>("dipole_fit.total_convolve_order"),
 			    false);
 
+    PlanckVelocity planck_velocity(storage_conf.getWithSubst("spacecraft_velocity_file"));
+
     auto data_range(get_local_data_range(mpi_rank, mpi_size, list_of_pointings));
+    std::vector<Pointing_t>::const_iterator first_pid, last_pid;
+    get_pid_iterators_for_range(list_of_pointings, data_range.pid_range, 
+				first_pid, last_pid);
+    if(first_pid == list_of_pointings.end() ||
+       last_pid == list_of_pointings.end() ||
+       first_pid->id != data_range.pid_range.start ||
+       last_pid->id != data_range.pid_range.end) 
+    {
+	log->error("Mismatch in the pointing IDs");
+	return;
+    }
 
     /* We should now iterate over each pointing period in the range.
      * The problem is that data are saved in larger chunks, each of
      * them spanning one OD (operational day). Therefore we need two
      * nested loops: the first loops over the range of OD, and within
      * each step loads data one OD long; the second loop iterates over
-     * the subset of pointing periods falling within the OD. */
+     * the subset of pointing periods falling within the OD. The inner
+     * loop is implemented within the function "process_one_od". */
     for(int od = data_range.od_range.start; od <= data_range.od_range.end; ++od) {
 	log->info(boost::format("Processing OD %1%") % od);
-	log->increase_indent();
 
 	setup_od_variable(od, program_conf);
 	setup_od_variable(od, storage_conf);
 
 	// Determine the extents of each pointings within this OD
-	std::vector<Pointing_t>::const_iterator first_pid, last_pid;
-	get_pid_iterators_for_range(list_of_pointings, data_range.pid_range, 
-				    first_pid, last_pid);
-	if(first_pid == list_of_pointings.end() ||
-	   last_pid == list_of_pointings.end() ||
-	   first_pid->id != data_range.pid_range.start ||
-	   last_pid->id != data_range.pid_range.end) 
-	{
-	    log->warning("Mismatch in the pointing IDs, skipping this OD");
-	    continue;
-	}
-
 	try {
-	    process_one_od(program_conf, storage_conf, first_pid, last_pid);
+	    auto fits =
+		process_one_od(program_conf, storage_conf, od,
+			       mask, galactic_pickup, planck_velocity,
+			       Range_t<std::vector<Pointing_t>::const_iterator> { first_pid, last_pid });
+	    if(fits.empty()) {
+		log->warning(boost::format("No fits between dipole and TODs "
+					   "found, skipping OD %1%")
+			     % od);
+		continue;
+	    }
 	}
 	catch(std::runtime_error & exc) {
 	    log->error(boost::format("Error: %1%. Skipping OD %2%")
@@ -470,7 +539,6 @@ run_dipole_fit(const LfiRadiometer & rad,
 	    break;
 	}
 
-	log->decrease_indent();
 	log->info(boost::format("Nothing more to do with OD %1%.") % od);
     }
 

@@ -32,9 +32,9 @@ public:
     std::vector<std::vector<std::vector<float> > > sky;
     std::vector<double> baseWgt;
 
-    inline std::vector<double> weightN (double x);
-    inline std::vector<double> interpolN (double theta, double phi);
-    inline double interpolPsi(double omega, const std::vector<double> & kArr);
+    inline std::vector<double> weightN (double x) const;
+    inline std::vector<double> interpolN (double theta, double phi) const;
+    inline double interpolPsi(double omega, const std::vector<double> & kArr) const;
     void init (std::string fileName, int order, bool feedback_flag);
 
     void initializeWeights(int order);
@@ -48,13 +48,13 @@ public:
     std::vector<double> 
     getIntensities (const std::vector<double> & theta, 
 		    const std::vector<double> & phi, 
-		    const std::vector<double> & psi);
+		    const std::vector<double> & psi) const;
     void getIntensities (const std::vector<double> & theta, 
 			 const std::vector<double> & phi, 
 			 const std::vector<double> & psi,
 			 std::vector<double> & I, 
 			 std::vector<double> & Q, 
-			 std::vector<double> & U);
+			 std::vector<double> & U) const;
 };
 
 #endif

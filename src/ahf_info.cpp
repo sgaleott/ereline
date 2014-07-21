@@ -61,10 +61,10 @@ get_pid_iterators_for_range(const std::vector<Pointing_t> & list_of_pointings,
 			    std::vector<Pointing_t>::const_iterator & first,
 			    std::vector<Pointing_t>::const_iterator & last)
 {
-    auto first_pid = find_pid(list_of_pointings.begin(),
-			      list_of_pointings.end(),
-			      pid_range.start);
-    auto last_pid = find_pid(list_of_pointings.begin(),
-			     list_of_pointings.end(),
-			     pid_range.end);
+    first = find_pid(list_of_pointings.begin(),
+		     list_of_pointings.end(),
+		     pid_range.start);
+    last = find_pid(list_of_pointings.begin(),
+		    list_of_pointings.end(),
+		    pid_range.end);
 }

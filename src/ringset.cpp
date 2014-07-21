@@ -181,7 +181,7 @@ ringset::initializeWeights(int order)
 ////////////////////////////////////////////////////////////////////////
 
 inline std::vector<double>
-ringset::weightN (double x)
+ringset::weightN (double x) const
 {
     std::vector<double> wgt = baseWgt;
 
@@ -201,7 +201,7 @@ ringset::weightN (double x)
 ////////////////////////////////////////////////////////////////////////
 
 inline std::vector<double>
-ringset::interpolN (double theta, double phi)
+ringset::interpolN (double theta, double phi) const
 {
     double frac = theta*invDeltaTheta - thetaOffset;
     int iTheta0 = int (frac) - iOffset;
@@ -246,7 +246,7 @@ ringset::interpolN (double theta, double phi)
 }
 
 inline double 
-ringset::interpolPsi(double omega, const std::vector<double> & kArr)
+ringset::interpolPsi(double omega, const std::vector<double> & kArr) const
 {
     double result = (psiVector[0] >= 0) ? kArr[0] : 0;
     if (nPsi <= 1) 
@@ -273,7 +273,7 @@ ringset::interpolPsi(double omega, const std::vector<double> & kArr)
 std::vector<double>
 ringset::getIntensities (const std::vector<double> & theta,
 			 const std::vector<double> & phi, 
-			 const std::vector<double> & psi)
+			 const std::vector<double> & psi) const
 { 
     // Init rotation trigonometry functions
     double cosBeta  = ecl2gal.entry[2][2];
