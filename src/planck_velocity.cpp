@@ -37,7 +37,7 @@ PlanckVelocity::PlanckVelocity ()
 
 // Return velocity at given SCET
 std::vector<double> 
-PlanckVelocity::getVelocity (double scetTime)
+PlanckVelocity::getVelocity (double scetTime) const
 {
   std::vector<double> vSat(3,0.0);
 
@@ -59,7 +59,7 @@ PlanckVelocity::getVelocity (double scetTime)
 }  
 
 std::vector<double> 
-PlanckVelocity::getAbsoluteVelocity(double scetTime)
+PlanckVelocity::getAbsoluteVelocity(double scetTime) const
 {
   std::vector<double> vSat = getVelocity(scetTime);
 
@@ -72,7 +72,9 @@ PlanckVelocity::getAbsoluteVelocity(double scetTime)
 }
 
 double 
-PlanckVelocity::dipole(std::vector<double> velocity, double theta, double phi)
+PlanckVelocity::dipole(const std::vector<double> & velocity, 
+		       double theta, 
+		       double phi) const
 {
   double velocityLength = sqrt(velocity[0]*velocity[0] + 
 			       velocity[1]*velocity[1] + 
@@ -97,90 +99,10 @@ PlanckVelocity::dipole(std::vector<double> velocity, double theta, double phi)
 }
 
 double 
-PlanckVelocity::getTotalDipole(double scetTime, double theta, double phi)
-{  
-  std::vector<double> vSatAbsolute = getAbsoluteVelocity(scetTime);
-
-  return dipole(vSatAbsolute, theta, phi);
-}
-
-std::vector<double> 
-PlanckVelocity::getTotalDipole(const std::vector<double> & scetTime, const std::vector<double> & theta, 
-			       const std::vector<double> & phi)
-{
-  std::vector<double> local_dipole;
-  for (size_t idx=0; idx<scetTime.size(); ++idx)
-    {
-      std::vector<double> vSatAbsolute = getAbsoluteVelocity(scetTime[idx]);
-      local_dipole.push_back(dipole(vSatAbsolute,theta[idx],phi[idx]));
-    }
-  return local_dipole;
-}
-
-double 
-PlanckVelocity::getSolarDipole(double theta, double phi)
-{  
-  return dipole(vSolSys, theta, phi);
-}
-
-std::vector<double> 
-PlanckVelocity::getSolarDipole(const std::vector<double> & theta, const std::vector<double> & phi)
-{
-  std::vector<double> local_dipole;
-  for (size_t idx=0; idx<theta.size(); ++idx)
-    {
-      local_dipole.push_back(dipole(vSolSys, theta[idx], phi[idx]));
-    }
-
-  return local_dipole;
-}
-
-double 
-PlanckVelocity::getOrbitalDipole(double scetTime, double theta, double phi)
-{  
-  std::vector<double> vSat = getVelocity(scetTime);
-
-  return dipole(vSat, theta, phi);
-}
-
-double 
-PlanckVelocity::getTotalDipoleTAnt(double scetTime, double theta, double phi, double hnydk)
-{
-  double totalDip = getTotalDipole(scetTime, theta, phi);
-  totalDip=totalDip+TCMB;
-
-  double tcmbAnt = hnydk/(exp(hnydk/TCMB)-1);
-  double totalDipAnt = hnydk/(exp(hnydk/totalDip)-1);
-
-  return totalDipAnt-tcmbAnt;
-}
-
-double 
-PlanckVelocity::getSolarDipoleTAnt(double theta, double phi, double hnydk)
-{
-  double solarDip = getSolarDipole(theta, phi);
-  solarDip=solarDip+TCMB;
-
-  double tcmbAnt = hnydk/(exp(hnydk/TCMB)-1);
-  double solarDipAnt = hnydk/(exp(hnydk/solarDip)-1);
-
-  return solarDipAnt-tcmbAnt;
-}
-
-double 
-PlanckVelocity::getOrbitalDipoleTAnt(double scetTime, double theta, double phi, double hnydk)
-{
-  double orbitalDip = getOrbitalDipole(scetTime, theta, phi);
-  orbitalDip=orbitalDip+TCMB;
-
-  double tcmbAnt = hnydk/(exp(hnydk/TCMB)-1);
-  double orbitalDipAnt = hnydk/(exp(hnydk/orbitalDip)-1);
-
-  return orbitalDipAnt-tcmbAnt;
-}
-
-double 
-PlanckVelocity::convolvedDipole (std::vector<double> velocity, double theta, double phi, double psi)
+PlanckVelocity::convolvedDipole (const std::vector<double> & velocity, 
+				 double theta, 
+				 double phi, 
+				 double psi) const
 {
   double xv = velocity[0]/SPEED_OF_LIGHT;
   double yv = velocity[1]/SPEED_OF_LIGHT;
@@ -211,130 +133,24 @@ PlanckVelocity::convolvedDipole (std::vector<double> velocity, double theta, dou
 }
 
 double 
-PlanckVelocity::getConvolvedDipole(double scetTime, double theta, double phi, double psi)
+PlanckVelocity::getConvolvedDipole(double scetTime, double theta, double phi, double psi) const
 {  
   // Compute velocity versor
-  std::vector<double> vSatAbsolute = getAbsoluteVelocity(scetTime);
+  const std::vector<double> vSatAbsolute = getAbsoluteVelocity(scetTime);
   return convolvedDipole (vSatAbsolute,theta,phi,psi);
 }
 
 std::vector<double> 
-PlanckVelocity::getConvolvedDipole(const std::vector<double> & scetTime, const std::vector<double> & theta, 
-				   const std::vector<double> & phi, const std::vector<double> & psi)
+PlanckVelocity::getConvolvedDipole(const std::vector<double> & scetTime, 
+				   const std::vector<double> & theta, 
+				   const std::vector<double> & phi, 
+				   const std::vector<double> & psi) const
 {
   std::vector<double> local_dipole;
   for (size_t idx=0; idx<scetTime.size(); ++idx)
     {
       std::vector<double> vSatAbsolute = getAbsoluteVelocity(scetTime[idx]);
       local_dipole.push_back(convolvedDipole(vSatAbsolute,theta[idx],phi[idx],psi[idx]));
-    }
-  return local_dipole;
-}
-
-double 
-PlanckVelocity::getSolarConvolvedDipole(double theta, double phi, double psi)
-{  
-  return convolvedDipole (vSolSys,theta,phi,psi);
-}
-
-std::vector<double> 
-PlanckVelocity::getSolarConvolvedDipole(const std::vector<double> & theta, const std::vector<double> & phi, const std::vector<double> & psi)
-{
-  std::vector<double> local_dipole;
-  for (size_t idx=0; idx<theta.size(); ++idx)
-    {
-      local_dipole.push_back(convolvedDipole(vSolSys,theta[idx],phi[idx],psi[idx]));
-    }
-  return local_dipole;
-}
-
-double 
-PlanckVelocity::getOrbitalConvolvedDipole(double scetTime, double theta, double phi, double psi)
-{  
-  // Compute velocity versor
-  std::vector<double> vSatAbsolute = getVelocity(scetTime);
-  return convolvedDipole (vSatAbsolute,theta,phi,psi);
-}
-
-std::vector<double>
-PlanckVelocity::getOrbitalConvolvedDipole(const std::vector<double> & scetTime, const std::vector<double> & theta, 
-					  const std::vector<double> & phi, const std::vector<double> & psi)
-{  
-  std::vector<double> local_dipole;
-  for (size_t idx=0; idx<scetTime.size(); ++idx)
-    {
-      std::vector<double> vSatAbsolute = getVelocity(scetTime[idx]);
-      local_dipole.push_back(convolvedDipole(vSatAbsolute,theta[idx],phi[idx],psi[idx]));
-    }
-  return local_dipole;
-}
-
-double 
-PlanckVelocity::getConvolvedDipoleTAnt(double scetTime, double theta, double phi, double psi, double hnydk)
-{
-  double totalDip = getConvolvedDipole(scetTime, theta, phi, psi);
-  totalDip=totalDip+TCMB;
-
-  double tcmbAnt = hnydk/(exp(hnydk/TCMB)-1);
-  double totalDipAnt = hnydk/(exp(hnydk/totalDip)-1);
-
-  return totalDipAnt-tcmbAnt;
-}
-
-double 
-PlanckVelocity::getSolarConvolvedDipoleTAnt(double theta, double phi, double psi, double hnydk)
-{
-  double totalDip = getSolarConvolvedDipole(theta, phi, psi);
-  totalDip=totalDip+TCMB;
-
-  double tcmbAnt = hnydk/(exp(hnydk/TCMB)-1);
-  double totalDipAnt = hnydk/(exp(hnydk/totalDip)-1);
-
-  return totalDipAnt-tcmbAnt;
-}
-
-double 
-PlanckVelocity::getOrbitalConvolvedDipoleTAnt(double scetTime, double theta, double phi, double psi, double hnydk)
-{
-  double totalDip = getOrbitalConvolvedDipole(scetTime, theta, phi, psi);
-  totalDip=totalDip+TCMB;
-
-  double tcmbAnt = hnydk/(exp(hnydk/TCMB)-1);
-  double totalDipAnt = hnydk/(exp(hnydk/totalDip)-1);
-
-  return totalDipAnt-tcmbAnt;
-}
-
-double 
-PlanckVelocity::constrainedDipole (std::vector<double> velocity, double theta, double phi, double psi)
-{
-  double xv = velocity[0]/SOLSYSSPEED;
-  double yv = velocity[1]/SOLSYSSPEED;
-  double zv = velocity[2]/SOLSYSSPEED;
-
-  // Rotate velocity
-  double x1 = cos(phi)*xv+sin(phi)*yv;
-  double y1 = -sin(phi)*xv+cos(phi)*yv;
-  double z1 = zv;
-
-  double x2 = cos(theta)*x1-sin(theta)*z1;
-  double y2 = y1;
-  double z2 = sin(theta)*x1+cos(theta)*z1;
-
-  double x3 = cos(psi)*x2+sin(psi)*y2;
-  double y3 = -sin(psi)*x2+cos(psi)*y2;
-  double z3 = z2;
-
-  return x3*M100+y3*M010+z3*M001;
-}
-
-std::vector<double> 
-PlanckVelocity::getSolarConvolvedConstraint(const std::vector<double> & theta, const std::vector<double> & phi, const std::vector<double> & psi)
-{
-  std::vector<double> local_dipole;
-  for (size_t idx=0; idx<theta.size(); ++idx)
-    {
-      local_dipole.push_back(constrainedDipole(vSolSys,theta[idx],phi[idx],psi[idx]));
     }
   return local_dipole;
 }
