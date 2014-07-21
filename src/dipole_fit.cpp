@@ -371,6 +371,10 @@ datadiff_file_path(const Configuration & storage_conf)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/* The argument "pid_range" typically contains all the pointings to be
+ * processed by the MPI process, not only the PIDs within the given
+ * OD. The implementation of "process_one_od" will silently skip all
+ * the PIDs outside "od". */
 static std::vector<dipoleFit>
 process_one_od(const Configuration & program_conf,
 	       const Configuration & storage_conf,
