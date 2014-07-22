@@ -1,10 +1,12 @@
-#include <cmath>
-
 #include "planck_velocity.hpp"
 #include "configuration.hpp"
 #include "dipole_parameters.hpp"
+#include "logging.hpp"
 #include "rotmatrix.hpp"
 #include "fits_object.hpp"
+
+#include <cmath>
+#include <sstream>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -13,6 +15,12 @@ PlanckVelocity::PlanckVelocity (const std::string & file_name,
 				const Dipole_parameters_t & a_dipole_params)
     : dipole_params(a_dipole_params)
 {
+    Logger * log = Logger::get_instance();
+    std::stringstream s;
+    s << a_dipole_params;
+    log->debug("PlanckVelocity initialized with the following dipole: "
+	       + s.str());
+    
     FitsObject velocityFile;
     velocityFile.openTable(file_name);
     

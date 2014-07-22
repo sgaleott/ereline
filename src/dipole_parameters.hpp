@@ -17,6 +17,9 @@ struct Dipole_parameters_t {
 			double a_monopole);
 };
 
+#include <iostream>
+std::ostream & operator<<(std::ostream & os, Dipole_parameters_t const & yt);
+
 struct Configuration;
 Dipole_parameters_t read_dipole_fit_params(const Configuration & conf);
 
