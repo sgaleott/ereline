@@ -77,7 +77,7 @@ PlanckVelocity::dipole(const std::vector<double> & velocity,
 			       velocity[1]*velocity[1] + 
 			       velocity[2]*velocity[2]);
 
-  std::vector<double> velocity_versor(3,0.0);
+  double velocity_versor[3];
   velocity_versor[0] = velocity[0]/velocityLength;
   velocity_versor[1] = velocity[1]/velocityLength;
   velocity_versor[2] = velocity[2]/velocityLength;
@@ -85,7 +85,8 @@ PlanckVelocity::dipole(const std::vector<double> & velocity,
   double beta = velocityLength/SPEED_OF_LIGHT;
   double gamma = 1./sqrt(1.-beta*beta);
   
-  std::vector<double> detDir = angToCart(theta, phi);
+  double detDir[3];
+  angToCart(theta, phi, detDir);
     
   double cosDir = (velocity_versor[0]*detDir[0] +
 		   velocity_versor[1]*detDir[1] +

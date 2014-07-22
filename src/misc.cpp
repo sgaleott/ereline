@@ -8,8 +8,6 @@
 #include <iomanip>
 #include <mpi.h>
 
-#include <boost/filesystem.hpp>
-
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_multifit.h>
@@ -19,18 +17,6 @@
 #include "misc.hpp"
 
 using namespace std;
-
-/*
- * Get the date in string format YYMMDD
- */
-string getDate ()
-{
-  char s[10];
-  time_t t = time(0);
-  strftime(s, 10, "%Y%m%d", localtime(&t));
-  string outTime(s,s+8);
-  return outTime;
-}
 
 /*
  * Trim a string from spaces
@@ -43,14 +29,11 @@ string trim (const string &orig)
   return orig.substr(p1,p2-p1+1);
 }
 
-vector<double> angToCart(double theta, double phi)
+void angToCart(double theta, double phi, double result[3])
 {
-  vector<double> temp(3,0.0);
-  
-  temp[0] = sin(theta)*cos(phi);
-  temp[1] = sin(theta)*sin(phi);
-  temp[2] = cos(theta);
-  return temp;
+  result[0] = sin(theta)*cos(phi);
+  result[1] = sin(theta)*sin(phi);
+  result[2] = cos(theta);
 }
 
 vector<double> cartToAng(vector<double> cart)
@@ -60,13 +43,13 @@ vector<double> cartToAng(vector<double> cart)
   output[0] = atan2(sqrt(cart[0]*cart[0]+cart[1]*cart[1]),cart[2]);
   // Phi
   output[1] = atan2(cart[1],cart[0]);
-  if (output[1]<0.) 
+  if (output[1]<0.)
     output[1] += TWOPI;
-  
+
   return output;
 }
 
-vector<string> 
+vector<string>
 getDetectorIds(int frequency)
 {
   vector<string> output;
@@ -106,7 +89,7 @@ getDetectorIds(int frequency)
   return output;
 }
 
-string 
+string
 getDetectorId(int diode)
 {
   switch(diode)
@@ -129,86 +112,6 @@ getDetectorId(int diode)
   return string("");
 }
 
-vector<string> 
-getAllDetectorIds()
-{
-  vector<string> output;
-  output.push_back("LFI18M-00");
-  output.push_back("LFI18S-10");
-  output.push_back("LFI19M-00");
-  output.push_back("LFI19S-10");
-  output.push_back("LFI20M-00");
-  output.push_back("LFI20S-10");
-  output.push_back("LFI21M-00");
-  output.push_back("LFI21S-10");
-  output.push_back("LFI22M-00");
-  output.push_back("LFI22S-10");
-  output.push_back("LFI23M-00");
-  output.push_back("LFI23S-10");
-  output.push_back("LFI24M-00");
-  output.push_back("LFI24S-10");
-  output.push_back("LFI25M-00");
-  output.push_back("LFI25S-10");
-  output.push_back("LFI26M-00");
-  output.push_back("LFI26S-10");
-  output.push_back("LFI27M-00");
-  output.push_back("LFI27S-10");
-  output.push_back("LFI28M-00");
-  output.push_back("LFI28S-10");
-  return output;
-}
-
-vector<string> 
-getAllDiodes()
-{
-  vector<string> output;
-  output.push_back("LFI18M-00");
-  output.push_back("LFI18M-01");
-  output.push_back("LFI18S-10");
-  output.push_back("LFI18S-11");
-  output.push_back("LFI19M-00");
-  output.push_back("LFI19M-01");
-  output.push_back("LFI19S-10");
-  output.push_back("LFI19S-11");
-  output.push_back("LFI20M-00");
-  output.push_back("LFI20M-01");
-  output.push_back("LFI20S-10");
-  output.push_back("LFI20S-11");
-  output.push_back("LFI21M-00");
-  output.push_back("LFI21M-01");
-  output.push_back("LFI21S-10");
-  output.push_back("LFI21S-11");
-  output.push_back("LFI22M-00");
-  output.push_back("LFI22M-01");
-  output.push_back("LFI22S-10");
-  output.push_back("LFI22S-11");
-  output.push_back("LFI23M-00");
-  output.push_back("LFI23M-01");
-  output.push_back("LFI23S-10");
-  output.push_back("LFI23S-11");
-  output.push_back("LFI24M-00");
-  output.push_back("LFI24M-01");
-  output.push_back("LFI24S-10");
-  output.push_back("LFI24S-11");
-  output.push_back("LFI25M-00");
-  output.push_back("LFI25M-01");
-  output.push_back("LFI25S-10");
-  output.push_back("LFI25S-11");
-  output.push_back("LFI26M-00");
-  output.push_back("LFI26M-01");
-  output.push_back("LFI26S-10");
-  output.push_back("LFI26S-11");
-  output.push_back("LFI27M-00");
-  output.push_back("LFI27M-01");
-  output.push_back("LFI27S-10");
-  output.push_back("LFI27S-11");
-  output.push_back("LFI28M-00");
-  output.push_back("LFI28M-01");
-  output.push_back("LFI28S-10");
-  output.push_back("LFI28S-11");
-  return output;
-}
-
 int getDetectorIdasInt(string detectorId)
 {
   int horn = stringToData<int>(detectorId.substr(3,2));
@@ -216,82 +119,6 @@ int getDetectorIdasInt(string detectorId)
   int detector = stringToData<int>(detectorId.substr(8,1));
 
   return horn+rad+detector;
-}
-
-string intToString(int64 x, unsigned int width)
-{
-  ostringstream strstrm;
-  (x>=0) ? strstrm << setw(width) << setfill('0') << x
-    : strstrm << "-" << setw(width-1) << setfill('0') << -x;
-  string res = strstrm.str();
-
-  return trim(res);
-}
-
-string getExchangeName (const string prefix, const string od, 
-			const string suffix)
-{
-  time_t rawtime;
-  time ( &rawtime );
-  tm *res = localtime(&rawtime);
-  string date_time_zero = intToString(res->tm_year+1900,4)
-    +intToString(res->tm_mon+1,2)
-    +intToString(res->tm_mday,2);
-  
-  string filename = prefix
-    +"-"
-    +od
-    +suffix
-    +date_time_zero
-    +".fits";
-
-  return filename;
-}
-     
-void flagConversion (vector<int> inputFlag, vector<int> & outFlag, vector<int> & commonFlag, bool isHk)
-{
-  for (unsigned int i=0; i<inputFlag.size(); ++i) 
-    {
-      // Science quality bit0 flags
-      if ( (inputFlag[i] & (1 << 14)) > 0 ) // 100 0000 0000 0000
-	outFlag[i] |= (1<<0); 
-      else if ( isHk && ((inputFlag[i] & (1 << 2)) > 0) )  // 100
-	outFlag[i] |= (1<<0); 
-      
-      
-      // Planet Cross bit2 flags
-      if ( (inputFlag[i] & (1 << 18)) > 0 ){ // 100 0000 0000 0000 0000
-      	outFlag[i] |= (1<<2);  
-	//	cout << "set planet flag" << endl;
-      }
-
-      // Moving Objects bit3 flags
-      if ( ((inputFlag[i] & (1 << 19)) > 0 ) || 
-	   ((inputFlag[i] & (1 << 20)) > 0 ) )
-	outFlag[i] |= (1<<3); 
-
-      // Gap bit4 flags
-      if ( (inputFlag[i] & (1 << 16)) > 0 )
-	outFlag[i] |= (1<<4); 
-
-
-
-      
-      // -- common flags --//
-
-      // Stable pointing bit0
-      if ( (inputFlag[i] & (1<<4) ) > 0 )
-	commonFlag[i] |= (1<<0);           // set bit0 IF bit4 = 1 0000
-      
-      // Time quality bit1
-      if ( ( (inputFlag[i] & (1<<5) ) > 0 )||
-	   ( (inputFlag[i] & (1<<6) ) > 0 ) ) // check bit5 or bit6 => 110 0000    
-	commonFlag[i] |= (1<<1);     // set bit 1 IF bit5 OR bit6 = 1    
-
-      // Special observation bit2
-      if ( ( (inputFlag[i] & (1<<22) ) > 0 ) ) // check bit22 => 10 0000 0000 0000 0000 0000    
-	commonFlag[i] |= (1<<2);     // set bit 1 IF bit22 = 1      
-    }
 }
 
 void mpiError (int rankMPI, int start, int stop)
@@ -311,7 +138,7 @@ double computeMean(vector<double> & input)
 {
   double sum = 0.0;
   double correction = 0.0;
-  
+
   for(size_t index = 0; index < input.size(); ++index)
     {
       double cur_element_corrected = input[index] - correction;
@@ -319,7 +146,7 @@ double computeMean(vector<double> & input)
       correction = (new_sum - sum) - cur_element_corrected;
       sum = new_sum;
     }
-  
+
   return sum/static_cast<double>(input.size());
 }
 
@@ -327,12 +154,12 @@ double computeVariance(vector<double> & input)
 {
   double mean = computeMean(input);
 
-  double sum = 0.0;  
+  double sum = 0.0;
   for(size_t index = 0; index < input.size(); ++index)
     {
       sum += pow((input[index]-mean),2);
     }
-  
+
   return sqrt(sum/static_cast<double>(input.size()));
 }
 
@@ -343,19 +170,19 @@ void invert2_eig (vector<double> & cc)
   gsl_matrix * eigenvectors = gsl_matrix_alloc(2,2);
   gsl_vector * eigenvalues = gsl_vector_alloc(2);
   gsl_eigen_symmv_workspace * work = gsl_eigen_symmv_alloc(2);
-  
+
   // set the matrix elements
   gsl_matrix_set(components, 0, 0, cc[0]);
   gsl_matrix_set(components, 1, 0, cc[1]);
   gsl_matrix_set(components, 0, 1, cc[1]);
   gsl_matrix_set(components, 1, 1, cc[2]);
-  
+
   gsl_eigen_symmv (components, eigenvalues, eigenvectors, work);
-  
+
   gsl_eigen_symmv_free(work);
   gsl_matrix_free(components);
 
-  // Get eigenvalues and eigenvectors  
+  // Get eigenvalues and eigenvectors
   double d0 = gsl_vector_get(eigenvalues,0);
   double d1 = gsl_vector_get(eigenvalues,1);
   double xd0=d0>1.e-30 ? 1./d0 : 0;
@@ -390,29 +217,6 @@ vector<int> sortAndCount(vector<int> & pixels)
   return compressedPixels;
 }
 
-void twiddle (unsigned int &v)
-{
-  for (int i=0; i<9; ++i)
-    {
-      v ^= v<<13;
-      v ^= v>>17;
-      v ^= v<<5;
-    }
-}
-    
-/*! Returns uniformly distributed random integer numbers from the
-  interval [0;0xFFFFFFFF]. */
-unsigned int intRandUniform(unsigned int x, unsigned int y,
-			    unsigned int z, unsigned int w)
-{
-  unsigned int t = x^(x<<11);
-  x = y;
-  y = z;
-  z = w;
-  
-  return w=(w^(w>>19))^(t^(t>>8));
-}
-
 /* Get the Temperature termometer given the horn */
 std::string getTFem (int horn)
 {
@@ -445,15 +249,3 @@ std::string getTFem (int horn)
     }
   return std::string("");
 }
-
-////////////////////////////////////////////////////////////////////////////////
-
-const std::string &
-join_paths(const std::string & a,
-	   const std::string & b)
-{
-    boost::filesystem::path file_path(a);
-    file_path /= b;
-    return file_path.string();
-}
-

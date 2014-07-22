@@ -78,7 +78,8 @@ daCapo::initializeConstraint(bool constraint,
     {
       double theta, phi;
       pix2ang_nest(nSide, pixelIndexFull[idx], &theta, &phi);
-      std::vector<double> cartesianPixel=angToCart(theta, phi);
+      double cartesianPixel[3];
+      angToCart(theta, phi, cartesianPixel);
       constraintMap.push_back(solar_dipole.axis[0] * cartesianPixel[0] + 
 			      solar_dipole.axis[1] * cartesianPixel[1] +
 			      solar_dipole.axis[2] * cartesianPixel[2]);
