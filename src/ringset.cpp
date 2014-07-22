@@ -287,8 +287,8 @@ ringset::getIntensities (const std::vector<double> & theta,
     double sinGamma = -ecl2gal.entry[0][2] / sinBeta;
     double gamma = atan2(sinGamma, cosGamma);
 
-    std::vector<double> result;
-    for (size_t idx = 0; idx < theta.size(); ++idx)
+    std::vector<double> result(theta.size());
+    for (size_t idx = 0; idx < result.size(); ++idx)
     {
 	// Convert ecliptic to galactic
 	double z = -sinBeta * sin(theta[idx]) * sin(phi[idx] - alpha) 
@@ -298,7 +298,7 @@ ringset::getIntensities (const std::vector<double> & theta,
 	    + sinBeta*cos(theta[idx]);
 	double xh = sin(theta[idx]) * cos(phi[idx] - alpha);
 
-	std::vector<double> tmpArr = interpolN (acos(z), atan2(yh,xh) + gamma);
+	std::vector<double> tmpArr(interpolN (acos(z), atan2(yh,xh) + gamma));
 
 	double ys = -cos(phi[idx] - alpha) * sinBeta;
 	double xs = sin(theta[idx]) * cosBeta 
@@ -306,9 +306,8 @@ ringset::getIntensities (const std::vector<double> & theta,
 	double omegaWg = psi[idx] + atan2(ys,xs) - HALFPI;
 
 	// * 2 Multiplication because of LevelS SCR 234
-	result.push_back(interpolPsi (omegaWg, tmpArr) * 2);
+	result[idx] = interpolPsi (omegaWg, tmpArr) * 2;
     }
 
     return result;
 }
-
