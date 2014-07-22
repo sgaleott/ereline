@@ -1,6 +1,7 @@
 #include "dipole_parameters.hpp"
 #include "configuration.hpp"
 #include <cmath>
+#include <boost/format.hpp>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -17,6 +18,17 @@ Dipole_parameters_t::Dipole_parameters_t(double ecl_dir_theta,
 
     for(int i = 0; i < 3; ++i)
 	solar_velocity[i] = axis[i] * solar_speed;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+std::ostream &
+operator<<(std::ostream & os, Dipole_parameters_t const & yt)
+{
+    os << boost::format("Dipole(axis=[%.3f, %.3f, %.3f], speed=%.4e m/s, T=$.4 K)")
+	% yt.axis[0] % yt.axis[1] % yt.axis[2]
+	% yt.solar_speed
+	% yt.monopole;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
