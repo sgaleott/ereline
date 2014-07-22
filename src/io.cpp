@@ -155,6 +155,9 @@ void save_tod(const std::string & file_name,
 	      const DifferencedData & datadiff,
 	      const std::string & comment)
 {
+    Logger * log = Logger::get_instance();
+    log->info(boost::format("Going to write a TOD into %1%") % file_name);
+
     FitsObject tod_file;
     tod_file.create(file_name, true);
 
