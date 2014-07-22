@@ -125,7 +125,7 @@ PlanckVelocity::convolvedDipole (const std::vector<double> & velocity,
     (M110*x3+M020*y3+M011*z3)*y3+
     (M101*x3+M011*y3+M002*z3)*z3;
 
-  double totalDipole = scalarProduct+relativisticCorrection;
+  double totalDipole = scalarProduct + relativisticCorrection;
   return totalDipole * dipole_params.monopole;
 }
 
@@ -134,7 +134,7 @@ PlanckVelocity::getConvolvedDipole(double scetTime, double theta, double phi, do
 {  
   // Compute velocity versor
   const std::vector<double> vSatAbsolute = getAbsoluteVelocity(scetTime);
-  return convolvedDipole (vSatAbsolute,theta,phi,psi);
+  return convolvedDipole (vSatAbsolute, theta, phi, psi);
 }
 
 std::vector<double> 
@@ -143,11 +143,12 @@ PlanckVelocity::getConvolvedDipole(const std::vector<double> & scetTime,
 				   const std::vector<double> & phi, 
 				   const std::vector<double> & psi) const
 {
-  std::vector<double> local_dipole;
-  for (size_t idx=0; idx<scetTime.size(); ++idx)
+  std::vector<double> local_dipole(scetTime.size());
+  for (size_t idx = 0; idx < local_dipole.size(); ++idx)
     {
       std::vector<double> vSatAbsolute = getAbsoluteVelocity(scetTime[idx]);
-      local_dipole.push_back(convolvedDipole(vSatAbsolute,theta[idx],phi[idx],psi[idx]));
+      local_dipole[idx] = convolvedDipole(vSatAbsolute, theta[idx], phi[idx], psi[idx]);
     }
+
   return local_dipole;
 }
