@@ -17,6 +17,28 @@ class SQLite3Connection;
 class gainTable;
 class LfiRadiometer;
 
+////////////////////////////////////////////////////////////////////////////////
+
+/* This function returns its argument. Additionally, assuming that
+ * "path" is a valid POSIX path, it creates any directory which does
+ * not exist but is referred by "path".
+ *
+ * Example:
+ *
+ *     std::cout << ensure_path_exists("/usr/lib/my/test/dir/file.txt");
+ *
+ * Output:
+ *
+ *     /usr/lib/my/test/dir/file.txt
+ *
+ * Moreover, if the directory /usr/lib/my/test/dir/ or any of its
+ * parents does not exist, it will be silently created.
+ */
+const std::string &
+ensure_path_exists(const std::string & path);
+
+////////////////////////////////////////////////////////////////////////////////
+
 template<typename T>
 void load_map(const std::string & file_name, 
 	      int column, 

@@ -7,7 +7,25 @@
 #include "sqlite3xx.hpp"
 
 #include <sstream>
+#include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+
+////////////////////////////////////////////////////////////////////////////////
+
+const std::string &
+ensure_path_exists(const std::string & path)
+{
+    boost::filesystem::path p(path);
+    boost::filesystem::path dirname = p.parent_path();
+
+    boost::system::error_code err;
+    boost::filesystem::create_directories(dirname, err);
+    if(err.value() != 0) {
+	throw std::runtime_error(err.message());
+    }
+
+    return path;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,7 +47,7 @@ loadConvolutionParametersFromUCDS(SQLite3Connection & ucds,
 
     int result = statement.step();
     if(result != SQLITE_ROW) {
-	auto error_msg = 
+	auto error_msg =
 	    boost::format("No match for radiometer %1% in the "
 			  "UCDS table \"convolved_dipole\" (error code: %2%)")
 	    % radiometer.shortName()
@@ -95,7 +113,7 @@ loadPointingInformation(SQLite3Connection & db,
     query << "\n\tSELECT pointingID, start_pointing, start_time, end_time, "
 	  << "\n\t       spin_ecl_lon, spin_ecl_lat, od_int"
 	  << "\n\t  FROM pointings"
-	  << "\n\t WHERE od_int >= " << first_od 
+	  << "\n\t WHERE od_int >= " << first_od
 	  << "\n\t   AND od_int <= " << last_od
 	  << "\n\t";
 

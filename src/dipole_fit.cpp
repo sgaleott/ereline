@@ -378,6 +378,7 @@ datadiff_file_path(const Configuration & storage_conf)
 static std::vector<dipoleFit>
 process_one_od(const Configuration & program_conf,
 	       const Configuration & storage_conf,
+	       const LfiRadiometer & radiometer,
 	       int od,
 	       const Healpix::Map_t<float> & mask,
 	       const ringset & galactic_pickup,
@@ -418,12 +419,40 @@ process_one_od(const Configuration & program_conf,
 	galactic_pickup.getIntensities(pointings.theta,
 				       pointings.phi,
 				       pointings.psi));
+    if(program_conf.get<bool>("dipole_fit.debug")) {
+	std::string file_path = 
+	    (boost::format("%s/dipole_fit/tods/sidelobes/%s_sidelobes_OD%04d.fits")
+	     % program_conf.getWithSubst("common.base_output_dir")
+	     % radiometer.shortName()
+	     % od)
+	    .str();
+	DifferencedData galactic_datadiff;
+	galactic_datadiff.obt_time = datadiff.obt_time;
+	galactic_datadiff.scet_time = datadiff.scet_time;
+	galactic_datadiff.sky_load = sidelobes;
+	galactic_datadiff.flags = datadiff.flags;
+	save_tod(ensure_path_exists(file_path), od, radiometer, galactic_datadiff);
+    }
 
     std::vector<double> convolved_dipole(
 	planck_velocity.getConvolvedDipole(datadiff.scet_time,
 					   pointings.theta,
 					   pointings.phi,
 					   pointings.psi));
+    if(program_conf.get<bool>("dipole_fit.debug")) {
+	std::string file_path = 
+	    (boost::format("%s/dipole_fit/tods/dipole/%s_dipole_OD%04d.fits")
+	     % program_conf.getWithSubst("common.base_output_dir")
+	     % radiometer.shortName()
+	     % od)
+	    .str();
+	DifferencedData dipole_datadiff;
+	dipole_datadiff.obt_time = datadiff.obt_time;
+	dipole_datadiff.scet_time = datadiff.scet_time;
+	dipole_datadiff.sky_load = convolved_dipole;
+	dipole_datadiff.flags = datadiff.flags;
+	save_tod(ensure_path_exists(file_path), od, radiometer, dipole_datadiff);
+    }
 
     // Loop over each pointing period that belongs to the current OD
     std::vector<dipoleFit> fits;
@@ -526,7 +555,7 @@ run_dipole_fit(const LfiRadiometer & rad,
 	// Determine the extents of each pointings within this OD
 	try {
 	    auto od_fits =
-		process_one_od(program_conf, storage_conf, od,
+		process_one_od(program_conf, storage_conf, rad, od,
 			       mask, galactic_pickup, planck_velocity,
 			       Range_t<std::vector<Pointing_t>::const_iterator> { first_pid, last_pid });
 	    if(od_fits.empty()) {
