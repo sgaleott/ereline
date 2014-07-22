@@ -34,17 +34,11 @@ struct gainTable
 
   gainTable();
 
-  std::vector<int> & getPids();
-  std::vector<double> & getGains();
-  std::vector<double> & getOffsets();
-  std::vector<int> & getWindowVector();
-  double getGainValue (int index);
-  double getOffsetValue (int index);
   int getPidIndex (int pid);
 
-  void setPidValue (int a_pid);
-  void setGainValue (double a_gain);
-  void setOffsetValue (double a_offset);
+  void appendPidValue (int a_pid);
+  void appendGainValue (double a_gain);
+  void appendOffsetValue (double a_offset);
   void setWindowVector (std::vector<int> & a_windowVector);
 
   void mergeResults();

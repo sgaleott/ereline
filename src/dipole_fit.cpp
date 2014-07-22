@@ -162,75 +162,9 @@ dipoleFit::fit(const std::vector<double> & data,
 }
 
 void
-dipoleFit::setGainV(double a_gainv)
-{
-  gainv=a_gainv;
-}
- 
-void
-dipoleFit::setOffset(double a_offset)
-{
-  offset=a_offset;
-}
-
-void
 dipoleFit::setPixSumDipole(const std::vector<float> & inpArr)
 {
   pixSumDipole = inpArr;
-}
-
-double 
-dipoleFit::getGainV() const
-{
-  return gainv;
-}
-
-double 
-dipoleFit::getGain() const
-{
-  return 1./gainv;
-}
- 
-double 
-dipoleFit::getOffset() const
-{
-  return offset;
-}
-
-int 
-dipoleFit::getPointingID() const
-{
-  return pointingID;
-}
- 
-int 
-dipoleFit::getNSide() const
-{
-  return nSide;
-}
-
-const std::vector<int> & 
-dipoleFit::getPixIndex() const
-{
-  return pixIndex;
-}
-
-const std::vector<double> & 
-dipoleFit::getPixSumData() const
-{
-  return pixSumData;
-}
-
-const std::vector<int> & 
-dipoleFit::getPixSumHits() const
-{
-  return pixSumHits;
-}
-
-const std::vector<float> & 
-dipoleFit::getPixSumDipole() const
-{
-  return pixSumDipole;
 }
 
 double 

@@ -15,30 +15,6 @@ gainTable::gainTable()
 {
 }
 
-std::vector<int> & 
-gainTable::getPids()
-{
-  return pointingIds;
-}
-
-std::vector<double> & 
-gainTable::getGains()
-{
-  return gain;
-}
-
-std::vector<double> & 
-gainTable::getOffsets()
-{
-  return offset;
-}
-
-std::vector<int> & 
-gainTable::getWindowVector()
-{
-  return windowVector;
-}
-
 int
 gainTable::getPidIndex (int pid)
 {
@@ -46,32 +22,20 @@ gainTable::getPidIndex (int pid)
   return res;
 }
 
-double 
-gainTable::getGainValue (int index)
-{
-  return gain[index];
-}
-
-double 
-gainTable::getOffsetValue (int index)
-{
-  return offset[index];
-}
-
 void 
-gainTable::setPidValue (int a_pid)
+gainTable::appendPidValue (int a_pid)
 {
   pointingIds.push_back(a_pid);
 }
 
 void 
-gainTable::setGainValue (double a_gain)
+gainTable::appendGainValue (double a_gain)
 {
   gain.push_back(a_gain);
 }
 
 void 
-gainTable::setOffsetValue (double a_offset)
+gainTable::appendOffsetValue (double a_offset)
 {
   offset.push_back(a_offset);
 }

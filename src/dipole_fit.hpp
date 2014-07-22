@@ -48,21 +48,7 @@ struct dipoleFit
 	     const std::vector<float> & maskMap, 
 	     const std::vector<double> & sidelobes);
 
-    void setGainV(double a_gainv);
-    void setOffset(double a_offset);
     void setPixSumDipole(const std::vector<float> & inpArr);
-
-    double getGainV() const;
-    double getGain() const;
-    double getOffset() const;
-
-    int getPointingID() const;
-    int getNSide() const;
-
-    const std::vector<int> & getPixIndex() const;
-    const std::vector<double> & getPixSumData() const;
-    const std::vector<int> & getPixSumHits() const;
-    const std::vector<float> & getPixSumDipole() const;
 
     double getDipoleVariance() const;
     double getMaxDipole() const;
