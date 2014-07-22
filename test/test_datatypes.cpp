@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(pointings)
     pointings.phi = std::vector<double> { 201., 202., 203., 204., 205. };
     pointings.psi = std::vector<double> { 301., 302., 303., 304., 305. };
 
-    const PointingData subset(pointings, 2, 4);
+    const PointingData subset(pointings, Range_t<size_t> {2, 4});
 
     PointingData expected;
     expected.obt_time = std::vector<uint64_t> { 2, 3, 4 };
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(datadiff)
     datadiff.sky_load = std::vector<double> { 101., 102., 103., 104., 105. };
     datadiff.flags = std::vector<uint32_t> { 201, 202, 203, 204, 205 };
 
-    const DifferencedData subset(datadiff, 2, 4);
+    const DifferencedData subset(datadiff, Range_t<size_t> {2, 4});
 
     DifferencedData expected;
     expected.obt_time = std::vector<uint64_t> { 2, 3, 4 };

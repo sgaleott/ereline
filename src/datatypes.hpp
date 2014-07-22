@@ -83,8 +83,7 @@ struct PointingData {
 
     PointingData() {}
     PointingData(const PointingData & obj, 
-		 uint64_t first_time, 
-		 uint64_t last_time);
+		 Range_t<uint64_t> obt_range);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -97,8 +96,13 @@ struct DifferencedData {
 
     DifferencedData() {}
     DifferencedData(const DifferencedData & obj, 
-		    uint64_t first_time, 
-		    uint64_t last_time);
+		    Range_t<uint64_t> obt_range);
 };
+
+////////////////////////////////////////////////////////////////////////////////
+
+Range_t<size_t>
+find_boundaries_in_obt_times(const std::vector<uint64_t> & source,
+			     Range_t<uint64_t> obt_range);
 
 #endif

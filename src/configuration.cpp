@@ -12,6 +12,7 @@ void
 init_fallbacks(std::map<std::string, std::string> & ass)
 {
     ass["dipole_fit.input_tod"] = "apply_r.output_tod";
+    ass["da_capo.solar_dipole"] = "dipole_fit.solar_dipole";
     ass["da_capo.input_gains"] = "dipole_fit.output_gains";
     ass["smooth_gains.input_gains"] = "da_capo.output_gains";
 }

@@ -1,11 +1,17 @@
 #include <cmath>
 
 #include "planck_velocity.hpp"
+#include "configuration.hpp"
+#include "dipole_parameters.hpp"
 #include "rotmatrix.hpp"
 #include "fits_object.hpp"
 
+////////////////////////////////////////////////////////////////////////////////
+
 // Open object and read velocities
-PlanckVelocity::PlanckVelocity (const std::string & file_name)
+PlanckVelocity::PlanckVelocity (const std::string & file_name,
+				const Dipole_parameters_t & a_dipole_params)
+    : dipole_params(a_dipole_params)
 {
     FitsObject velocityFile;
     velocityFile.openTable(file_name);
@@ -17,22 +23,6 @@ PlanckVelocity::PlanckVelocity (const std::string & file_name)
     velocityFile.getColumn("XVEL", xvel, 1, numOfRows);
     velocityFile.getColumn("YVEL", yvel, 1, numOfRows);
     velocityFile.getColumn("ZVEL", zvel, 1, numOfRows);
-
-    // Initialize common variables
-    std::vector<double> SOLSYSDIR_V=angToCart(SOLSYSDIR_ECL_THETA, SOLSYSDIR_ECL_PHI);
-    vSolSys.push_back(SOLSYSDIR_V[0]*SOLSYSSPEED);
-    vSolSys.push_back(SOLSYSDIR_V[1]*SOLSYSSPEED);
-    vSolSys.push_back(SOLSYSDIR_V[2]*SOLSYSSPEED);
-}
-
-// Initialize V SolSys only
-PlanckVelocity::PlanckVelocity ()
-{
-  // Initialize common variables
-  std::vector<double> SOLSYSDIR_V=angToCart(SOLSYSDIR_ECL_THETA, SOLSYSDIR_ECL_PHI);
-  vSolSys.push_back(SOLSYSDIR_V[0]*SOLSYSSPEED);
-  vSolSys.push_back(SOLSYSDIR_V[1]*SOLSYSSPEED);
-  vSolSys.push_back(SOLSYSDIR_V[2]*SOLSYSSPEED);
 }
 
 // Return velocity at given SCET
@@ -64,9 +54,8 @@ PlanckVelocity::getAbsoluteVelocity(double scetTime) const
   std::vector<double> vSat = getVelocity(scetTime);
 
   // Add the solar system velocity
-  vSat[0] += vSolSys[0];
-  vSat[1] += vSolSys[1];
-  vSat[2] += vSolSys[2];
+  for(int i = 0; i < 3; ++i)
+      vSat[i] += dipole_params.solar_velocity[i];
   
   return vSat;
 }
@@ -94,8 +83,7 @@ PlanckVelocity::dipole(const std::vector<double> & velocity,
 		   velocity_versor[1]*detDir[1] +
 		   velocity_versor[2]*detDir[2]);
   
-  return (1./(gamma*(1. - beta*cosDir )) -1.)*TCMB;
-  //return cosDir*TCMB*beta;
+  return (1./(gamma*(1. - beta*cosDir )) -1.) * dipole_params.monopole;
 }
 
 double 
@@ -129,7 +117,7 @@ PlanckVelocity::convolvedDipole (const std::vector<double> & velocity,
     (M101*x3+M011*y3+M002*z3)*z3;
 
   double totalDipole = scalarProduct+relativisticCorrection;
-  return totalDipole*TCMB;
+  return totalDipole * dipole_params.monopole;
 }
 
 double 

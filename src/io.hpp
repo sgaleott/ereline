@@ -60,12 +60,6 @@ void loadConvolutionParametersFromUCDS(SQLite3Connection & ucds,
 				       const LfiRadiometer & radiometer,
 				       PlanckVelocity & vel);
 
-void saveGainTable(const std::string & file_name,
-		   signed short od,
-		   const LfiRadiometer & radiometer,
-		   const gainTable & gain_table,
-		   const std::string & comment = "");
-
 void loadPointingInformation(SQLite3Connection & ucds,
 			     int first_od,
 			     int last_od,
@@ -76,5 +70,16 @@ void loadPointingInformation(SQLite3Connection & ucds,
 			     int od,
 			     std::vector<Pointing_t> & pointings);
 
+void saveGainTable(const std::string & file_name,
+		   signed short od,
+		   const LfiRadiometer & radiometer,
+		   const gainTable & gain_table,
+		   const std::string & comment = "");
+
+void save_tod(const std::string & file_name,
+	      signed short od,
+	      const LfiRadiometer & radiometer,
+	      const DifferencedData & datadiff,
+	      const std::string & comment = "");
 
 #endif

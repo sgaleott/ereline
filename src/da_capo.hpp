@@ -6,6 +6,8 @@
 
 #include "dipole_fit.hpp"
 
+struct Dipole_parameters_t;
+
 //Class for holding a set of 4 baseline vectors,
 //two of which represent the usual destriping baselines, and the remaining two the gain.
 class basevec
@@ -102,7 +104,8 @@ class daCapo
   std::vector<int> pixelIndexFullMap;
   std::vector<int> sendcnt;
 
-  void initializeConstraint(bool constraint);
+  void initializeConstraint(bool constraint, 
+			    const Dipole_parameters_t & solar_dipole);
   void initializeConstraint(std::vector<double> & constraint);
   void initializeLocmap(const std::vector<dipoleFit> & binnedData);
   void initializeFullmap();
@@ -110,7 +113,8 @@ class daCapo
 		 const std::vector<float> & mask);
 
  public:
-  daCapo(std::vector<dipoleFit> & binnedData, std::vector<float> & mask, bool constraint);
+  daCapo(std::vector<dipoleFit> & binnedData, std::vector<float> & mask, bool constraint,
+	 const Dipole_parameters_t & dipole_params);
   daCapo (std::vector<dipoleFit> & binnedData, std::vector<float> & mask, std::vector<double> & constraint);
 
   void constructCCmatrix(const std::vector<dipoleFit> & binnedData);

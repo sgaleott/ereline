@@ -36,7 +36,7 @@ struct dipoleFit
 		 const std::vector<double> & theta, 
 		 const std::vector<double> & phi, 
 		 const std::vector<double> & dipole,
-		 const std::vector<size_t> & pidRange, 
+		 const Range_t<size_t> & index_range, 
 		 const std::vector<double> & sidelobes);
     bool fitData(const std::vector<float> & maskMap);
     bool fit(const std::vector<double> & data, 
@@ -44,7 +44,7 @@ struct dipoleFit
 	     const std::vector<double> & theta, 
 	     const std::vector<double> & phi, 
 	     const std::vector<double> & dipole,
-	     const std::vector<size_t> & pidRange, 
+	     const Range_t<size_t> & index_range, 
 	     const std::vector<float> & maskMap, 
 	     const std::vector<double> & sidelobes);
 

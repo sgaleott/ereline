@@ -113,37 +113,38 @@ LfiRadiometer LfiRadiometer::twinRadiometer() const
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static Range_t<long>
+Range_t<size_t>
 find_boundaries_in_obt_times(const std::vector<uint64_t> & source,
-			     uint64_t first_time, 
-			     uint64_t last_time,
-			     std::vector<uint64_t> & dest)
+			     Range_t<uint64_t> obt_range)
 {
     const auto first_element = std::lower_bound(source.begin(),
 						source.end(),
-						first_time);
-    auto last_element = std::upper_bound(source.begin(),
-					 source.end(),
-					 last_time);
+						obt_range.start);
+    const auto last_element = std::upper_bound(source.begin(),
+					       source.end(),
+					       obt_range.end);
 
-    dest.assign(first_element, last_element);
+    Range_t<size_t> result { 0, source.size() - 1 };
 
-    return Range_t<long> {
-	std::distance(source.begin(), first_element),
-        std::distance(source.begin(), last_element) };
+    if(first_element != source.end())
+	result.start = std::distance(source.begin(), first_element);
+
+    if(last_element != source.end())
+	result.end = std::distance(source.begin(), last_element);
+
+    return result;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 PointingData::PointingData(const PointingData & obj, 
-			   uint64_t first_time, 
-			   uint64_t last_time)
+			   Range_t<uint64_t> obt_range)
 {
-    const Range_t<long> index(find_boundaries_in_obt_times(obj.obt_time,
-							   first_time,
-							   last_time,
-							   obt_time));
+    const Range_t<size_t> index(
+	find_boundaries_in_obt_times(obj.obt_time, obt_range));
 
+    obt_time.assign(obj.obt_time.begin() + index.start, 
+		    obj.obt_time.begin() + index.end);
     scet_time.assign(obj.scet_time.begin() + index.start, 
 		     obj.scet_time.begin() + index.end);
     theta.assign(obj.theta.begin() + index.start, 
@@ -157,14 +158,13 @@ PointingData::PointingData(const PointingData & obj,
 ////////////////////////////////////////////////////////////////////////////////
 
 DifferencedData::DifferencedData(const DifferencedData & obj, 
-				 uint64_t first_time, 
-				 uint64_t last_time)
+				 Range_t<uint64_t> obt_range)
 {
-    const Range_t<long> index(find_boundaries_in_obt_times(obj.obt_time,
-							   first_time,
-							   last_time,
-							   obt_time));
+    const Range_t<size_t> index(
+	find_boundaries_in_obt_times(obj.obt_time, obt_range));
 
+    obt_time.assign(obj.obt_time.begin() + index.start, 
+		    obj.obt_time.begin() + index.end);
     scet_time.assign(obj.scet_time.begin() + index.start, 
 		     obj.scet_time.begin() + index.end);
     sky_load.assign(obj.sky_load.begin() + index.start, 

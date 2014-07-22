@@ -8,6 +8,7 @@ dx11d_pipeline_SOURCES = \
 	logging.cpp \
 	configuration.cpp \
 	ahf_info.cpp \
+	dipole_parameters.cpp \
 	mpi_processes.cpp \
 	rotmatrix.cpp \
 	planck_velocity.cpp \

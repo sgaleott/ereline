@@ -6,9 +6,9 @@
 
 struct Pointing_t {
     int id;
-    double start_pointing;
-    double start_time;
-    double end_time;
+    uint64_t start_pointing;
+    uint64_t start_time;
+    uint64_t end_time;
     double spin_ecl_lon;
     double spin_ecl_lat;
     int od;

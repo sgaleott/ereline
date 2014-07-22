@@ -29,18 +29,19 @@
 
     "dipole_fit": {
 	"run": true,
-	"monopole_K_CMB": 2.725,
+	"monopole_K_CMB": 2.72548,
 	"solar_dipole": {
-	    "theta_ecl_rad": 1.765248346,
-	    "phi_ecl_rad": 2.995840906,
-	    "speed_m_s": 369000.0
+	    "theta_ecl_rad": 1.7656131194951572,
+	    "phi_ecl_rad": 2.995889600573578,
+	    "speed_m_s": 370082.2332
 	},
 	"quality_flag": 6111248,
 	"galactic_pickup": "/datastor/tomasi/ringsets/ringset_LFI{horn}{arm}_{od}.fits",
 	"total_convolve_order": 9,
 	"mask": "/datastor/tomasi/maps/mask_70GHz.fits.gz",
 	"output_gains": "{common.base_output_dir}/gains/LFI{horn}{arm}_{od}_gains.fits",
-	"output_fit": "{common.base_output_dir}/gains/LFI{horn}{arm}_{od}_fit.fits"
+	"output_fit": "{common.base_output_dir}/gains/LFI{horn}{arm}_{od}_fit.fits",
+	"debug": true
     },
 
     "da_capo": {

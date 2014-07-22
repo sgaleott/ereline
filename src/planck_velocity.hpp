@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "dipole_parameters.hpp"
+
 struct PlanckVelocity
 {
   double M100;
@@ -23,12 +25,12 @@ struct PlanckVelocity
   double M011;
   double M002;
 
+  Dipole_parameters_t dipole_params;
+
   std::vector<double> scet;
   std::vector<double> xvel;
   std::vector<double> yvel;
   std::vector<double> zvel;
-
-  std::vector<double> vSolSys;
 
   double dipole(const std::vector<double> & velocity, 
 		double theta, 
@@ -38,8 +40,8 @@ struct PlanckVelocity
 			 double phi, 
 			 double psi) const;
 
-  PlanckVelocity (const std::string & file_name);
-  PlanckVelocity ();
+  PlanckVelocity (const std::string & file_name, 
+		  const Dipole_parameters_t & a_dipole_params);
 
   std::vector<double> getVelocity (double scetTime) const;
   std::vector<double> getAbsoluteVelocity(double scetTime) const;

@@ -128,3 +128,34 @@ loadPointingInformation(SQLite3Connection & ucds,
 {
     loadPointingInformation(ucds, od, od, pointings);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+void save_tod(const std::string & file_name,
+	      signed short od,
+	      const LfiRadiometer & radiometer,
+	      const DifferencedData & datadiff,
+	      const std::string & comment)
+{
+    FitsObject tod_file;
+    tod_file.create(file_name, true);
+
+    std::vector<fitscolumn> columns {
+	{ "OBT", "", fitsTypeC<double>(), 1 },
+	{ "SCET", "", fitsTypeC<double>(), 1 },
+	{ "SKYLOAD", "", fitsTypeC<double>(), 1 },
+	{ "FLAGS", "", fitsTypeC<int>(), 1 } };
+    tod_file.insertBINtable(columns, radiometer.shortName());
+    tod_file.writeColumn(1, datadiff.obt_time);
+    tod_file.writeColumn(2, datadiff.scet_time);
+    tod_file.writeColumn(3, datadiff.sky_load);
+    tod_file.writeColumn(4, datadiff.flags);
+
+    tod_file.setKey("HORN", radiometer.horn);
+    tod_file.setKey("RAD", radiometer.radiometer);
+    tod_file.setKey("OD", od);
+
+    if(! comment.empty()) {
+	tod_file.setComment(comment);
+    }
+}

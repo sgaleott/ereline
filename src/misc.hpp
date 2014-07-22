@@ -16,35 +16,10 @@ typedef unsigned int uint;
 typedef signed long long int64;
 typedef unsigned long long uint64;
 
-// Colatitude of the solar system motion relative to CMB
-// (ecliptical coordinates).
-//const double SOLSYSDIR_ECL_THETA=1.765248346;
-
-// Longitude of the solar system motion relative to CMB
-// (ecliptical coordinates).
-//const double SOLSYSDIR_ECL_PHI=2.995840906;
-
-// Speed of the solar system motion relative to CMB in m/s.
-//const double SOLSYSSPEED=369000.0;
-
-/*************************LFI VALUES*****************************/
-
-// Colatitude min= / max=
-const double SOLSYSDIR_ECL_THETA=1.7656131194951572;
-
-// Longitude min= / max=
-const double SOLSYSDIR_ECL_PHI=2.995889600573578;
-
-// Solar system speed +/- 2
-const double SOLSYSSPEED=370082.2332;
-
 /****************************************************************/
 
 // Light speed in m/s (CODATA 2006)
 const double SPEED_OF_LIGHT=2.99792458e8;
-
-// Average CMB temperature in K (Fixsen, D. J. 1999, Volume 707, Issue 2, pp. 916-920 (2009))
-const double TCMB = 2.72548;
 
 // Boltzmann's constant in J/K (CODATA 2006)
 const double K_BOLTZMAN=1.3806504e-23;

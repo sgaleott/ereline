@@ -46,7 +46,7 @@ dipoleFit::binData(const std::vector<double> & data,
 		   const std::vector<double> & theta, 
 		   const std::vector<double> & phi, 
 		   const std::vector<double> & dipole, 
-		   const std::vector<size_t> & pidRange, 
+		   const Range_t<size_t> & index_range, 
 		   const std::vector<double> & sidelobes)
 {
   const int numPixs=12*nSide*nSide;
@@ -56,7 +56,7 @@ dipoleFit::binData(const std::vector<double> & data,
   std::vector<double> tmpDipoleConstraint (numPixs,0);
 
   // bin the samples and calculate the "binned" dipole
-  for (size_t sampleNum = pidRange[0]; sampleNum <= pidRange[1]; sampleNum++)
+  for (size_t sampleNum = index_range.start; sampleNum <= index_range.end; sampleNum++)
     {
       // select "good" samples
       if ((flag[sampleNum]&qualityFlag) == 0) 
@@ -143,11 +143,11 @@ dipoleFit::fit(const std::vector<double> & data,
 	       const std::vector<double> & theta, 
 	       const std::vector<double> & phi, 
 	       const std::vector<double> & dipole, 
-	       const std::vector<size_t> & pidRange, 
+	       const Range_t<size_t> & index_range, 
 	       const std::vector<float> & maskMap, 
 	       const std::vector<double> & sidelobes)
 {
-  if (binData(data, flag, theta, phi, dipole, pidRange, sidelobes))
+  if (binData(data, flag, theta, phi, dipole, index_range, sidelobes))
     return fitData(maskMap);
 
   return false;
@@ -414,6 +414,17 @@ process_one_od(const Configuration & program_conf,
 	       % pointings.obt_time.front()
 	       % pointings.obt_time.back());
 
+    std::vector<double> sidelobes(
+	galactic_pickup.getIntensities(pointings.theta,
+				       pointings.phi,
+				       pointings.psi));
+
+    std::vector<double> convolved_dipole(
+	planck_velocity.getConvolvedDipole(datadiff.scet_time,
+					   pointings.theta,
+					   pointings.phi,
+					   pointings.psi));
+
     // Loop over each pointing period that belongs to the current OD
     std::vector<dipoleFit> fits;
     for(auto cur_pid = pid_range.start; 
@@ -429,34 +440,18 @@ process_one_od(const Configuration & program_conf,
 		   % cur_pid->start_time
 		   % cur_pid->end_time);
 
-	PointingData pid_pointings(pointings, 
-				   cur_pid->start_time, cur_pid->end_time);
-	DifferencedData pid_datadiff(datadiff, 
-				     cur_pid->start_time, cur_pid->end_time);
-
-	if(pid_pointings.obt_time.empty()) {
-	    log->info("No data for this pointing, skipping it");
-	    continue;
-	}
-
-	std::vector<double> sidelobes(
-	    galactic_pickup.getIntensities(pid_pointings.theta,
-					   pid_pointings.phi,
-					   pid_pointings.psi));
-
-	std::vector<double> convolved_dipole(
-	    planck_velocity.getConvolvedDipole(pid_datadiff.scet_time,
-					       pid_pointings.theta,
-					       pid_pointings.phi,
-					       pid_pointings.psi));
+	const Range_t<uint64_t> obt_range { 
+	    cur_pid->start_time, cur_pid->end_time };
+	auto idx_range =
+	    find_boundaries_in_obt_times(pointings.obt_time, obt_range);
 
 	dipoleFit fitter(quality_flag, mask.nside, cur_pid->id);
-	if(fitter.fit(pid_datadiff.sky_load,
-		      pid_datadiff.flags,
-		      pid_pointings.theta,
-		      pid_pointings.phi,
+	if(fitter.fit(datadiff.sky_load,
+		      datadiff.flags,
+		      pointings.theta,
+		      pointings.phi,
 		      convolved_dipole,
-		      std::vector<size_t> { 0, pid_datadiff.sky_load.size() - 1 },
+		      idx_range,
 		      mask.pixels,
 		      sidelobes))
 	    fits.push_back(fitter);
@@ -477,8 +472,15 @@ run_dipole_fit(const LfiRadiometer & rad,
     const int mpi_size = MPI::COMM_WORLD.Get_size();
     const int mpi_rank = MPI::COMM_WORLD.Get_rank();
 
+    if(! program_conf.get<bool>("dipole_fit.run")) {
+	log->info("dipoleFit will not be run");
+	return;
+    }
+
     log->info("Starting module dipoleFit");
     log->increase_indent();
+
+    const bool debug_flag = program_conf.get<bool>("dipole_fit.debug");
 
     LfiRadiometer real_radiometer(
 	radiometer_to_use(mpi_rank, rad, program_conf, storage_conf));
@@ -491,7 +493,8 @@ run_dipole_fit(const LfiRadiometer & rad,
 			    program_conf.get<int>("dipole_fit.total_convolve_order"),
 			    false);
 
-    PlanckVelocity planck_velocity(storage_conf.getWithSubst("spacecraft_velocity_file"));
+    PlanckVelocity planck_velocity(storage_conf.getWithSubst("spacecraft_velocity_file"),
+				   read_dipole_fit_params(program_conf));
 
     auto data_range(get_local_data_range(mpi_rank, mpi_size, list_of_pointings));
     std::vector<Pointing_t>::const_iterator first_pid, last_pid;
@@ -513,6 +516,7 @@ run_dipole_fit(const LfiRadiometer & rad,
      * each step loads data one OD long; the second loop iterates over
      * the subset of pointing periods falling within the OD. The inner
      * loop is implemented within the function "process_one_od". */
+    std::vector<dipoleFit> fits;
     for(int od = data_range.od_range.start; od <= data_range.od_range.end; ++od) {
 	log->info(boost::format("Processing OD %1%") % od);
 
@@ -521,16 +525,18 @@ run_dipole_fit(const LfiRadiometer & rad,
 
 	// Determine the extents of each pointings within this OD
 	try {
-	    auto fits =
+	    auto od_fits =
 		process_one_od(program_conf, storage_conf, od,
 			       mask, galactic_pickup, planck_velocity,
 			       Range_t<std::vector<Pointing_t>::const_iterator> { first_pid, last_pid });
-	    if(fits.empty()) {
+	    if(od_fits.empty()) {
 		log->warning(boost::format("No fits between dipole and TODs "
 					   "found, skipping OD %1%")
 			     % od);
 		continue;
 	    }
+
+	    fits.insert(fits.end(), od_fits.begin(), od_fits.end());
 	}
 	catch(std::runtime_error & exc) {
 	    log->error(boost::format("Error: %1%. Skipping OD %2%")

@@ -39,6 +39,8 @@ template<> inline int fitsType <int16>  () { return TSHORT;    }
 template<> inline int fitsType <uint16> () { return TUSHORT;   }
 template<> inline int fitsType <int>    () { return TINT;      }
 template<> inline int fitsType <uint>   () { return TUINT;     }
+template<> inline int fitsType <long>  () { return TLONG;    }
+template<> inline int fitsType <unsigned long> () { return TULONG;   }
 template<> inline int fitsType <int64>  () { return TLONGLONG; }
 template<> inline int fitsType <uint64> () { return TLONGLONG; }
 template<> inline int fitsType <float>  () { return TFLOAT;    }
@@ -53,6 +55,8 @@ template<> inline std::string fitsTypeC <int16>  () { return "I"; }
 template<> inline std::string fitsTypeC <uint16> () { return "U"; }
 template<> inline std::string fitsTypeC <int>    () { return "J"; }
 template<> inline std::string fitsTypeC <uint>   () { return "V"; }
+template<> inline std::string fitsTypeC <long>    () { return "K"; }
+template<> inline std::string fitsTypeC <unsigned long>   () { return "K"; }
 template<> inline std::string fitsTypeC <int64>  () { return "K"; }
 template<> inline std::string fitsTypeC <uint64> () { return "K"; }
 template<> inline std::string fitsTypeC <float>  () { return "E"; }

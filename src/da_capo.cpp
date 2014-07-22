@@ -20,7 +20,8 @@ extern "C" {
  **/
 daCapo::daCapo(std::vector<dipoleFit> & binnedData, 
 	       std::vector<float> & mask, 
-	       bool constraint)
+	       bool constraint,
+	       const Dipole_parameters_t & dipole_params)
 {
   sizeMPI = MPI::COMM_WORLD.Get_size();
   rankMPI = MPI::COMM_WORLD.Get_rank();
@@ -32,7 +33,7 @@ daCapo::daCapo(std::vector<dipoleFit> & binnedData,
   initializeLocmap(binnedData);
   initializeFullmap();
   applyMask(binnedData, mask);
-  initializeConstraint(constraint);
+  initializeConstraint(constraint, dipole_params);
 
   localMap = std::vector<double>(pixelIndexLocal.size()+1, 0.);
   fullMap = std::vector<double>(pixelIndexFull.size(), 0.);
@@ -66,19 +67,21 @@ daCapo::daCapo (std::vector<dipoleFit> & binnedData, std::vector<float> & mask, 
  * Initialize a Solar Dipole Map
  **/
 void
-daCapo::initializeConstraint(bool constraint)
+daCapo::initializeConstraint(bool constraint, 
+			     const Dipole_parameters_t & solar_dipole)
 {
   if (!constraint)
     return;
 
   // Build Dipole Constraint Map 
-  std::vector<double> SOLSYSDIR_V=angToCart(SOLSYSDIR_ECL_THETA, SOLSYSDIR_ECL_PHI);
   for (size_t idx=0; idx<pixelIndexFull.size(); idx++) 
     {
       double theta, phi;
       pix2ang_nest(nSide, pixelIndexFull[idx], &theta, &phi);
       std::vector<double> cartesianPixel=angToCart(theta, phi);
-      constraintMap.push_back(SOLSYSDIR_V[0]*cartesianPixel[0]+SOLSYSDIR_V[1]*cartesianPixel[1]+SOLSYSDIR_V[2]*cartesianPixel[2]);
+      constraintMap.push_back(solar_dipole.axis[0] * cartesianPixel[0] + 
+			      solar_dipole.axis[1] * cartesianPixel[1] +
+			      solar_dipole.axis[2] * cartesianPixel[2]);
     }
 }
 
