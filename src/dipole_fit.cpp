@@ -555,7 +555,7 @@ run_dipole_fit(const LfiRadiometer & rad,
 	// Determine the extents of each pointings within this OD
 	try {
 	    auto od_fits =
-		process_one_od(program_conf, storage_conf, rad, od,
+		process_one_od(program_conf, storage_conf, real_radiometer, od,
 			       mask, galactic_pickup, planck_velocity,
 			       Range_t<std::vector<Pointing_t>::const_iterator> { first_pid, last_pid });
 	    if(od_fits.empty()) {
