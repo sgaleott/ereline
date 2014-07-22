@@ -49,6 +49,7 @@ dipoleFit::binData(const std::vector<double> & data,
 		   const Range_t<size_t> & index_range, 
 		   const std::vector<double> & sidelobes)
 {
+  Logger * log = Logger::get_instance();
   const int numPixs=12*nSide*nSide;
   std::vector<int> tmpHits (numPixs,0);
   std::vector<double> tmpData (numPixs,0);
@@ -56,6 +57,13 @@ dipoleFit::binData(const std::vector<double> & data,
   std::vector<double> tmpDipoleConstraint (numPixs,0);
 
   // bin the samples and calculate the "binned" dipole
+  log->debug(boost::format("Running dipoleFit::binData with indexes running in "
+			   "the range [%d, %d] (there are %d samples "
+			   "available). NSIDE is %d")
+	     % index_range.start 
+	     % index_range.end
+	     % data.size()
+	     % nSide);
   for (size_t sampleNum = index_range.start; sampleNum <= index_range.end; sampleNum++)
     {
       // select "good" samples
