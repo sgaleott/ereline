@@ -415,10 +415,12 @@ process_one_od(const Configuration & program_conf,
 	       % pointings.obt_time.front()
 	       % pointings.obt_time.back());
 
+    log->debug("Computing Galactic pickup through sidelobes...");
     std::vector<double> sidelobes(
 	galactic_pickup.getIntensities(pointings.theta,
 				       pointings.phi,
 				       pointings.psi));
+    log->debug("...done");
     if(program_conf.get<bool>("dipole_fit.debug")) {
 	std::string file_path = 
 	    (boost::format("%s/dipole_fit/tods/sidelobes/%s_sidelobes_OD%04d.fits")
@@ -434,11 +436,13 @@ process_one_od(const Configuration & program_conf,
 	save_tod(ensure_path_exists(file_path), od, radiometer, galactic_datadiff);
     }
 
+    log->debug("Computing the amplitude of the dipole convolved with 4\u03c0 beams");
     std::vector<double> convolved_dipole(
 	planck_velocity.getConvolvedDipole(datadiff.scet_time,
 					   pointings.theta,
 					   pointings.phi,
 					   pointings.psi));
+    log->debug("...done");
     if(program_conf.get<bool>("dipole_fit.debug")) {
 	std::string file_path = 
 	    (boost::format("%s/dipole_fit/tods/dipole/%s_dipole_OD%04d.fits")
@@ -492,7 +496,8 @@ process_one_od(const Configuration & program_conf,
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-run_dipole_fit(const LfiRadiometer & rad,
+run_dipole_fit(SQLite3Connection & ucds,
+	       const LfiRadiometer & rad,
 	       Configuration & program_conf,
 	       Configuration & storage_conf,
 	       const std::vector<Pointing_t> & list_of_pointings)
@@ -524,6 +529,7 @@ run_dipole_fit(const LfiRadiometer & rad,
 
     PlanckVelocity planck_velocity(storage_conf.getWithSubst("spacecraft_velocity_file"),
 				   read_dipole_fit_params(program_conf));
+    loadConvolutionParametersFromUCDS(ucds, real_radiometer, planck_velocity);
 
     auto data_range(get_local_data_range(mpi_rank, mpi_size, list_of_pointings));
     std::vector<Pointing_t>::const_iterator first_pid, last_pid;

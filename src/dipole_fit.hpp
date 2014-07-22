@@ -72,8 +72,10 @@ struct dipoleFit
 };
 
 class Configuration;
+struct SQLite3Connection;
 
-void run_dipole_fit(const LfiRadiometer & rad,
+void run_dipole_fit(SQLite3Connection & ucds,
+		    const LfiRadiometer & rad,
 		    Configuration & program_conf,
 		    Configuration & storage_conf,
 		    const std::vector<Pointing_t> & list_of_pointings);
