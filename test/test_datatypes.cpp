@@ -8,12 +8,12 @@
 
 BOOST_AUTO_TEST_CASE(lfi_radiometer_type)
 {
-    LfiRadiometer rad1(18, 1);
-    LfiRadiometer rad2("LFI24S");
-    LfiRadiometer rad3("LFI26M-00");
-    LfiRadiometer rad4("28S");
-    LfiRadiometer rad5("LFI21M-0");
-    LfiRadiometer rad6;
+    Lfi_radiometer_t rad1(18, 1);
+    Lfi_radiometer_t rad2("LFI24S");
+    Lfi_radiometer_t rad3("LFI26M-00");
+    Lfi_radiometer_t rad4("28S");
+    Lfi_radiometer_t rad5("LFI21M-0");
+    Lfi_radiometer_t rad6;
 
     BOOST_CHECK_EQUAL(rad1.horn, 18); BOOST_CHECK_EQUAL(rad1.radiometer, 1);
     BOOST_CHECK_EQUAL(rad2.horn, 24); BOOST_CHECK_EQUAL(rad2.radiometer, 1);

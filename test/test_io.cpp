@@ -13,35 +13,11 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "logging.hpp"
-BOOST_AUTO_TEST_CASE(load_convolved_dipole)
-{
-    Logger * log = Logger::get_instance();
-    log->set_log_level(Logger::Log_level::DEBUG);
-
-    SQLite3Connection ucds(TEST_DATA_DIR "/ucds.db");
-    std::vector<Pointing_t> pointings;
-    PlanckVelocity vel;
-    loadConvolutionParametersFromUCDS(ucds, LfiRadiometer("LFI24M"), vel);
-
-    BOOST_CHECK_CLOSE(vel.M100,  0.00119669520223024,  1e-7);
-    BOOST_CHECK_CLOSE(vel.M010, -1.35903112318943e-06, 1e-7);
-    BOOST_CHECK_CLOSE(vel.M001,  0.998945455192864,    1e-7);
-    BOOST_CHECK_CLOSE(vel.M200,  0.00106781574504692,  1e-7);
-    BOOST_CHECK_CLOSE(vel.M110, -2.31094686909285e-06, 1e-7);
-    BOOST_CHECK_CLOSE(vel.M101,  0.000231187225785091, 1e-7);
-    BOOST_CHECK_CLOSE(vel.M020,  0.000136825401708578, 1e-7);
-    BOOST_CHECK_CLOSE(vel.M011,  8.95456618142487e-07, 1e-7);
-    BOOST_CHECK_CLOSE(vel.M002,  0.998795358853245,    1e-7);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 BOOST_AUTO_TEST_CASE(load_pointings)
 {
-    SQLite3Connection ucds(TEST_DATA_DIR "/ucds.db");
+    Sqlite_connection_t ucds(TEST_DATA_DIR "/ucds.db");
     std::vector<Pointing_t> pointings;
-    loadPointingInformation(ucds, 943, 945, pointings);
+    load_pointing_information(ucds, 943, 945, pointings);
 
     BOOST_CHECK_EQUAL(pointings.size(), 5);
 
