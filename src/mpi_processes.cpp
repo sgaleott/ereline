@@ -8,35 +8,30 @@ splitOdsIntoMpiProcesses(int numOfMpiProcesses,
                          std::vector<Data_range_t> & data_range)
 {
     const int detectorsPerRadiometer = 2;
-
+    const int num_of_chunks = numOfMpiProcesses / detectorsPerRadiometer;
     // Compute ranges
     const int numOfOds = list_of_ods.size();
 
     data_range.clear();
-    for (size_t prox = 0;
-         prox < numOfMpiProcesses / detectorsPerRadiometer;
-         ++prox)
+    for (size_t prox = 0; prox < num_of_chunks; ++prox)
     {
-        int step = detectorsPerRadiometer * numOfOds / numOfMpiProcesses + 1;
-        int start = step * prox;
-        int stop = start + step;
-        if (stop > numOfOds)
-            stop = numOfOds;
+        const int start = int(std::round(float(prox * numOfOds) / num_of_chunks));
+        const int stop = int(std::round(float((prox + 1) * numOfOds) / num_of_chunks)) - 1;
 
         Data_range_t cur_range;
 
         if(start < numOfOds && stop > start) {
             cur_range = {
-                { list_of_ods.at(start).od, list_of_ods.at(stop - 1).od },
-                { list_of_ods.at(start).first_pointing_id, list_of_ods.at(stop - 1).last_pointing_id },
-                stop - start,
+                { list_of_ods.at(start).od, list_of_ods.at(stop).od },
+                { list_of_ods.at(start).first_pointing_id, list_of_ods.at(stop).last_pointing_id },
+                stop - start + 1,
                 0
             };
         } else {
             cur_range = { { -1, -1 }, { -1, -1 }, 0, 0 };
         }
 
-        for (int od_idx = start; od_idx < stop; ++od_idx) {
+        for (int od_idx = start; od_idx <= stop; ++od_idx) {
             cur_range.num_of_pids += list_of_ods.at(od_idx).num_of_pointings;
         }
 

@@ -16,14 +16,14 @@ BOOST_AUTO_TEST_CASE(OdList)
 {
     const std::vector<Pointing_t> list_of_pointings {
 	// Od  Unused  Unused  Unused  Unused  Unused  Od
-	{   1,    0.0,    0.1,    1.0,    0.0,    0.0, 91 },
-	{   2,    1.0,    1.1,    2.0,    0.0,    0.0, 91 },
-	{   3,    2.0,    2.1,    3.0,    0.0,    0.0, 91 },
-	{   4,    3.0,    3.1,    4.0,    0.0,    0.0, 91 },
-	{   5,    4.0,    4.1,    5.0,    0.0,    0.0, 92 },
-	{   6,    5.0,    5.1,    6.0,    0.0,    0.0, 93 },
-	{   7,    6.0,    6.1,    7.0,    0.0,    0.0, 93 },
-	{   8,    7.0,    7.1,    8.0,    0.0,    0.0, 94 },
+	{   1,    0,      1,     10,    0.0,    0.0, 91 },
+	{   2,    1,     11,     20,    0.0,    0.0, 91 },
+	{   3,    2,     21,     30,    0.0,    0.0, 91 },
+	{   4,    3,     31,     40,    0.0,    0.0, 91 },
+	{   5,    4,     41,     50,    0.0,    0.0, 92 },
+	{   6,    5,     51,     60,    0.0,    0.0, 93 },
+	{   7,    6,     61,     70,    0.0,    0.0, 93 },
+	{   8,    7,     71,     80,    0.0,    0.0, 94 },
     };
 
     auto od_list = build_od_list(list_of_pointings);
@@ -103,17 +103,17 @@ BOOST_AUTO_TEST_CASE(MpiProcesses)
 				  expected.begin(), expected.end());
 
     splitOdsIntoMpiProcesses(6, list_of_ods, result);
-    expected = std::vector<Data_range_t>{ { { 1, 4 }, { 1, 44 }, 4, 44 },
-					  { { 5, 8 }, { 45, 95 }, 4, 49 },
-					  { { 9, 9 }, { 96, 107 }, 1, 12 } };
+    expected = std::vector<Data_range_t>{ { { 1, 3 }, { 1, 33 }, 3, 33 },
+					  { { 4, 6 }, { 34, 65 }, 3, 30 },
+					  { { 7, 9 }, { 66, 107 }, 3, 42 } };
     BOOST_CHECK_EQUAL_COLLECTIONS(result.begin(), result.end(),
 				  expected.begin(), expected.end());
 
     splitOdsIntoMpiProcesses(8, list_of_ods, result);
-    expected = std::vector<Data_range_t>{ { { 1, 3 }, { 1, 33 }, 3, 33 },
-					  { { 4, 6 }, { 34, 65 }, 3, 30 },
-					  { { 7, 9 }, { 66, 107 }, 3, 42 },
-					  { { -1, -1 }, { -1, -1 }, 0, 0 } };
+    expected = std::vector<Data_range_t>{ { { 1, 2 }, { 1, 24 }, 2, 24 },
+					  { { 3, 5 }, { 25, 55 }, 3, 31 },
+					  { { 6, 7 }, { 56, 78 }, 2, 21 },
+					  { { 8, 9 }, { 79, 107 }, 2, 29 } };
     BOOST_CHECK_EQUAL_COLLECTIONS(result.begin(), result.end(),
 				  expected.begin(), expected.end());
 }
