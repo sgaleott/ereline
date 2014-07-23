@@ -73,7 +73,6 @@ load_convolution_params(Sqlite_connection_t & ucds,
 
 void
 saveGainTable(const std::string & file_name,
-              signed short od,
               const Lfi_radiometer_t & radiometer,
               const Gain_table_t & gain_table,
               const std::string & comment)
@@ -93,7 +92,6 @@ saveGainTable(const std::string & file_name,
 
     gain_file.setKey("HORN", radiometer.horn);
     gain_file.setKey("RAD", radiometer.radiometer);
-    gain_file.setKey("OD", od);
 
     if(! comment.empty()) {
         gain_file.setComment(comment);
