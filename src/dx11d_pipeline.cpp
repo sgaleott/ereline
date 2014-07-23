@@ -1,6 +1,7 @@
 #include "configuration.hpp"
 #include "logging.hpp"
 #include "dipole_fit.hpp"
+#include "dipole_fit_results.hpp"
 #include "da_capo.hpp"
 #include "datatypes.hpp"
 #include "smooth_gains.hpp"

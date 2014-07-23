@@ -56,14 +56,9 @@ struct Dipole_fit_t
     void unload();
 };
 
-struct Dipole_fit_results_t {
-    Gain_table_t gain_table;
-    std::vector<Dipole_fit_t> list_of_fits;
-    Healpix::Map_t<float> mask;
-};
-
 class Configuration;
 struct Sqlite_connection_t;
+struct Dipole_fit_results_t;
 
 void run_dipole_fit(Sqlite_connection_t & ucds,
                     const Lfi_radiometer_t & rad,
