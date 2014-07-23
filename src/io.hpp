@@ -16,6 +16,7 @@ class PlanckVelocity;
 class SQLite3Connection;
 class gainTable;
 class LfiRadiometer;
+struct dipoleFit;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -102,5 +103,10 @@ void save_tod(const std::string & file_name,
 	      const LfiRadiometer & radiometer,
 	      const DifferencedData & datadiff,
 	      const std::string & comment = "");
+
+void save_dipole_fit(const std::string & file_name,
+		     const LfiRadiometer & radiometer,
+		     const dipoleFit & fit,
+		     const std::string & comment = "");
 
 #endif

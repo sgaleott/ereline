@@ -192,7 +192,6 @@ dipoleFit::unload()
   std::vector<float>().swap(pixSumDipole);
   std::vector<int>().swap(pixIndex);
   std::vector<int>().swap(pixSumHits);
-  std::vector<float>().swap(inputMap);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -330,6 +329,7 @@ process_one_od(const Configuration & program_conf,
     Logger * log = Logger::get_instance();
     const uint32_t quality_flag = 
 	program_conf.get<uint32_t>("dipole_fit.quality_flag");
+    const bool debug_flag = program_conf.get<bool>("dipole_fit.debug");
 
     const std::string pnt_file_path(pointings_file_path(storage_conf));
     const std::string ddf_file_path(datadiff_file_path(storage_conf));
@@ -363,7 +363,7 @@ process_one_od(const Configuration & program_conf,
 				       pointings.phi,
 				       pointings.psi));
     log->debug("...done");
-    if(program_conf.get<bool>("dipole_fit.debug")) {
+    if(debug_flag) {
 	std::string file_path = 
 	    (boost::format("%s/dipole_fit/tods/sidelobes/%s_sidelobes_OD%04d.fits")
 	     % program_conf.getWithSubst("common.base_output_dir")
@@ -385,7 +385,7 @@ process_one_od(const Configuration & program_conf,
 					   pointings.phi,
 					   pointings.psi));
     log->debug("...done");
-    if(program_conf.get<bool>("dipole_fit.debug")) {
+    if(debug_flag) {
 	std::string file_path = 
 	    (boost::format("%s/dipole_fit/tods/dipole/%s_dipole_OD%04d.fits")
 	     % program_conf.getWithSubst("common.base_output_dir")
@@ -428,11 +428,44 @@ process_one_od(const Configuration & program_conf,
 		      convolved_dipole,
 		      idx_range,
 		      mask.pixels,
-		      sidelobes))
+		      sidelobes)) {
 	    fits.push_back(fitter);
+	    if(debug_flag) {
+		std::string file_path = 
+		    (boost::format("%s/dipole_fit/fits/%s_fit_OD%04d_pid%06d.fits")
+		     % program_conf.getWithSubst("common.base_output_dir")
+		     % radiometer.shortName()
+		     % cur_pid->od
+		     % cur_pid->id)
+		    .str();
+#
+		save_dipole_fit(ensure_path_exists(file_path), radiometer,
+				fitter);
+	    }
+	}
     }
 
     return fits;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+static void
+extract_gains(const std::vector<dipoleFit> & list_of_fits, 
+	      gainTable & gain_table)
+{
+    const size_t num_of_fits = list_of_fits.size();
+    gain_table.pointingIds.resize(num_of_fits);
+    gain_table.gain.resize(num_of_fits);
+    gain_table.offset.resize(num_of_fits);
+
+    for(size_t idx = 0; idx < num_of_fits; ++idx) {
+	const auto & cur_fit = list_of_fits.at(idx);
+
+	gain_table.pointingIds[idx] = cur_fit.pointingID;
+	gain_table.gain[idx] = 1. / cur_fit.gainv;
+	gain_table.offset[idx] = cur_fit.offset;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -442,7 +475,8 @@ run_dipole_fit(SQLite3Connection & ucds,
 	       const LfiRadiometer & rad,
 	       Configuration & program_conf,
 	       Configuration & storage_conf,
-	       const std::vector<Pointing_t> & list_of_pointings)
+	       const std::vector<Pointing_t> & list_of_pointings,
+	       Dipole_fit_results_t & result)
 {
     Logger * log = Logger::get_instance();
     const int mpi_size = MPI::COMM_WORLD.Get_size();
@@ -456,14 +490,11 @@ run_dipole_fit(SQLite3Connection & ucds,
     log->info("Starting module dipoleFit");
     log->increase_indent();
 
-    const bool debug_flag = program_conf.get<bool>("dipole_fit.debug");
-
     LfiRadiometer real_radiometer(
 	radiometer_to_use(mpi_rank, rad, program_conf, storage_conf));
 
     // Load all the inputs needed by this module
-    Healpix::Map_t<float> mask;
-    load_map(program_conf.getWithSubst("dipole_fit.mask"), 1, mask);
+    load_map(program_conf.getWithSubst("dipole_fit.mask"), 1, result.mask);
 
     ringset galactic_pickup(program_conf.getWithSubst("dipole_fit.galactic_pickup"),
 			    program_conf.get<int>("dipole_fit.total_convolve_order"),
@@ -493,7 +524,6 @@ run_dipole_fit(SQLite3Connection & ucds,
      * each step loads data one OD long; the second loop iterates over
      * the subset of pointing periods falling within the OD. The inner
      * loop is implemented within the function "process_one_od". */
-    std::vector<dipoleFit> fits;
     for(int od = data_range.od_range.start; od <= data_range.od_range.end; ++od) {
 	log->info(boost::format("Processing OD %1%") % od);
 
@@ -504,7 +534,7 @@ run_dipole_fit(SQLite3Connection & ucds,
 	try {
 	    auto od_fits =
 		process_one_od(program_conf, storage_conf, real_radiometer, od,
-			       mask, galactic_pickup, planck_velocity,
+			       result.mask, galactic_pickup, planck_velocity,
 			       Range_t<std::vector<Pointing_t>::const_iterator> { first_pid, last_pid });
 	    if(od_fits.empty()) {
 		log->warning(boost::format("No fits between dipole and TODs "
@@ -513,7 +543,8 @@ run_dipole_fit(SQLite3Connection & ucds,
 		continue;
 	    }
 
-	    fits.insert(fits.end(), od_fits.begin(), od_fits.end());
+	    result.list_of_fits.insert(result.list_of_fits.end(), 
+				       od_fits.begin(), od_fits.end());
 	}
 	catch(std::runtime_error & exc) {
 	    log->error(boost::format("Error: %1%. Skipping OD %2%")
@@ -529,6 +560,7 @@ run_dipole_fit(SQLite3Connection & ucds,
 	log->info(boost::format("Nothing more to do with OD %1%.") % od);
     }
 
+    extract_gains(result.list_of_fits, result.gain_table);
     log->decrease_indent();
     log->info("Module dipoleFit completed.");
 }

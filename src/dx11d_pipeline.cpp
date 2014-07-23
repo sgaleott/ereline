@@ -145,11 +145,13 @@ inner_main(int argc, const char ** argv)
 	log->info(boost::format("Processing radiometer %1%")
 		  % radiometer.shortName());
 
+	Dipole_fit_results_t result;
 	run_dipole_fit(ucds,
 		       radiometer, 
 		       program_config, 
 		       storage_config, 
-		       list_of_pointings);
+		       list_of_pointings,
+		       result);
 	run_da_capo(program_config, storage_config);
 	run_smooth_gains(program_config, storage_config);
     }

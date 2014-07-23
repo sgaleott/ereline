@@ -1,4 +1,5 @@
 #include "io.hpp"
+#include "dipole_fit.hpp"
 #include "planck_velocity.hpp"
 #include "fits_object.hpp"
 #include "gain_table.hpp"
@@ -180,3 +181,43 @@ void save_tod(const std::string & file_name,
 	tod_file.setComment(comment);
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+save_dipole_fit(const std::string & file_name,
+		const LfiRadiometer & radiometer,
+		const dipoleFit & fit,
+		const std::string & comment)
+{
+    Logger * log = Logger::get_instance();
+    log->info(boost::format("Going to write a dipoleFit result "
+			    "into %1%") % file_name);
+
+    FitsObject dipole_fit_file;
+    dipole_fit_file.create(file_name, true);
+
+    std::vector<fitscolumn> columns {
+	{ "PIXIDX", "", fitsTypeC<int>(), 1 },
+	{ "PIXHITS", "", fitsTypeC<int>(), 1 },
+	{ "PIXDATA", "", fitsTypeC<double>(), 1 },
+	{ "PIXDIP", "", fitsTypeC<float>(), 1 } };
+    dipole_fit_file.insertBINtable(columns, radiometer.shortName());
+    dipole_fit_file.writeColumn(1, fit.pixIndex);
+    dipole_fit_file.writeColumn(2, fit.pixSumHits);
+    dipole_fit_file.writeColumn(3, fit.pixSumData);
+    dipole_fit_file.writeColumn(4, fit.pixSumDipole);
+
+    dipole_fit_file.setKey("NSIDE", fit.nSide);
+    dipole_fit_file.setKey("PID", fit.pointingID);
+    dipole_fit_file.setKey("FLAG", fit.qualityFlag);
+    dipole_fit_file.setKey("GAINV", fit.gainv);
+    dipole_fit_file.setKey("OFFSET", fit.offset);
+    dipole_fit_file.setKey("DIPMIN", fit.minDipole);
+    dipole_fit_file.setKey("DIPMAX", fit.maxDipole);
+
+    if(! comment.empty()) {
+	dipole_fit_file.setComment(comment);
+    }
+}
+

@@ -4,6 +4,8 @@
 #include <vector>
 
 #include "ahf_info.hpp"
+#include "gain_table.hpp"
+#include "healpix_map.hpp"
 #include "planck_velocity.hpp"
 
 struct LfiRadiometer;
@@ -25,7 +27,6 @@ struct dipoleFit
     std::vector<int> pixSumHits;
     std::vector<double> pixSumData;
     std::vector<float> pixSumDipole;
-    std::vector<float> inputMap;
 
     dipoleFit(uint32_t a_qualityFlag, int a_nSide, int a_pointingID);
 
@@ -57,6 +58,12 @@ struct dipoleFit
     void unload();
 };
 
+struct Dipole_fit_results_t {
+    gainTable gain_table;
+    std::vector<dipoleFit> list_of_fits;
+    Healpix::Map_t<float> mask;
+};
+
 class Configuration;
 struct SQLite3Connection;
 
@@ -64,6 +71,7 @@ void run_dipole_fit(SQLite3Connection & ucds,
 		    const LfiRadiometer & rad,
 		    Configuration & program_conf,
 		    Configuration & storage_conf,
-		    const std::vector<Pointing_t> & list_of_pointings);
+		    const std::vector<Pointing_t> & list_of_pointings,
+		    Dipole_fit_results_t & result);
 
 #endif
