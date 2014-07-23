@@ -43,6 +43,7 @@ test_misc_LDADD =  $(BOOST_UNIT_TEST_FRAMEWORK_LIB)
 test_io_SOURCES = \
 	test_io.cpp \
 	../src/datatypes.cpp \
+	../src/dipole_parameters.cpp \
 	../src/fits_object.cpp \
 	../src/io.cpp \
 	../src/logging.cpp \
