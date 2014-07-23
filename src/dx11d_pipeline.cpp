@@ -88,7 +88,7 @@ read_ahf_info(Sqlite_connection_t & ucds,
     first_od = program_config.get<int>("common.first_od");
     last_od = program_config.get<int>("common.last_od");
 
-    loadPointingInformation(ucds, first_od, last_od, list_of_pointings);
+    load_pointing_information(ucds, first_od, last_od, list_of_pointings);
 
     Logger * log = Logger::get_instance();
     log->info(boost::format("Number of pointings to process: %1% (%2%-%3%), "

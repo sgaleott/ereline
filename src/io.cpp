@@ -103,10 +103,10 @@ saveGainTable(const std::string & file_name,
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-loadPointingInformation(Sqlite_connection_t & db,
-			int first_od,
-			int last_od,
-			std::vector<Pointing_t> & pointings)
+load_pointing_information(Sqlite_connection_t & db,
+			  int first_od,
+			  int last_od,
+			  std::vector<Pointing_t> & pointings)
 {
     Logger * log = Logger::get_instance();
 
@@ -141,11 +141,11 @@ loadPointingInformation(Sqlite_connection_t & db,
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-loadPointingInformation(Sqlite_connection_t & ucds,
-			int od,
-			std::vector<Pointing_t> & pointings)
+load_pointing_information(Sqlite_connection_t & ucds,
+			  int od,
+			  std::vector<Pointing_t> & pointings)
 {
-    loadPointingInformation(ucds, od, od, pointings);
+    load_pointing_information(ucds, od, od, pointings);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

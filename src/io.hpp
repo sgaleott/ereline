@@ -82,15 +82,15 @@ void load_convolution_params(Sqlite_connection_t & ucds,
 			     const Lfi_radiometer_t & radiometer,
 			     Planck_velocity_t & vel);
 
-void loadPointingInformation(Sqlite_connection_t & ucds,
+void load_pointing_information(Sqlite_connection_t & ucds,
 			     int first_od,
 			     int last_od,
 			     std::vector<Pointing_t> & pointings);
 // Wrapper around the previous definition, with the assumption that
 // first_od == last_od == od.
-void loadPointingInformation(Sqlite_connection_t & ucds,
-			     int od,
-			     std::vector<Pointing_t> & pointings);
+void load_pointing_information(Sqlite_connection_t & ucds,
+			       int od,
+			       std::vector<Pointing_t> & pointings);
 
 void saveGainTable(const std::string & file_name,
 		   signed short od,
