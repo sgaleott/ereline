@@ -11,14 +11,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // Open object and read velocities
-PlanckVelocity::PlanckVelocity (const std::string & file_name,
-				const Dipole_parameters_t & a_dipole_params)
+Planck_velocity_t::Planck_velocity_t (const std::string & file_name,
+				      const Dipole_parameters_t & a_dipole_params)
     : dipole_params(a_dipole_params)
 {
     Logger * log = Logger::get_instance();
     std::stringstream s;
     s << a_dipole_params;
-    log->debug("PlanckVelocity initialized with the following dipole: "
+    log->debug("Planck_velocity_t initialized with the following dipole: "
 	       + s.str());
     
     FitsObject velocityFile;
@@ -35,7 +35,7 @@ PlanckVelocity::PlanckVelocity (const std::string & file_name,
 
 // Return velocity at given SCET
 std::vector<double> 
-PlanckVelocity::getVelocity (double scetTime) const
+Planck_velocity_t::getVelocity (double scetTime) const
 {
   std::vector<double> vSat(3,0.0);
 
@@ -57,7 +57,7 @@ PlanckVelocity::getVelocity (double scetTime) const
 }  
 
 std::vector<double> 
-PlanckVelocity::getAbsoluteVelocity(double scetTime) const
+Planck_velocity_t::getAbsoluteVelocity(double scetTime) const
 {
   std::vector<double> vSat = getVelocity(scetTime);
 
@@ -69,9 +69,9 @@ PlanckVelocity::getAbsoluteVelocity(double scetTime) const
 }
 
 double 
-PlanckVelocity::dipole(const std::vector<double> & velocity, 
-		       double theta, 
-		       double phi) const
+Planck_velocity_t::dipole(const std::vector<double> & velocity, 
+			  double theta, 
+			  double phi) const
 {
   double velocityLength = sqrt(velocity[0]*velocity[0] + 
 			       velocity[1]*velocity[1] + 
@@ -96,10 +96,10 @@ PlanckVelocity::dipole(const std::vector<double> & velocity,
 }
 
 double 
-PlanckVelocity::convolvedDipole (const std::vector<double> & velocity, 
-				 double theta, 
-				 double phi, 
-				 double psi) const
+Planck_velocity_t::convolvedDipole (const std::vector<double> & velocity, 
+				    double theta, 
+				    double phi, 
+				    double psi) const
 {
   double xv = velocity[0]/SPEED_OF_LIGHT;
   double yv = velocity[1]/SPEED_OF_LIGHT;
@@ -130,7 +130,7 @@ PlanckVelocity::convolvedDipole (const std::vector<double> & velocity,
 }
 
 double 
-PlanckVelocity::getConvolvedDipole(double scetTime, double theta, double phi, double psi) const
+Planck_velocity_t::getConvolvedDipole(double scetTime, double theta, double phi, double psi) const
 {  
   // Compute velocity versor
   const std::vector<double> vSatAbsolute = getAbsoluteVelocity(scetTime);
@@ -138,10 +138,10 @@ PlanckVelocity::getConvolvedDipole(double scetTime, double theta, double phi, do
 }
 
 std::vector<double> 
-PlanckVelocity::getConvolvedDipole(const std::vector<double> & scetTime, 
-				   const std::vector<double> & theta, 
-				   const std::vector<double> & phi, 
-				   const std::vector<double> & psi) const
+Planck_velocity_t::getConvolvedDipole(const std::vector<double> & scetTime, 
+				      const std::vector<double> & theta, 
+				      const std::vector<double> & phi, 
+				      const std::vector<double> & psi) const
 {
   std::vector<double> local_dipole(scetTime.size());
   for (size_t idx = 0; idx < local_dipole.size(); ++idx)

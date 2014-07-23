@@ -12,7 +12,7 @@
 
 #include <sqlite3.h>
 
-class PlanckVelocity;
+class Planck_velocity_t;
 class Sqlite_connection_t;
 class Gain_table_t;
 class Lfi_radiometer_t;
@@ -78,9 +78,9 @@ void load_map(const std::string & file_name,
 	      % file_name);
 }
 
-void loadConvolutionParametersFromUCDS(Sqlite_connection_t & ucds,
-				       const Lfi_radiometer_t & radiometer,
-				       PlanckVelocity & vel);
+void load_convolution_params(Sqlite_connection_t & ucds,
+			     const Lfi_radiometer_t & radiometer,
+			     Planck_velocity_t & vel);
 
 void loadPointingInformation(Sqlite_connection_t & ucds,
 			     int first_od,

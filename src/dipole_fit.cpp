@@ -311,7 +311,7 @@ process_one_od(const Configuration & program_conf,
 	       int od,
 	       const Healpix::Map_t<float> & mask,
 	       const ringset & galactic_pickup,
-	       const PlanckVelocity & planck_velocity,
+	       const Planck_velocity_t & planck_velocity,
 	       Range_t<std::vector<Pointing_t>::const_iterator> pid_range)
 {
     Logger * log = Logger::get_instance();
@@ -488,9 +488,10 @@ run_dipole_fit(Sqlite_connection_t & ucds,
 			    program_conf.get<int>("dipole_fit.total_convolve_order"),
 			    false);
 
-    PlanckVelocity planck_velocity(storage_conf.getWithSubst("spacecraft_velocity_file"),
-				   read_dipole_fit_params(program_conf));
-    loadConvolutionParametersFromUCDS(ucds, real_radiometer, planck_velocity);
+    Planck_velocity_t planck_velocity(
+	storage_conf.getWithSubst("spacecraft_velocity_file"),
+	read_dipole_fit_params(program_conf));
+    load_convolution_params(ucds, real_radiometer, planck_velocity);
 
     auto data_range(get_local_data_range(mpi_rank, mpi_size, list_of_pointings));
     std::vector<Pointing_t>::const_iterator first_pid, last_pid;

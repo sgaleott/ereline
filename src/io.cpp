@@ -31,9 +31,9 @@ ensure_path_exists(const std::string & path)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-loadConvolutionParametersFromUCDS(Sqlite_connection_t & ucds,
-				  const Lfi_radiometer_t & radiometer,
-				  PlanckVelocity & vel)
+load_convolution_params(Sqlite_connection_t & ucds,
+			const Lfi_radiometer_t & radiometer,
+			Planck_velocity_t & vel)
 {
     Logger * log = Logger::get_instance();
 
