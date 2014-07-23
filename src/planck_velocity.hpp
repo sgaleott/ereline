@@ -32,27 +32,27 @@ struct Planck_velocity_t
   std::vector<double> yvel;
   std::vector<double> zvel;
 
-  double dipole(const std::vector<double> & velocity, 
-		double theta, 
-		double phi) const;
-  double convolvedDipole(const std::vector<double> & velocity, 
-			 double theta, 
-			 double phi, 
-			 double psi) const;
+  double dipole(const std::vector<double> & velocity,
+                double theta,
+                double phi) const;
+  double convolvedDipole(const std::vector<double> & velocity,
+                         double theta,
+                         double phi,
+                         double psi) const;
 
-  Planck_velocity_t (const std::string & file_name, 
-		     const Dipole_parameters_t & a_dipole_params);
+  Planck_velocity_t (const std::string & file_name,
+                     const Dipole_parameters_t & a_dipole_params);
 
   std::vector<double> getVelocity (double scetTime) const;
   std::vector<double> getAbsoluteVelocity(double scetTime) const;
 
   double getConvolvedDipole(double scetTime,
-			    double theta,
-			    double phi, double psi) const;
+                            double theta,
+                            double phi, double psi) const;
   std::vector<double> getConvolvedDipole(const std::vector<double> & scetTime,
-					 const std::vector<double> & theta,
-					 const std::vector<double> & phi,
-					 const std::vector<double> & psi) const;
+                                         const std::vector<double> & theta,
+                                         const std::vector<double> & phi,
+                                         const std::vector<double> & psi) const;
 };
 
 #endif

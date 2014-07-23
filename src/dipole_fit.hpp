@@ -30,22 +30,22 @@ struct Dipole_fit_t
 
     Dipole_fit_t(uint32_t a_qualityFlag, int a_nSide, int a_pointingID);
 
-    bool binData(const std::vector<double> & data, 
-		 const std::vector<uint32_t>& flag,
-		 const std::vector<double> & theta, 
-		 const std::vector<double> & phi, 
-		 const std::vector<double> & dipole,
-		 const Range_t<size_t> & index_range, 
-		 const std::vector<double> & sidelobes);
+    bool binData(const std::vector<double> & data,
+                 const std::vector<uint32_t>& flag,
+                 const std::vector<double> & theta,
+                 const std::vector<double> & phi,
+                 const std::vector<double> & dipole,
+                 const Range_t<size_t> & index_range,
+                 const std::vector<double> & sidelobes);
     bool fitData(const std::vector<float> & maskMap);
-    bool fit(const std::vector<double> & data, 
-	     const std::vector<uint32_t> & flag,
-	     const std::vector<double> & theta, 
-	     const std::vector<double> & phi, 
-	     const std::vector<double> & dipole,
-	     const Range_t<size_t> & index_range, 
-	     const std::vector<float> & maskMap, 
-	     const std::vector<double> & sidelobes);
+    bool fit(const std::vector<double> & data,
+             const std::vector<uint32_t> & flag,
+             const std::vector<double> & theta,
+             const std::vector<double> & phi,
+             const std::vector<double> & dipole,
+             const Range_t<size_t> & index_range,
+             const std::vector<float> & maskMap,
+             const std::vector<double> & sidelobes);
 
     void setPixSumDipole(const std::vector<float> & inpArr);
 
@@ -66,10 +66,10 @@ class Configuration;
 struct Sqlite_connection_t;
 
 void run_dipole_fit(Sqlite_connection_t & ucds,
-		    const Lfi_radiometer_t & rad,
-		    Configuration & program_conf,
-		    Configuration & storage_conf,
-		    const std::vector<Pointing_t> & list_of_pointings,
-		    Dipole_fit_results_t & result);
+                    const Lfi_radiometer_t & rad,
+                    Configuration & program_conf,
+                    Configuration & storage_conf,
+                    const std::vector<Pointing_t> & list_of_pointings,
+                    Dipole_fit_results_t & result);
 
 #endif

@@ -17,9 +17,9 @@ public:
 };
 
 void decompress_pointings(const std::string & file_name,
-			  PointingData & pointings);
+                          PointingData & pointings);
 
 void decompress_differenced_data(const std::string & file_name,
-				 DifferencedData & datadiff);
+                                 DifferencedData & datadiff);
 
 #endif

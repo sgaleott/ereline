@@ -57,25 +57,25 @@ Configuration::fill_with_standard_variables(const std::string & start_path)
 
     for(const auto & kv : children)
     {
-	if(kv.first.empty())
-	    break;
+        if(kv.first.empty())
+            break;
 
-	std::string cur_path;
-	if(start_path.empty())
-	    cur_path = kv.first;
-	else
-	    cur_path = start_path + "." + kv.first;
+        std::string cur_path;
+        if(start_path.empty())
+            cur_path = kv.first;
+        else
+            cur_path = start_path + "." + kv.first;
 
-	set_variable(cur_path, ptree.get<std::string>(cur_path));
-	fill_with_standard_variables(cur_path);
+        set_variable(cur_path, ptree.get<std::string>(cur_path));
+        fill_with_standard_variables(cur_path);
     }
 }
 
 ////////////////////////////////////////////////////////////////////////
 
-void 
+void
 Configuration::set_variable(const std::string & name,
-			    const std::string & value)
+                            const std::string & value)
 {
     variables[name] = value;
 }
@@ -89,34 +89,34 @@ Configuration::substitute_variables(const std::string & str) const
 
     for(auto cur_char = str.begin(); cur_char != str.end(); ++cur_char)
     {
-	if(*cur_char == '{') {
-	    cur_char++; // Skip the '{'
-	    auto cur_pos = cur_char - str.begin();
+        if(*cur_char == '{') {
+            cur_char++; // Skip the '{'
+            auto cur_pos = cur_char - str.begin();
 
-	    // Read the variable name
-	    auto end_pos = str.find('}', cur_pos);
-	    if(end_pos == str.npos) {
-		auto msg =
-		    boost::format("No closing '}' in \"%1%\"")
-		    % str;
-		throw Configuration_error(boost::str(msg));
-	    }
+            // Read the variable name
+            auto end_pos = str.find('}', cur_pos);
+            if(end_pos == str.npos) {
+                auto msg =
+                    boost::format("No closing '}' in \"%1%\"")
+                    % str;
+                throw Configuration_error(boost::str(msg));
+            }
 
-	    std::string var_name = str.substr(cur_pos, end_pos - cur_pos);
-	    auto var_match = variables.find(var_name);
-	    if(var_match == variables.end()) {
-		auto msg =
-		    boost::format("Variable %1% in \"%2%\" is undefined or has the wrong type")
-		    % var_name
-		    % str;
-		throw Configuration_error(boost::str(msg));
-	    }
+            std::string var_name = str.substr(cur_pos, end_pos - cur_pos);
+            auto var_match = variables.find(var_name);
+            if(var_match == variables.end()) {
+                auto msg =
+                    boost::format("Variable %1% in \"%2%\" is undefined or has the wrong type")
+                    % var_name
+                    % str;
+                throw Configuration_error(boost::str(msg));
+            }
 
-	    result += var_match->second;
-	    cur_char += end_pos - cur_pos;
-	} else {
-	    result += *cur_char;
-	}
+            result += var_match->second;
+            cur_char += end_pos - cur_pos;
+        } else {
+            result += *cur_char;
+        }
     }
 
     return result;
@@ -158,12 +158,12 @@ void setup_od_variable(int od, Configuration & conf)
 
 void
 setup_variables_for_radiometer(const Lfi_radiometer_t & rad,
-			       Configuration & conf)
+                               Configuration & conf)
 {
-    conf.set_variable("horn", 
-		      (boost::format("%1%") % rad.horn).str());
-    conf.set_variable("arm", 
-		      rad.armName());
-    conf.set_variable("frequency_GHz", 
-		      (boost::format("%1%") % rad.frequencyInGhz()).str());
+    conf.set_variable("horn",
+                      (boost::format("%1%") % rad.horn).str());
+    conf.set_variable("arm",
+                      rad.armName());
+    conf.set_variable("frequency_GHz",
+                      (boost::format("%1%") % rad.frequencyInGhz()).str());
 }

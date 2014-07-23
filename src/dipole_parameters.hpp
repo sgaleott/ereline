@@ -5,16 +5,16 @@ struct Dipole_parameters_t {
     // Axis of the dipole (length = 1)
     double axis[3];
     // Velocity vector (equal to axis * solar_speed)
-    double solar_velocity[3]; 
+    double solar_velocity[3];
     // Speed of the Sun wrt CMB rest frame [m/s]
-    double solar_speed; 
+    double solar_speed;
     // Thermodynamic temperature of the monopole [K_CMB]
-    double monopole; 
+    double monopole;
 
-    Dipole_parameters_t(double ecl_dir_theta, 
-			double ecl_dir_phi, 
-			double a_solar_speed, 
-			double a_monopole);
+    Dipole_parameters_t(double ecl_dir_theta,
+                        double ecl_dir_phi,
+                        double a_solar_speed,
+                        double a_monopole);
 };
 
 #include <iostream>

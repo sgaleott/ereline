@@ -15,13 +15,13 @@ struct rotmatrix
 
     rotmatrix ();
     rotmatrix (double a00, double a01, double a02,
-	       double a10, double a11, double a12,
-	       double a20, double a21, double a22);
+               double a10, double a11, double a12,
+               double a20, double a21, double a22);
     void setRotmatrix(double a00, double a01, double a02,
-		      double a10, double a11, double a12,
-		      double a20, double a21, double a22);
-    void makeAxisRotationTransform (const std::vector<double> &axis, 
-				    double angle);
+                      double a10, double a11, double a12,
+                      double a20, double a21, double a22);
+    void makeAxisRotationTransform (const std::vector<double> &axis,
+                                    double angle);
     std::vector<double> transform (const std::vector<double> &vec);
 };
 

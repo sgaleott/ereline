@@ -12,12 +12,12 @@ Logger * Logger::singleton = NULL;
 
 ////////////////////////////////////////////////////////////////////////
 
-Logger * 
+Logger *
 Logger::get_instance()
 {
     if(! exist_instance_flag) {
-	singleton = new Logger();
-	exist_instance_flag = true;
+        singleton = new Logger();
+        exist_instance_flag = true;
     }
 
     return singleton;
@@ -35,11 +35,11 @@ current_date_and_time()
 
 ////////////////////////////////////////////////////////////////////////
 
-void 
+void
 Logger::log(Log_level level, const std::string & string) const
 {
     if(level < log_level || log_stream_list.empty())
-	return; // Do not log anything
+        return; // Do not log anything
 
     std::string error_type;
     switch(level) {
@@ -51,27 +51,27 @@ Logger::log(Log_level level, const std::string & string) const
 
     boost::format msg;
     if(mpi_rank >= 0 && mpi_size >= 0) {
-	// Include the MPI rank of this process and the number of
-	// processes in the log message
-	msg = (boost::format("%1% %2%: [%5%/%6%] %3%%4%") 
-	       % current_date_and_time() 
-	       % error_type 
-	       % std::string(indent_level, '\t') // Indent
-	       % string
-	       % (mpi_rank + 1)
-	       % mpi_size);
+        // Include the MPI rank of this process and the number of
+        // processes in the log message
+        msg = (boost::format("%1% %2%: [%5%/%6%] %3%%4%")
+               % current_date_and_time()
+               % error_type
+               % std::string(indent_level, '\t') // Indent
+               % string
+               % (mpi_rank + 1)
+               % mpi_size);
     } else {
-	msg = (boost::format("%1% %2%: %3%%4%") 
-	       % current_date_and_time() 
-	       % error_type 
-	       % std::string(indent_level, '\t') // Indent
-	       % string);
+        msg = (boost::format("%1% %2%: %3%%4%")
+               % current_date_and_time()
+               % error_type
+               % std::string(indent_level, '\t') // Indent
+               % string);
     }
 
     for(auto log_stream : log_stream_list) {
-	if(log_stream != NULL) {
-	    (*log_stream) << msg << std::endl;
-	    log_stream->flush();
-	}
+        if(log_stream != NULL) {
+            (*log_stream) << msg << std::endl;
+            log_stream->flush();
+        }
     }
 }

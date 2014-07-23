@@ -24,8 +24,8 @@ struct Sqlite_statement_t {
     int num_of_rows;
 
     Sqlite_statement_t(Sqlite_connection_t & a_db,
-		       const char * a_sql,
-		       int num_of_bytes = -1);
+                       const char * a_sql,
+                       int num_of_bytes = -1);
     ~Sqlite_statement_t() noexcept;
 
     int step();
@@ -34,7 +34,7 @@ struct Sqlite_statement_t {
     int column_int(int ncol) const { return sqlite3_column_int(ptr, ncol); }
     double column_double(int ncol) const { return sqlite3_column_double(ptr, ncol); }
     std::string column_text(int ncol) const {
-	return std::string(reinterpret_cast<const char *>(sqlite3_column_text(ptr, ncol)));
+        return std::string(reinterpret_cast<const char *>(sqlite3_column_text(ptr, ncol)));
     }
 };
 

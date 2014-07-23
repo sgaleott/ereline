@@ -19,9 +19,9 @@ extern "C" {
  * It also take the number of streams (single diode/radiometer, horn using all streams)
  **/
 daCapo::daCapo(std::vector<Dipole_fit_t> & binnedData,
-	       std::vector<float> & mask,
-	       bool constraint,
-	       const Dipole_parameters_t & dipole_params)
+               std::vector<float> & mask,
+               bool constraint,
+               const Dipole_parameters_t & dipole_params)
 {
   sizeMPI = MPI::COMM_WORLD.Get_size();
   rankMPI = MPI::COMM_WORLD.Get_rank();
@@ -42,9 +42,9 @@ daCapo::daCapo(std::vector<Dipole_fit_t> & binnedData,
   preconditioner = std::vector< std::vector<double> >(binnedData.size(), std::vector<double>(3, 0.));
 }
 
-daCapo::daCapo (std::vector<Dipole_fit_t> & binnedData, 
-		std::vector<float> & mask, 
-		std::vector<double> & constraint)
+daCapo::daCapo (std::vector<Dipole_fit_t> & binnedData,
+                std::vector<float> & mask,
+                std::vector<double> & constraint)
 {
   sizeMPI = MPI::COMM_WORLD.Get_size();
   rankMPI = MPI::COMM_WORLD.Get_rank();
@@ -70,7 +70,7 @@ daCapo::daCapo (std::vector<Dipole_fit_t> & binnedData,
  **/
 void
 daCapo::initializeConstraint(bool constraint,
-			     const Dipole_parameters_t & solar_dipole)
+                             const Dipole_parameters_t & solar_dipole)
 {
   if (!constraint)
     return;
@@ -83,8 +83,8 @@ daCapo::initializeConstraint(bool constraint,
       double cartesianPixel[3];
       angToCart(theta, phi, cartesianPixel);
       constraintMap.push_back(solar_dipole.axis[0] * cartesianPixel[0] +
-			      solar_dipole.axis[1] * cartesianPixel[1] +
-			      solar_dipole.axis[2] * cartesianPixel[2]);
+                              solar_dipole.axis[1] * cartesianPixel[1] +
+                              solar_dipole.axis[2] * cartesianPixel[2]);
     }
 }
 
@@ -115,9 +115,9 @@ daCapo::initializeLocmap(const std::vector<Dipole_fit_t> & binnedData)
     {
       std::vector<int> pixIndexPid = binnedData[ipp].pixIndex;
       for (size_t i=0; i<pixIndexPid.size(); i++)
-	{
-	  tmpPixels.push_back(pixIndexPid[i]);
-	}
+        {
+          tmpPixels.push_back(pixIndexPid[i]);
+        }
     }
 
   //Compress. This now holds a list of pixels hit by the local toi.
@@ -134,9 +134,9 @@ daCapo::initializeLocmap(const std::vector<Dipole_fit_t> & binnedData)
       std::vector<int> pixIndexPid = binnedData[ipp].pixIndex;
       std::vector<int> pixMap;
       for (size_t i=0; i<pixIndexPid.size(); i++)
-	{
-	  pixMap.push_back(search_table[pixIndexPid[i]]);
-	}
+        {
+          pixMap.push_back(search_table[pixIndexPid[i]]);
+        }
       pixelIndexLocalMap.push_back(pixMap);
     }
 }
@@ -163,7 +163,7 @@ daCapo::initializeFullmap()
 
   std::vector<int> dummy(sizeMPI, 0);
   MPI::COMM_WORLD.Alltoall (sendcnt.data(), static_cast<int>(sendcnt.size()/sizeMPI), MPI_INT,
-			    dummy.data(), static_cast<int>(sendcnt.size()/sizeMPI), MPI_INT);
+                            dummy.data(), static_cast<int>(sendcnt.size()/sizeMPI), MPI_INT);
   MPI::COMM_WORLD.Barrier();
 
   std::vector<int> disin(sizeMPI, 0);
@@ -176,7 +176,7 @@ daCapo::initializeFullmap()
 
   std::vector<int> tmpPixels(disout[sizeMPI-1]+dummy[sizeMPI-1], 0);
   MPI::COMM_WORLD.Alltoallv(pixelIndexLocal.data(), sendcnt.data(), disin.data(), MPI_INT,
-			    tmpPixels.data(), dummy.data(), disout.data(), MPI_INT);
+                            tmpPixels.data(), dummy.data(), disout.data(), MPI_INT);
 
   // Compress. This now holds a list of pixels hit by the local toi.
   pixelIndexFull = sortAndCount(tmpPixels);
@@ -193,21 +193,21 @@ daCapo::initializeFullmap()
 
       std::vector<int> ipix_tmp(npix_tmp);
       if (rankMPI==irank)
-	for (int i=0; i<npix_tmp; i++)
-	  ipix_tmp[i]=pixelIndexFull[i];
+        for (int i=0; i<npix_tmp; i++)
+          ipix_tmp[i]=pixelIndexFull[i];
 
       MPI::COMM_WORLD.Bcast(ipix_tmp.data(), npix_tmp, MPI_INT, irank);
       MPI::COMM_WORLD.Barrier();
 
       int m=0;
       for (int i=0; i<sendcnt[irank]; i++)
-	{
+        {
           while (pixelIndexLocal[offset+i]>ipix_tmp[m])
-	    {
-	      m++;
-	    }
+            {
+              m++;
+            }
           pixelIndexFullMap[offset+i]=m;
-	}
+        }
       offset +=sendcnt[irank];
     }
 }
@@ -218,16 +218,16 @@ daCapo::initializeFullmap()
  **/
 void
 daCapo::applyMask(const std::vector<Dipole_fit_t> & binnedData,
-		  const std::vector<float> & mask)
+                  const std::vector<float> & mask)
 {
   int dummy_pixel = static_cast<int>(pixelIndexLocal.size());
   for (size_t ipp=0; ipp<binnedData.size(); ipp++)
     {
       std::vector<int> pixIndexPid = binnedData[ipp].pixIndex;
       for (size_t i=0; i<pixIndexPid.size(); i++)
-	{
-	  if (mask[pixIndexPid[i]]==0) pixelIndexLocalMap[ipp][i]=dummy_pixel;
-	}
+        {
+          if (mask[pixIndexPid[i]]==0) pixelIndexLocalMap[ipp][i]=dummy_pixel;
+        }
     }
 }
 
@@ -244,9 +244,9 @@ daCapo::constructCCmatrix(const std::vector<Dipole_fit_t> & binnedData)
       std::vector<int> hits = binnedData[ipp].pixSumHits;
       double gain = binnedData[ipp].gainv;
       for (size_t i=0; i<hits.size(); i++)
-	{
-	  ccLoc[pixelIndexLocalMap[ipp][i]] += gain*gain*hits[i];
-	}
+        {
+          ccLoc[pixelIndexLocalMap[ipp][i]] += gain*gain*hits[i];
+        }
     }
 
   // Local CC to Full CC
@@ -261,10 +261,10 @@ daCapo::constructCCmatrix(const std::vector<Dipole_fit_t> & binnedData)
 
       std::vector<double> cbuf(nbf, 0.);
       for (int i=0; i<sendcnt[irank]; i++)
-	cbuf[pixelIndexFullMap[offset+i]] = ccLoc[offset+i];
+        cbuf[pixelIndexFullMap[offset+i]] = ccLoc[offset+i];
 
       MPI::COMM_WORLD.Reduce (cbuf.data(), ccFull.data(), static_cast<int>(cbuf.size()),
-			      MPI_DOUBLE, MPI_SUM, irank);
+                              MPI_DOUBLE, MPI_SUM, irank);
       MPI::COMM_WORLD.Barrier();
 
       offset += sendcnt[irank];
@@ -317,9 +317,9 @@ daCapo::buildPreconditioner(const std::vector<Dipole_fit_t> & binnedData)
        std::vector<double> ippPrec(3, 0.);
        for (size_t i=0; i<hits.size(); i++)
          {
-	   ippPrec[0] += static_cast<float>(hits[i]);
-	   ippPrec[1] += static_cast<float>(hits[i])*signal[i];
-	   ippPrec[2] += static_cast<float>(hits[i])*signal[i]*signal[i];
+           ippPrec[0] += static_cast<float>(hits[i]);
+           ippPrec[1] += static_cast<float>(hits[i])*signal[i];
+           ippPrec[2] += static_cast<float>(hits[i])*signal[i]*signal[i];
          }
        invert2_eig(ippPrec);
        preconditioner[ipp]=ippPrec;
@@ -341,9 +341,9 @@ daCapo::toiToLocmap(const std::vector<Dipole_fit_t> & binnedData)
       const double gain = binnedData[ipp].gainv;
 
       for (size_t i=0; i<signal.size(); i++)
-	{
-	  localMap[pixelIndexLocalMap[ipp][i]] += gain*signal[i];
-	}
+        {
+          localMap[pixelIndexLocalMap[ipp][i]] += gain*signal[i];
+        }
     }
 }
 
@@ -366,10 +366,10 @@ daCapo::locToFullmap()
 
       std::vector<double> mbuff(npix_buff, 0.);
       for (int i=0; i<sendcnt[irank]; i++)
-	mbuff[pixelIndexFullMap[offset+i]]=localMap[offset+i];
+        mbuff[pixelIndexFullMap[offset+i]]=localMap[offset+i];
 
       MPI::COMM_WORLD.Reduce (mbuff.data(), fullMap.data(), static_cast<int>(mbuff.size()),
-			      MPI_DOUBLE, MPI_SUM, irank);
+                              MPI_DOUBLE, MPI_SUM, irank);
       MPI::COMM_WORLD.Barrier();
 
       offset +=sendcnt[irank];
@@ -387,9 +387,9 @@ daCapo::ccMultiply()
   for (size_t ip=0; ip<fullMap.size(); ip++)
     {
       if (ccFull[ip]>0)
-	fullMap[ip] *= ccFull[ip];
+        fullMap[ip] *= ccFull[ip];
       else
-	fullMap[ip]=HEALPIX_UNDEF;
+        fullMap[ip]=HEALPIX_UNDEF;
     }
   MPI::COMM_WORLD.Barrier();
 }
@@ -408,8 +408,8 @@ daCapo::applyConstraint()
   for (size_t ip=0; ip<constraintMap.size(); ip++)
     if (ccFull[ip]>0)
       {
-	ddotmap1 += fullMap[ip];
-	ddotmap2 += fullMap[ip]*constraintMap[ip];
+        ddotmap1 += fullMap[ip];
+        ddotmap2 += fullMap[ip]*constraintMap[ip];
       }
 
   MPI::COMM_WORLD.Allreduce(&ddotmap1, &ddotmap1, 1, MPI_DOUBLE, MPI_SUM);
@@ -450,14 +450,14 @@ daCapo::fullToLocmap()
       std::vector<double> mbuff(npix_buff, 0.);
 
       if (rankMPI==irank)
-	for (size_t i=0; i<fullMap.size(); i++)
-	  mbuff[i]=fullMap[i];
+        for (size_t i=0; i<fullMap.size(); i++)
+          mbuff[i]=fullMap[i];
 
       MPI::COMM_WORLD.Bcast(mbuff.data(), npix_buff, MPI_DOUBLE, irank);
       MPI::COMM_WORLD.Barrier();
 
       for (int i=0; i<sendcnt[irank]; i++)
-	localMap[offset+i]=mbuff[pixelIndexFullMap[offset+i]];
+        localMap[offset+i]=mbuff[pixelIndexFullMap[offset+i]];
 
       offset +=sendcnt[irank];
     }
@@ -482,7 +482,7 @@ daCapo::applyCC()
  */
 void
 daCapo::subtractMapFromTod(const std::vector<Dipole_fit_t> & binnedData,
-			   basevec &p)
+                           basevec &p)
 {
   int dummy_pixel=static_cast<int>(localMap.size())-1;
 
@@ -498,14 +498,14 @@ daCapo::subtractMapFromTod(const std::vector<Dipole_fit_t> & binnedData,
       const double gain = binnedData[ipp].gainv;
 
       for (size_t i=0; i<nn; i++)
-	if (pixelIndexLocalMap[ipp][i]<dummy_pixel)
-	  {
-	    tmp1[i]=signal[i]-gain*hits[i]*localMap[pixelIndexLocalMap[ipp][i]];
+        if (pixelIndexLocalMap[ipp][i]<dummy_pixel)
+          {
+            tmp1[i]=signal[i]-gain*hits[i]*localMap[pixelIndexLocalMap[ipp][i]];
           }
       for (size_t i=0; i<nn; i++)
-	{
-	  p.base[ipp] += tmp1[i];
-	  p.gain[ipp] += tmp1[i]*dipole[i];
+        {
+          p.base[ipp] += tmp1[i];
+          p.gain[ipp] += tmp1[i]*dipole[i];
         }
     }
 }
@@ -517,7 +517,7 @@ daCapo::subtractMapFromTod(const std::vector<Dipole_fit_t> & binnedData,
  **/
 void
 daCapo::baseToLocmap(const std::vector<Dipole_fit_t> & binnedData,
-		     const basevec &p)
+                     const basevec &p)
 {
   for (size_t ipp=0; ipp<pixelIndexLocalMap.size(); ipp++)
     {
@@ -527,10 +527,10 @@ daCapo::baseToLocmap(const std::vector<Dipole_fit_t> & binnedData,
       const double gain = binnedData[ipp].gainv;
 
       for (size_t i=0; i<pixelIndexLocalMap[ipp].size(); i++)
-	{
-	  localMap[pixelIndexLocalMap[ipp][i]] +=
-	    gain*hits[i]*(p.base[ipp]+p.gain[ipp]*dipole[i]);
-	}
+        {
+          localMap[pixelIndexLocalMap[ipp][i]] +=
+            gain*hits[i]*(p.base[ipp]+p.gain[ipp]*dipole[i]);
+        }
     }
 }
 
@@ -540,7 +540,7 @@ daCapo::baseToLocmap(const std::vector<Dipole_fit_t> & binnedData,
  **/
 void
 daCapo::subtractMapFromBase(const std::vector<Dipole_fit_t> & binnedData,
-			    basevec &p)
+                            basevec &p)
 {
   int dummy_pixel = static_cast<int>(localMap.size())-1;
 
@@ -558,17 +558,17 @@ daCapo::subtractMapFromBase(const std::vector<Dipole_fit_t> & binnedData,
       std::vector<double> tmp1(nn, 0.);
 
       for (size_t i=0; i<nn; i++)
-	if (pixelIndexLocalMap[ipp][i]<dummy_pixel)
+        if (pixelIndexLocalMap[ipp][i]<dummy_pixel)
           {
             tmp1[i] = r.base[ipp]+r.gain[ipp]*dipole[i]
-	      -gain*localMap[pixelIndexLocalMap[ipp][i]];
+              -gain*localMap[pixelIndexLocalMap[ipp][i]];
           }
 
       for (size_t i=0; i<nn; i++)
-	{
-	  p.base[ipp] += tmp1[i]*static_cast<float>(hits[i]);
-	  p.gain[ipp] += tmp1[i]*static_cast<float>(hits[i])*static_cast<float>(dipole[i]);
-	}
+        {
+          p.base[ipp] += tmp1[i]*static_cast<float>(hits[i]);
+          p.gain[ipp] += tmp1[i]*static_cast<float>(hits[i])*static_cast<float>(dipole[i]);
+        }
     }
 }
 
@@ -597,9 +597,9 @@ daCapo::updateSignal(std::vector<Dipole_fit_t> & binnedData)
       std::vector<float> dipole = binnedData[ipp].pixSumDipole;
       std::vector<float> localDipole;
       for (size_t i=0; i<pixelIndexLocalMap[ipp].size(); i++)
-	{
-	  localDipole.push_back(dipole[i] + static_cast<float>(localMap[pixelIndexLocalMap[ipp][i]]));
-	}
+        {
+          localDipole.push_back(dipole[i] + static_cast<float>(localMap[pixelIndexLocalMap[ipp][i]]));
+        }
       binnedData[ipp].setPixSumDipole(localDipole);
     }
 }
@@ -609,7 +609,7 @@ daCapo::updateSignal(std::vector<Dipole_fit_t> & binnedData)
  **/
 double
 daCapo::iterativeCalibration (std::vector<Dipole_fit_t> & binnedData,
-			      bool firstLoop)
+                              bool firstLoop)
 {
   constructCCmatrix(binnedData);
   updateDipolenorm();
@@ -685,12 +685,12 @@ daCapo::iterativeCalibration (std::vector<Dipole_fit_t> & binnedData,
       aa.Add(phelp);
 
       if (rz/rzinit<1e-12)
-	{
-	  if (rankMPI == 0)
-	      std::cout << "   rz/rzinit " << std::setw(12) << rz/rzinit
-			<< "   at step " << istep << std::endl << std::flush;
-	  break;
-	}
+        {
+          if (rankMPI == 0)
+              std::cout << "   rz/rzinit " << std::setw(12) << rz/rzinit
+                        << "   at step " << istep << std::endl << std::flush;
+          break;
+        }
 
       double beta=rz/rzo;
       p.Scale(beta);
@@ -730,7 +730,7 @@ daCapo::iterativeCalibration (std::vector<Dipole_fit_t> & binnedData,
 
 void
 run_da_capo(const Configuration & program_conf,
-	    const Configuration & storage_conf)
+            const Configuration & storage_conf)
 {
   Logger * log = Logger::get_instance();
 

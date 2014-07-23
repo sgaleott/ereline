@@ -14,7 +14,7 @@ public:
     ConfigurationError(const std::string & a_description) noexcept
         : description(a_description) { }
     ConfigurationError(const boost::format & a_description) noexcept
-	: description(a_description.str()) { }
+        : description(a_description.str()) { }
 
     const char * what() noexcept { return description.c_str(); }
 };
@@ -26,7 +26,7 @@ class IoError : public std::exception {
 
 public:
     IoError(const std::string & a_description) noexcept
-	: description(a_description) { }
+        : description(a_description) { }
     IoError(const boost::format & a_description) noexcept
         : description(a_description.str()) { }
 
@@ -61,7 +61,7 @@ struct Range_t {
 
     // This is useful for unit tests
     bool operator!=(const Range_t<T> & other) const {
-	return (start != other.start) || (end != other.end);
+        return (start != other.start) || (end != other.end);
     }
 };
 
@@ -82,8 +82,8 @@ struct PointingData {
     std::vector<double> psi;
 
     PointingData() {}
-    PointingData(const PointingData & obj, 
-		 Range_t<uint64_t> obt_range);
+    PointingData(const PointingData & obj,
+                 Range_t<uint64_t> obt_range);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -95,14 +95,14 @@ struct DifferencedData {
     std::vector<uint32_t> flags;
 
     DifferencedData() {}
-    DifferencedData(const DifferencedData & obj, 
-		    Range_t<uint64_t> obt_range);
+    DifferencedData(const DifferencedData & obj,
+                    Range_t<uint64_t> obt_range);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
 Range_t<size_t>
 find_boundaries_in_obt_times(const std::vector<uint64_t> & source,
-			     Range_t<uint64_t> obt_range);
+                             Range_t<uint64_t> obt_range);
 
 #endif

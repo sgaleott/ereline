@@ -210,8 +210,8 @@ vector<int> sortAndCount(vector<int> & pixels)
   for (size_t i=0; i<pixels.size(); ++i)
     if (pixels[i]>pix0)
       {
-	compressedPixels.push_back(pixels[i]);
-	pix0  = pixels[i];
+        compressedPixels.push_back(pixels[i]);
+        pix0  = pixels[i];
       }
 
   return compressedPixels;

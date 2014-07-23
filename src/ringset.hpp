@@ -45,16 +45,16 @@ public:
     ringset ();
     ringset (std::string fileName, int order, bool feedback_flag);
 
-    std::vector<double> 
-    getIntensities (const std::vector<double> & theta, 
-		    const std::vector<double> & phi, 
-		    const std::vector<double> & psi) const;
-    void getIntensities (const std::vector<double> & theta, 
-			 const std::vector<double> & phi, 
-			 const std::vector<double> & psi,
-			 std::vector<double> & I, 
-			 std::vector<double> & Q, 
-			 std::vector<double> & U) const;
+    std::vector<double>
+    getIntensities (const std::vector<double> & theta,
+                    const std::vector<double> & phi,
+                    const std::vector<double> & psi) const;
+    void getIntensities (const std::vector<double> & theta,
+                         const std::vector<double> & phi,
+                         const std::vector<double> & psi,
+                         std::vector<double> & I,
+                         std::vector<double> & Q,
+                         std::vector<double> & U) const;
 };
 
 #endif

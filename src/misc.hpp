@@ -53,7 +53,7 @@ enum PDT {
   PIPE_FLOAT64 =  9,
   PIPE_BOOL    = 10,
   PIPE_STRING  = 11,
-  PIPE_INVALID = -1 
+  PIPE_INVALID = -1
 };
 
 // Returns datatype code
@@ -133,7 +133,7 @@ std::string getTFem (int horn);
 template<typename T> std::vector<T> sumVectors (std::vector<T> add1, std::vector<T> add2)
 {
   if (add1.size() != add2.size())
-      throw std::runtime_error(boost::format("Error: the vectors must have the same size: %d / %d") 
+      throw std::runtime_error(boost::format("Error: the vectors must have the same size: %d / %d")
                                % add1.size() % add2.size());
 
   std::vector<T> retVec(add1.size());
@@ -146,7 +146,7 @@ template<typename T> std::vector<T> sumVectors (std::vector<T> add1, std::vector
 ////////////////////////////////////////////////////////////////////////////////
 
 /* Save in "first_idx" and "last_idx" the indexes of the first and
- * last element in "vec" that is between "first" and "last". 
+ * last element in "vec" that is between "first" and "last".
  *
  * If the range defined by [first, last] is not within "vec", both
  * "first_idx" and "last_idx" are initialized to -1.
@@ -154,22 +154,22 @@ template<typename T> std::vector<T> sumVectors (std::vector<T> add1, std::vector
  * Vector "vec" must be in sorted order. */
 
 template<typename T> void
-find_range_of_indexes(std::vector<T> vec, 
-		      T first, 
-		      T last,
-		      int & first_idx, 
-		      int & last_idx)
+find_range_of_indexes(std::vector<T> vec,
+                      T first,
+                      T last,
+                      int & first_idx,
+                      int & last_idx)
 {
     auto start_ptr = std::lower_bound(vec.begin(), vec.end(), first);
     auto end_ptr = std::upper_bound(vec.begin(), vec.end(), last);
     if(start_ptr == vec.end() || end_ptr == vec.end()) {
-	first_idx = last_idx = -1;
+        first_idx = last_idx = -1;
     } else {
-	first_idx = std::distance(vec.begin(), start_ptr);
-	if(end_ptr != vec.begin())
-	    last_idx = std::distance(vec.begin(), end_ptr) - 1;
-	else
-	    last_idx = first_idx;
+        first_idx = std::distance(vec.begin(), start_ptr);
+        if(end_ptr != vec.begin())
+            last_idx = std::distance(vec.begin(), end_ptr) - 1;
+        else
+            last_idx = first_idx;
     }
 }
 

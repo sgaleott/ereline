@@ -16,9 +16,9 @@ public:
   std::vector<double> base;
   std::vector<double> gain;
   int nbase;
-  
+
 public:
-  
+
   basevec(int npp)
   {
     nbase=npp;
@@ -26,7 +26,7 @@ public:
     base = std::vector<double> (npp, 0.);
     gain = std::vector<double> (npp, 0.);
   }
-  
+
   void SetValues(double g, double b, int index)
   {
     base[index]=b;
@@ -104,21 +104,21 @@ class daCapo
   std::vector<int> pixelIndexFullMap;
   std::vector<int> sendcnt;
 
-  void initializeConstraint(bool constraint, 
-			    const Dipole_parameters_t & solar_dipole);
+  void initializeConstraint(bool constraint,
+                            const Dipole_parameters_t & solar_dipole);
   void initializeConstraint(std::vector<double> & constraint);
   void initializeLocmap(const std::vector<Dipole_fit_t> & binnedData);
   void initializeFullmap();
-  void applyMask(const std::vector<Dipole_fit_t> & binnedData, 
-		 const std::vector<float> & mask);
+  void applyMask(const std::vector<Dipole_fit_t> & binnedData,
+                 const std::vector<float> & mask);
 
  public:
-  daCapo(std::vector<Dipole_fit_t> & binnedData, 
-	 std::vector<float> & mask, bool constraint,
-	 const Dipole_parameters_t & dipole_params);
-  daCapo (std::vector<Dipole_fit_t> & binnedData, 
-	  std::vector<float> & mask, 
-	  std::vector<double> & constraint);
+  daCapo(std::vector<Dipole_fit_t> & binnedData,
+         std::vector<float> & mask, bool constraint,
+         const Dipole_parameters_t & dipole_params);
+  daCapo (std::vector<Dipole_fit_t> & binnedData,
+          std::vector<float> & mask,
+          std::vector<double> & constraint);
 
   void constructCCmatrix(const std::vector<Dipole_fit_t> & binnedData);
   void updateDipolenorm();
@@ -135,13 +135,13 @@ class daCapo
   void applyPreconditioner(const basevec &r, basevec &z);
   void updateSignal(std::vector<Dipole_fit_t> & binnedData);
 
-  double iterativeCalibration(std::vector<Dipole_fit_t> & binnedData, 
-			      bool firstLoop);
+  double iterativeCalibration(std::vector<Dipole_fit_t> & binnedData,
+                              bool firstLoop);
 };
 
 class Configuration;
 
 void run_da_capo(const Configuration & program_conf,
-		 const Configuration & storage_conf);
+                 const Configuration & storage_conf);
 
 #endif

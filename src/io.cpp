@@ -22,7 +22,7 @@ ensure_path_exists(const std::string & path)
     boost::system::error_code err;
     boost::filesystem::create_directories(dirname, err);
     if(err.value() != 0) {
-	throw std::runtime_error(err.message());
+        throw std::runtime_error(err.message());
     }
 
     return path;
@@ -32,30 +32,30 @@ ensure_path_exists(const std::string & path)
 
 void
 load_convolution_params(Sqlite_connection_t & ucds,
-			const Lfi_radiometer_t & radiometer,
-			Planck_velocity_t & vel)
+                        const Lfi_radiometer_t & radiometer,
+                        Planck_velocity_t & vel)
 {
     Logger * log = Logger::get_instance();
 
     std::stringstream query;
     query << "\n\tSELECT m100, m010, m001, m200, m110, m101, m020, m011, m002"
-	  << "\n\t  FROM convolved_dipole"
-	  << "\n\t WHERE horn = " << radiometer.horn
-	  << "\n\t   AND radiometer = " << radiometer.radiometer
-	  << "\n\t";
+          << "\n\t  FROM convolved_dipole"
+          << "\n\t WHERE horn = " << radiometer.horn
+          << "\n\t   AND radiometer = " << radiometer.radiometer
+          << "\n\t";
 
     Sqlite_statement_t statement(ucds, query.str().c_str());
 
     int result = statement.step();
     if(result != SQLITE_ROW) {
-	auto error_msg =
-	    boost::format("No match for radiometer %1% in the "
-			  "UCDS table \"convolved_dipole\" (error code: %2%)")
-	    % radiometer.shortName()
-	    % result;
+        auto error_msg =
+            boost::format("No match for radiometer %1% in the "
+                          "UCDS table \"convolved_dipole\" (error code: %2%)")
+            % radiometer.shortName()
+            % result;
 
-	log->error(error_msg);
-	throw IoError(error_msg.str());
+        log->error(error_msg);
+        throw IoError(error_msg.str());
     }
 
     vel.M100 = statement.column_double(0);
@@ -73,19 +73,19 @@ load_convolution_params(Sqlite_connection_t & ucds,
 
 void
 saveGainTable(const std::string & file_name,
-	      signed short od,
-	      const Lfi_radiometer_t & radiometer,
-	      const Gain_table_t & gain_table,
-	      const std::string & comment)
+              signed short od,
+              const Lfi_radiometer_t & radiometer,
+              const Gain_table_t & gain_table,
+              const std::string & comment)
 {
     FitsObject gain_file;
 
     gain_file.create(file_name, true);
 
     std::vector<fitscolumn> columns {
-	{ "PID", "", fitsTypeC<int32_t>(), 1 },
-	{ "GAIN", "", fitsTypeC<double>(), 1 },
-	{ "OFFSET", "", fitsTypeC<double>(), 1 } };
+        { "PID", "", fitsTypeC<int32_t>(), 1 },
+        { "GAIN", "", fitsTypeC<double>(), 1 },
+        { "OFFSET", "", fitsTypeC<double>(), 1 } };
     gain_file.insertBINtable(columns, radiometer.shortName());
     gain_file.writeColumn(1, gain_table.pointingIds);
     gain_file.writeColumn(2, gain_table.gain);
@@ -96,7 +96,7 @@ saveGainTable(const std::string & file_name,
     gain_file.setKey("OD", od);
 
     if(! comment.empty()) {
-	gain_file.setComment(comment);
+        gain_file.setComment(comment);
     }
 }
 
@@ -104,26 +104,26 @@ saveGainTable(const std::string & file_name,
 
 void
 load_pointing_information(Sqlite_connection_t & db,
-			  int first_od,
-			  int last_od,
-			  std::vector<Pointing_t> & pointings)
+                          int first_od,
+                          int last_od,
+                          std::vector<Pointing_t> & pointings)
 {
     Logger * log = Logger::get_instance();
 
     std::stringstream query;
     query << "\n\tSELECT pointingID, start_pointing, start_time, end_time, "
-	  << "\n\t       spin_ecl_lon, spin_ecl_lat, od_int"
-	  << "\n\t  FROM pointings"
-	  << "\n\t WHERE od_int >= " << first_od
-	  << "\n\t   AND od_int <= " << last_od
-	  << "\n\t";
+          << "\n\t       spin_ecl_lon, spin_ecl_lat, od_int"
+          << "\n\t  FROM pointings"
+          << "\n\t WHERE od_int >= " << first_od
+          << "\n\t   AND od_int <= " << last_od
+          << "\n\t";
 
     Sqlite_statement_t statement(db, query.str().c_str());
 
     int result = statement.step();
     pointings.resize(0);
     while(result == SQLITE_ROW) {
-	Pointing_t cur_pointing;
+        Pointing_t cur_pointing;
 
         cur_pointing.id             = statement.column_int   (0);
         cur_pointing.start_pointing = statement.column_double(1);
@@ -133,7 +133,7 @@ load_pointing_information(Sqlite_connection_t & db,
         cur_pointing.spin_ecl_lat   = statement.column_double(5);
         cur_pointing.od             = statement.column_int   (6);
 
-	pointings.push_back(cur_pointing);
+        pointings.push_back(cur_pointing);
         result = statement.step();
     }
 }
@@ -142,8 +142,8 @@ load_pointing_information(Sqlite_connection_t & db,
 
 void
 load_pointing_information(Sqlite_connection_t & ucds,
-			  int od,
-			  std::vector<Pointing_t> & pointings)
+                          int od,
+                          std::vector<Pointing_t> & pointings)
 {
     load_pointing_information(ucds, od, od, pointings);
 }
@@ -151,10 +151,10 @@ load_pointing_information(Sqlite_connection_t & ucds,
 ////////////////////////////////////////////////////////////////////////////////
 
 void save_tod(const std::string & file_name,
-	      signed short od,
-	      const Lfi_radiometer_t & radiometer,
-	      const DifferencedData & datadiff,
-	      const std::string & comment)
+              signed short od,
+              const Lfi_radiometer_t & radiometer,
+              const DifferencedData & datadiff,
+              const std::string & comment)
 {
     Logger * log = Logger::get_instance();
     log->info(boost::format("Going to write a TOD into %1%") % file_name);
@@ -163,10 +163,10 @@ void save_tod(const std::string & file_name,
     tod_file.create(file_name, true);
 
     std::vector<fitscolumn> columns {
-	{ "OBT", "", fitsTypeC<double>(), 1 },
-	{ "SCET", "", fitsTypeC<double>(), 1 },
-	{ "SKYLOAD", "", fitsTypeC<double>(), 1 },
-	{ "FLAGS", "", fitsTypeC<int>(), 1 } };
+        { "OBT", "", fitsTypeC<double>(), 1 },
+        { "SCET", "", fitsTypeC<double>(), 1 },
+        { "SKYLOAD", "", fitsTypeC<double>(), 1 },
+        { "FLAGS", "", fitsTypeC<int>(), 1 } };
     tod_file.insertBINtable(columns, radiometer.shortName());
     tod_file.writeColumn(1, datadiff.obt_time);
     tod_file.writeColumn(2, datadiff.scet_time);
@@ -178,7 +178,7 @@ void save_tod(const std::string & file_name,
     tod_file.setKey("OD", od);
 
     if(! comment.empty()) {
-	tod_file.setComment(comment);
+        tod_file.setComment(comment);
     }
 }
 
@@ -186,22 +186,22 @@ void save_tod(const std::string & file_name,
 
 void
 save_dipole_fit(const std::string & file_name,
-		const Lfi_radiometer_t & radiometer,
-		const Dipole_fit_t & fit,
-		const std::string & comment)
+                const Lfi_radiometer_t & radiometer,
+                const Dipole_fit_t & fit,
+                const std::string & comment)
 {
     Logger * log = Logger::get_instance();
     log->info(boost::format("Going to write a dipoleFit result "
-			    "into %1%") % file_name);
+                            "into %1%") % file_name);
 
     FitsObject dipole_fit_file;
     dipole_fit_file.create(file_name, true);
 
     std::vector<fitscolumn> columns {
-	{ "PIXIDX", "", fitsTypeC<int>(), 1 },
-	{ "PIXHITS", "", fitsTypeC<int>(), 1 },
-	{ "PIXDATA", "", fitsTypeC<double>(), 1 },
-	{ "PIXDIP", "", fitsTypeC<float>(), 1 } };
+        { "PIXIDX", "", fitsTypeC<int>(), 1 },
+        { "PIXHITS", "", fitsTypeC<int>(), 1 },
+        { "PIXDATA", "", fitsTypeC<double>(), 1 },
+        { "PIXDIP", "", fitsTypeC<float>(), 1 } };
     dipole_fit_file.insertBINtable(columns, radiometer.shortName());
     dipole_fit_file.writeColumn(1, fit.pixIndex);
     dipole_fit_file.writeColumn(2, fit.pixSumHits);
@@ -217,7 +217,7 @@ save_dipole_fit(const std::string & file_name,
     dipole_fit_file.setKey("DIPMAX", fit.maxDipole);
 
     if(! comment.empty()) {
-	dipole_fit_file.setComment(comment);
+        dipole_fit_file.setComment(comment);
     }
 }
 

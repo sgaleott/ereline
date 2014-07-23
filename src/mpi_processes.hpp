@@ -13,18 +13,18 @@ struct Data_range_t {
 
     // This is useful for unit tests
     bool operator!=(const Data_range_t & other) const {
-	return (od_range != other.od_range) 
-	    || (pid_range != other.pid_range) 
-	    || num_of_ods != other.num_of_ods 
-	    || num_of_pids != other.num_of_pids;
+        return (od_range != other.od_range)
+            || (pid_range != other.pid_range)
+            || num_of_ods != other.num_of_ods
+            || num_of_pids != other.num_of_pids;
     }
 };
 
-inline std::ostream & 
+inline std::ostream &
 operator<<(std::ostream & os, Data_range_t const & yt)
 {
-    os << "[ OD range: " << yt.od_range 
-       << ", pID range: " << yt.pid_range 
+    os << "[ OD range: " << yt.od_range
+       << ", pID range: " << yt.pid_range
        << ", #OD: " << yt.num_of_ods
        << ", #pID: " << yt.num_of_pids
        << "]";
@@ -34,8 +34,8 @@ operator<<(std::ostream & os, Data_range_t const & yt)
 
 void
 splitOdsIntoMpiProcesses(int numOfMpiProcesses,
-			 const std::vector<Od_t> & list_of_ods,
-			 std::vector<Data_range_t> & data_range);
+                         const std::vector<Od_t> & list_of_ods,
+                         std::vector<Data_range_t> & data_range);
 
 Range_t<int>
 range_of_ods_for_this_process(const std::vector<Od_t> & list_of_ods);

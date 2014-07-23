@@ -41,9 +41,9 @@ ensure_path_exists(const std::string & path);
 ////////////////////////////////////////////////////////////////////////////////
 
 template<typename T>
-void load_map(const std::string & file_name, 
-	      int column, 
-	      Healpix::Map_t<T> & map)
+void load_map(const std::string & file_name,
+              int column,
+              Healpix::Map_t<T> & map)
 {
     Logger * log = Logger::get_instance();
 
@@ -59,54 +59,54 @@ void load_map(const std::string & file_name,
     file.getKey("ORDERING", ordering_str);
 
     if(ordering_str == "NESTED")
-	map.ordering = Healpix::Ordering_t::NEST;
+        map.ordering = Healpix::Ordering_t::NEST;
     else if(ordering_str == "RING")
-	map.ordering = Healpix::Ordering_t::RING;
+        map.ordering = Healpix::Ordering_t::RING;
     else {
-	auto msg = boost::format("unknown ordering for map %1%: \"%2\"")
-	    % file_name % ordering_str;
-	throw std::runtime_error(msg.str());
+        auto msg = boost::format("unknown ordering for map %1%: \"%2\"")
+            % file_name % ordering_str;
+        throw std::runtime_error(msg.str());
     }
 
     log->debug(boost::format("The map has %1% pixels (NSIDE=%2%) and order %3%")
-	       % num_of_pixels
-	       % map.nside
-	       % ordering_str);
+               % num_of_pixels
+               % map.nside
+               % ordering_str);
     file.getColumn(column, map.pixels, 1, num_of_pixels);
     log->info(boost::format("%1% pixels read from %2%")
-	      % num_of_pixels
-	      % file_name);
+              % num_of_pixels
+              % file_name);
 }
 
 void load_convolution_params(Sqlite_connection_t & ucds,
-			     const Lfi_radiometer_t & radiometer,
-			     Planck_velocity_t & vel);
+                             const Lfi_radiometer_t & radiometer,
+                             Planck_velocity_t & vel);
 
 void load_pointing_information(Sqlite_connection_t & ucds,
-			     int first_od,
-			     int last_od,
-			     std::vector<Pointing_t> & pointings);
+                             int first_od,
+                             int last_od,
+                             std::vector<Pointing_t> & pointings);
 // Wrapper around the previous definition, with the assumption that
 // first_od == last_od == od.
 void load_pointing_information(Sqlite_connection_t & ucds,
-			       int od,
-			       std::vector<Pointing_t> & pointings);
+                               int od,
+                               std::vector<Pointing_t> & pointings);
 
 void saveGainTable(const std::string & file_name,
-		   signed short od,
-		   const Lfi_radiometer_t & radiometer,
-		   const Gain_table_t & gain_table,
-		   const std::string & comment = "");
+                   signed short od,
+                   const Lfi_radiometer_t & radiometer,
+                   const Gain_table_t & gain_table,
+                   const std::string & comment = "");
 
 void save_tod(const std::string & file_name,
-	      signed short od,
-	      const Lfi_radiometer_t & radiometer,
-	      const DifferencedData & datadiff,
-	      const std::string & comment = "");
+              signed short od,
+              const Lfi_radiometer_t & radiometer,
+              const DifferencedData & datadiff,
+              const std::string & comment = "");
 
 void save_dipole_fit(const std::string & file_name,
-		     const Lfi_radiometer_t & radiometer,
-		     const Dipole_fit_t & fit,
-		     const std::string & comment = "");
+                     const Lfi_radiometer_t & radiometer,
+                     const Dipole_fit_t & fit,
+                     const std::string & comment = "");
 
 #endif

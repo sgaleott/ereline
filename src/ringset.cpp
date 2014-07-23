@@ -46,21 +46,21 @@ ringset::init (std::string fileName, int order, bool feedback_flag)
 {
     // Initialize Rotmatrix Ecliptic to Galactic
     ecl2gal = rotmatrix(-0.054882486, -0.993821033, -0.096476249,
-			 0.494116468, -0.110993846,  0.862281440,
-			-0.867661702, -0.000346354,  0.497154957);
+                         0.494116468, -0.110993846,  0.862281440,
+                        -0.867661702, -0.000346354,  0.497154957);
 
     Logger * log = Logger::get_instance();
     log->info(boost::format("Reading ringsets from FITS file %1%")
-	      % fileName);
+              % fileName);
 
     fitsfile * fptr;
     int status = 0;
     fits_open_file(&fptr, fileName.c_str(), READONLY, &status);
     if(status != 0) {
-	char msg[30];
-	fits_get_errstatus(status, msg);
-	throw std::runtime_error((boost::format("Error reading %1%: %2%") 
-				  % fileName % msg).str());
+        char msg[30];
+        fits_get_errstatus(status, msg);
+        throw std::runtime_error((boost::format("Error reading %1%: %2%")
+                                  % fileName % msg).str());
     }
 
     fits_read_key(fptr, TINT, "beam_mmax", &beammMax, NULL, &status);
@@ -96,8 +96,8 @@ ringset::init (std::string fileName, int order, bool feedback_flag)
     psiVector.swap(tmpVector);
     for (size_t idx=0; idx<tmpPresent.size(); ++idx)
     {
-	psiVector[tmpPresent[idx]] = nPsi;
-	(tmpPresent[idx] == 0) ? nPsi+=1 : nPsi+=2;
+        psiVector[tmpPresent[idx]] = nPsi;
+        (tmpPresent[idx] == 0) ? nPsi+=1 : nPsi+=2;
     }
 
     fits_movabs_hdu(fptr, 2, NULL, &status);
@@ -107,50 +107,50 @@ ringset::init (std::string fileName, int order, bool feedback_flag)
     sky.swap(tmpMat);
     for (int psiIdx=0; psiIdx<nPsi; ++psiIdx)
     {
-	if(feedback_flag && psiIdx % 10 == 0) {
-	    const int bar_length = 40;
-	    char bar[bar_length + 1];
-	    int percent = (psiIdx * bar_length) / (nPsi - 1);
-	    int char_idx;
+        if(feedback_flag && psiIdx % 10 == 0) {
+            const int bar_length = 40;
+            char bar[bar_length + 1];
+            int percent = (psiIdx * bar_length) / (nPsi - 1);
+            int char_idx;
 
-	    bar[bar_length] = 0;
-	    for(char_idx = 0; char_idx < bar_length; ++char_idx) {
-		bar[char_idx] = char_idx < percent ? '*' : '.';
-	    }
-	    std::fprintf(stderr,
-			 "|%s| %d/%d, %d%%\r", bar, psiIdx + 1, nPsi, (psiIdx * 100) / (nPsi - 1));
-	}
+            bar[bar_length] = 0;
+            for(char_idx = 0; char_idx < bar_length; ++char_idx) {
+                bar[char_idx] = char_idx < percent ? '*' : '.';
+            }
+            std::fprintf(stderr,
+                         "|%s| %d/%d, %d%%\r", bar, psiIdx + 1, nPsi, (psiIdx * 100) / (nPsi - 1));
+        }
 
-	std::vector<float> tmpSky(nTheta * nPhi);
-	fits_read_col(fptr, TFLOAT, 1,
-		      1 + psiIdx * nTheta * nPhi, 1, nTheta * nPhi,
-		      NULL, tmpSky.data(), NULL, &status);
+        std::vector<float> tmpSky(nTheta * nPhi);
+        fits_read_col(fptr, TFLOAT, 1,
+                      1 + psiIdx * nTheta * nPhi, 1, nTheta * nPhi,
+                      NULL, tmpSky.data(), NULL, &status);
 
-	for (int thetaIdx = 0; thetaIdx < nTheta; ++thetaIdx) {
-	    for (int phiIdx = 0; phiIdx < nPhi; ++phiIdx) {
-		sky[phiIdx][thetaIdx][psiIdx] = 
-		    (psiIdx == 0) 
-		    ? tmpSky[thetaIdx * nPhi + phiIdx] 
-		    : 2 * tmpSky[thetaIdx * nPhi + phiIdx];
-	    }
-	}
+        for (int thetaIdx = 0; thetaIdx < nTheta; ++thetaIdx) {
+            for (int phiIdx = 0; phiIdx < nPhi; ++phiIdx) {
+                sky[phiIdx][thetaIdx][psiIdx] =
+                    (psiIdx == 0)
+                    ? tmpSky[thetaIdx * nPhi + phiIdx]
+                    : 2 * tmpSky[thetaIdx * nPhi + phiIdx];
+            }
+        }
     }
 
     if(feedback_flag) {
-	std::fputc('\n', stderr);
+        std::fputc('\n', stderr);
     }
 
     fits_close_file(fptr, &status);
     if(status != 0) {
-	fits_report_error(stderr, status);
-	loaded = false;
-	ok = false;
-	return;
+        fits_report_error(stderr, status);
+        loaded = false;
+        ok = false;
+        return;
     }
 
     initializeWeights(order);
     log->info(boost::format("Ringsets loaded from %1% successfully")
-	      % fileName);
+              % fileName);
 
     loaded = true;
     ok = true;
@@ -167,15 +167,15 @@ ringset::initializeWeights(int order)
     std::vector<double> tmpWgt(nPoints, 1);
     baseWgt.swap(tmpWgt);
     for (int extIdx = 0; extIdx < nPoints; ++extIdx) {
-	for (int intIdx=0; intIdx < nPoints; ++intIdx) {
-	    if (intIdx != extIdx) {
-		baseWgt[extIdx] *= extIdx - intIdx;
-	    }
-	}
+        for (int intIdx=0; intIdx < nPoints; ++intIdx) {
+            if (intIdx != extIdx) {
+                baseWgt[extIdx] *= extIdx - intIdx;
+            }
+        }
     }
-  
+
     for (int idx=0; idx < nPoints; ++idx)
-	baseWgt[idx] = 1. / baseWgt[idx];
+        baseWgt[idx] = 1. / baseWgt[idx];
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -190,10 +190,10 @@ ringset::weightN (double x) const
 
     for (int idx=1; idx<nPoints; ++idx)
     {
-	wgt[idx] *= mul1;
-	wgt[nPoints - idx - 1] *= mul2;
-	mul1 *= x - idx;
-	mul2 *= x - nPoints + idx + 1;
+        wgt[idx] *= mul1;
+        wgt[nPoints - idx - 1] *= mul2;
+        mul1 *= x - idx;
+        mul2 *= x - nPoints + idx + 1;
     }
     return wgt;
 }
@@ -206,51 +206,51 @@ ringset::interpolN (double theta, double phi) const
     double frac = theta*invDeltaTheta - thetaOffset;
     int iTheta0 = int (frac) - iOffset;
 
-    if (iTheta0 > (nTheta-nPoints)) 
-	iTheta0 = nTheta-nPoints;
-    if (iTheta0 < 0) 
-	iTheta0 = 0;
+    if (iTheta0 > (nTheta-nPoints))
+        iTheta0 = nTheta-nPoints;
+    if (iTheta0 < 0)
+        iTheta0 = 0;
     frac -= iTheta0;
     std::vector<double> wgt1 = weightN (frac);
 
     frac = phi * invDeltaPhi - phiOffset;
     if(frac >= 0) {
-	frac = (frac < double(nPhi)) ? frac : remainder(frac, double(nPhi));
+        frac = (frac < double(nPhi)) ? frac : remainder(frac, double(nPhi));
     } else {
-	frac = remainder(frac, double(nPhi)) + double(nPhi);
+        frac = remainder(frac, double(nPhi)) + double(nPhi);
     }
 
     int iPhi0 = int (frac) - iOffset;
     frac -= iPhi0;
-    if (iPhi0 >= nPhi) 
-	iPhi0 -= nPhi;
-    if (iPhi0 < 0) 
-	iPhi0 += nPhi;
+    if (iPhi0 >= nPhi)
+        iPhi0 -= nPhi;
+    if (iPhi0 < 0)
+        iPhi0 += nPhi;
     std::vector<double> wgt2 = weightN (frac);
 
     std::vector<double> result(nPsi, 0);
     int iPhi = iPhi0;
     for (int i = 0; i < nPoints; ++i)
     {
-	for (int j = 0; j < nPoints; ++j)
-	{
-	    double weight = wgt2[i] * wgt1[j];
-	    const float * ref = &sky[iPhi][iTheta0 + j][0];
-	    for (int k=0; k < nPsi; ++k)
-		result[k] += weight * ref[k];
-	}
-	if (++iPhi >= nPhi) 
-	    iPhi -= nPhi;
+        for (int j = 0; j < nPoints; ++j)
+        {
+            double weight = wgt2[i] * wgt1[j];
+            const float * ref = &sky[iPhi][iTheta0 + j][0];
+            for (int k=0; k < nPsi; ++k)
+                result[k] += weight * ref[k];
+        }
+        if (++iPhi >= nPhi)
+            iPhi -= nPhi;
     }
     return result;
 }
 
-inline double 
+inline double
 ringset::interpolPsi(double omega, const std::vector<double> & kArr) const
 {
     double result = (psiVector[0] >= 0) ? kArr[0] : 0;
-    if (nPsi <= 1) 
-	return result;
+    if (nPsi <= 1)
+        return result;
 
     double cosang = 1;
     double sinang = 0;
@@ -259,11 +259,11 @@ ringset::interpolPsi(double omega, const std::vector<double> & kArr) const
 
     for (int k = 1; k <= beammMax; ++k)
     {
-	const double tmp = sinang * cosomg + cosang * sinomg;
-	cosang = cosang * cosomg - sinang * sinomg;
-	sinang = tmp;
-	if (psiVector[k] >= 0)
-	    result += cosang * kArr[psiVector[k]] - sinang * kArr[psiVector[k] + 1];
+        const double tmp = sinang * cosomg + cosang * sinomg;
+        cosang = cosang * cosomg - sinang * sinomg;
+        sinang = tmp;
+        if (psiVector[k] >= 0)
+            result += cosang * kArr[psiVector[k]] - sinang * kArr[psiVector[k] + 1];
     }
     return result;
 }
@@ -272,9 +272,9 @@ ringset::interpolPsi(double omega, const std::vector<double> & kArr) const
 
 std::vector<double>
 ringset::getIntensities (const std::vector<double> & theta,
-			 const std::vector<double> & phi, 
-			 const std::vector<double> & psi) const
-{ 
+                         const std::vector<double> & phi,
+                         const std::vector<double> & psi) const
+{
     // Init rotation trigonometry functions
     double cosBeta  = ecl2gal.entry[2][2];
     double sinBeta  = sqrt(1 - cosBeta * cosBeta);
@@ -290,23 +290,23 @@ ringset::getIntensities (const std::vector<double> & theta,
     std::vector<double> result(theta.size());
     for (size_t idx = 0; idx < result.size(); ++idx)
     {
-	// Convert ecliptic to galactic
-	double z = -sinBeta * sin(theta[idx]) * sin(phi[idx] - alpha) 
-	    + cosBeta * cos(theta[idx]);
+        // Convert ecliptic to galactic
+        double z = -sinBeta * sin(theta[idx]) * sin(phi[idx] - alpha)
+            + cosBeta * cos(theta[idx]);
 
-	double yh = cosBeta * sin(theta[idx]) * sin(phi[idx] - alpha) 
-	    + sinBeta*cos(theta[idx]);
-	double xh = sin(theta[idx]) * cos(phi[idx] - alpha);
+        double yh = cosBeta * sin(theta[idx]) * sin(phi[idx] - alpha)
+            + sinBeta*cos(theta[idx]);
+        double xh = sin(theta[idx]) * cos(phi[idx] - alpha);
 
-	std::vector<double> tmpArr(interpolN (acos(z), atan2(yh,xh) + gamma));
+        std::vector<double> tmpArr(interpolN (acos(z), atan2(yh,xh) + gamma));
 
-	double ys = -cos(phi[idx] - alpha) * sinBeta;
-	double xs = sin(theta[idx]) * cosBeta 
-	    + cos(theta[idx]) * sin(phi[idx] - alpha) * sinBeta;
-	double omegaWg = psi[idx] + atan2(ys,xs) - HALFPI;
+        double ys = -cos(phi[idx] - alpha) * sinBeta;
+        double xs = sin(theta[idx]) * cosBeta
+            + cos(theta[idx]) * sin(phi[idx] - alpha) * sinBeta;
+        double omegaWg = psi[idx] + atan2(ys,xs) - HALFPI;
 
-	// * 2 Multiplication because of LevelS SCR 234
-	result[idx] = interpolPsi (omegaWg, tmpArr) * 2;
+        // * 2 Multiplication because of LevelS SCR 234
+        result[idx] = interpolPsi (omegaWg, tmpArr) * 2;
     }
 
     return result;
