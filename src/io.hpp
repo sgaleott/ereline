@@ -14,7 +14,7 @@
 
 class PlanckVelocity;
 class SQLite3Connection;
-class gainTable;
+class Gain_table_t;
 class LfiRadiometer;
 struct dipoleFit;
 
@@ -95,7 +95,7 @@ void loadPointingInformation(SQLite3Connection & ucds,
 void saveGainTable(const std::string & file_name,
 		   signed short od,
 		   const LfiRadiometer & radiometer,
-		   const gainTable & gain_table,
+		   const Gain_table_t & gain_table,
 		   const std::string & comment = "");
 
 void save_tod(const std::string & file_name,

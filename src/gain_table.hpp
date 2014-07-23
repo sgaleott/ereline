@@ -14,8 +14,7 @@
 #include <cstdlib>
 #include <vector>
 
-struct gainTable
-{
+struct Gain_table_t {
   std::vector<int> pointingIds;
   std::vector<double> gain;
   std::vector<double> offset;
@@ -32,7 +31,7 @@ struct gainTable
   std::vector<double> variableWMA(const std::vector<int> & windowLen, 
 				  const std::vector<double> & dipole);
 
-  gainTable();
+  Gain_table_t();
 
   int getPidIndex (int pid);
 

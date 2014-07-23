@@ -452,7 +452,7 @@ process_one_od(const Configuration & program_conf,
 
 static void
 extract_gains(const std::vector<dipoleFit> & list_of_fits, 
-	      gainTable & gain_table)
+	      Gain_table_t & gain_table)
 {
     const size_t num_of_fits = list_of_fits.size();
     gain_table.pointingIds.resize(num_of_fits);

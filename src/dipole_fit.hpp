@@ -59,7 +59,7 @@ struct dipoleFit
 };
 
 struct Dipole_fit_results_t {
-    gainTable gain_table;
+    Gain_table_t gain_table;
     std::vector<dipoleFit> list_of_fits;
     Healpix::Map_t<float> mask;
 };

@@ -75,7 +75,7 @@ void
 saveGainTable(const std::string & file_name,
 	      signed short od,
 	      const LfiRadiometer & radiometer,
-	      const gainTable & gain_table,
+	      const Gain_table_t & gain_table,
 	      const std::string & comment)
 {
     FitsObject gain_file;

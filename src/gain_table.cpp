@@ -11,43 +11,43 @@
 #include <gsl/gsl_fft_real.h>
 #include <gsl/gsl_fft_halfcomplex.h>
 
-gainTable::gainTable()
+Gain_table_t::Gain_table_t()
 {
 }
 
 int
-gainTable::getPidIndex (int pid)
+Gain_table_t::getPidIndex (int pid)
 {
   unsigned int res = static_cast<unsigned int>(std::lower_bound(pointingIds.begin(), pointingIds.end(), pid) - pointingIds.begin());
   return res;
 }
 
 void 
-gainTable::appendPidValue (int a_pid)
+Gain_table_t::appendPidValue (int a_pid)
 {
   pointingIds.push_back(a_pid);
 }
 
 void 
-gainTable::appendGainValue (double a_gain)
+Gain_table_t::appendGainValue (double a_gain)
 {
   gain.push_back(a_gain);
 }
 
 void 
-gainTable::appendOffsetValue (double a_offset)
+Gain_table_t::appendOffsetValue (double a_offset)
 {
   offset.push_back(a_offset);
 }
 
 void 
-gainTable::setWindowVector (std::vector<int> & a_windowVector)
+Gain_table_t::setWindowVector (std::vector<int> & a_windowVector)
 {
   windowVector = a_windowVector;
 }
 
 void
-gainTable::mergeResults()
+Gain_table_t::mergeResults()
 {
     int rankMPI = MPI::COMM_WORLD.Get_rank();
     int sizeMPI = MPI::COMM_WORLD.Get_size();
@@ -109,7 +109,7 @@ gainTable::mergeResults()
 }
 
 std::vector<double> 
-gainTable::wma(int windowLen, 
+Gain_table_t::wma(int windowLen, 
 	       const std::vector<double> weights, 
 	       const std::vector<double> raw)
 {
@@ -152,7 +152,7 @@ gainTable::wma(int windowLen,
 }
 
 std::vector<int>
-gainTable::createWindowsVector(int windowLen1, 
+Gain_table_t::createWindowsVector(int windowLen1, 
 			       int windowLen2,
 			       double minRangeDipole, 
 			       double maxRangeDipole, 
@@ -259,7 +259,7 @@ gainTable::createWindowsVector(int windowLen1,
 }
 
 std::vector<double> 
-gainTable::variableWMA(const std::vector<int> & windowLen, 
+Gain_table_t::variableWMA(const std::vector<int> & windowLen, 
 		       const std::vector<double> & dipole)
 {  
   // Moving window smoothing
@@ -308,9 +308,9 @@ gainTable::variableWMA(const std::vector<int> & windowLen,
 }
 
 std::vector<double> 
-gainTable::variableWMAlocal(const std::vector<int> & windowLen, 
-			    const std::vector<double> & dipole, 
-			    const std::vector<double> & sectorGain)
+Gain_table_t::variableWMAlocal(const std::vector<int> & windowLen, 
+			       const std::vector<double> & dipole, 
+			       const std::vector<double> & sectorGain)
 {  
   // Moving window smoothing
   std::vector<double> windowVec;
@@ -359,10 +359,10 @@ gainTable::variableWMAlocal(const std::vector<int> & windowLen,
 }
 
 std::vector<double>
-gainTable::gainSmoothing(int windowLenMinima, int windowLenMaxima, 
-			 int windowLenSlowSmoothing, double percentSlowVariations,
-			 double minRangeDipole, double maxRangeDipole,
-			 std::vector<double> & dipole)
+Gain_table_t::gainSmoothing(int windowLenMinima, int windowLenMaxima, 
+			    int windowLenSlowSmoothing, double percentSlowVariations,
+			    double minRangeDipole, double maxRangeDipole,
+			    std::vector<double> & dipole)
 {
   std::vector<int> dipoleWindowVector = createWindowsVector(windowLenMinima, windowLenMaxima, minRangeDipole, maxRangeDipole, dipole);
 
@@ -544,7 +544,7 @@ gainTable::gainSmoothing(int windowLenMinima, int windowLenMaxima,
 }
 
 std::vector<double> 
-gainTable::zeroing(int windowLen, double percent, std::vector<double> & dipole)
+Gain_table_t::zeroing(int windowLen, double percent, std::vector<double> & dipole)
 {
   std::vector<double> paddedRaw;
   for (size_t idx=windowLen/2; idx>0; --idx)
@@ -595,11 +595,11 @@ gainTable::zeroing(int windowLen, double percent, std::vector<double> & dipole)
 }
 
 std::vector<double>
-gainTable::offsetSmoothing(int windowLenMinima, 
-			   int windowLenMaxima, 
-			   double minRangeDipole, 
-			   double maxRangeDipole, 
-			   std::vector<double> & dipole)
+Gain_table_t::offsetSmoothing(int windowLenMinima, 
+			      int windowLenMaxima, 
+			      double minRangeDipole, 
+			      double maxRangeDipole, 
+			      std::vector<double> & dipole)
 {
   std::vector<int> dipoleWindowVector = createWindowsVector(windowLenMinima, windowLenMaxima, minRangeDipole, maxRangeDipole, dipole);
   std::vector<double> retVec = variableWMAlocal(dipoleWindowVector, dipole, offset);
@@ -607,9 +607,9 @@ gainTable::offsetSmoothing(int windowLenMinima,
 }
 
 void
-gainTable::selectRadiometerGains(int armNumber, 
-				 size_t detectorIdsSize, 
-				 const std::vector<int> & nIdsRange)
+Gain_table_t::selectRadiometerGains(int armNumber, 
+				    size_t detectorIdsSize, 
+				    const std::vector<int> & nIdsRange)
 {
     // Select values
     std::vector<int> tmpPointingIds;
@@ -642,10 +642,10 @@ gainTable::selectRadiometerGains(int armNumber,
 }
 
 void
-gainTable::selectDiodeGains(int detectorIdIdx, size_t detectorIdsSize, 
-			    const std::vector<int> nIdsRange, 
-			    std::vector<double> & outGain,
-			    std::vector<double> & outOffset)
+Gain_table_t::selectDiodeGains(int detectorIdIdx, size_t detectorIdsSize, 
+			       const std::vector<int> nIdsRange, 
+			       std::vector<double> & outGain,
+			       std::vector<double> & outOffset)
 {
   // Select values
   std::vector<int> tmpPointingIds;
