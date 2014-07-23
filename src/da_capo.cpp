@@ -18,7 +18,7 @@ extern "C" {
  * Take binned data and dipolefit gains as input.
  * It also take the number of streams (single diode/radiometer, horn using all streams)
  **/
-daCapo::daCapo(std::vector<Dipole_fit_t> & binnedData,
+daCapo::daCapo(std::vector<Dipole_fit_t> & locallyBinnedData,
                std::vector<float> & mask,
                bool constraint,
                const Dipole_parameters_t & dipole_params)
@@ -26,43 +26,43 @@ daCapo::daCapo(std::vector<Dipole_fit_t> & binnedData,
   sizeMPI = MPI::COMM_WORLD.Get_size();
   rankMPI = MPI::COMM_WORLD.Get_rank();
 
-  nSide = binnedData[0].nSide;
+  nSide = locallyBinnedData[0].nSide;
   nPixelMap = 12 * nSide * nSide;
   rzinit=0;
 
-  initializeLocmap(binnedData);
+  initializeLocmap(locallyBinnedData);
   initializeFullmap();
-  applyMask(binnedData, mask);
+  applyMask(locallyBinnedData, mask);
   initializeConstraint(constraint, dipole_params);
 
   localMap = std::vector<double>(pixelIndexLocal.size()+1, 0.);
   fullMap = std::vector<double>(pixelIndexFull.size(), 0.);
   ccFull = std::vector<double>(pixelIndexFull.size(), 0.);
   dipolenorm = std::vector<double>(3, 0.);
-  preconditioner = std::vector< std::vector<double> >(binnedData.size(), std::vector<double>(3, 0.));
+  preconditioner = std::vector< std::vector<double> >(locallyBinnedData.size(), std::vector<double>(3, 0.));
 }
 
-daCapo::daCapo (std::vector<Dipole_fit_t> & binnedData,
+daCapo::daCapo (std::vector<Dipole_fit_t> & locallyBinnedData,
                 std::vector<float> & mask,
                 std::vector<double> & constraint)
 {
   sizeMPI = MPI::COMM_WORLD.Get_size();
   rankMPI = MPI::COMM_WORLD.Get_rank();
 
-  nSide = binnedData[0].nSide;
+  nSide = locallyBinnedData[0].nSide;
   nPixelMap = 12 * nSide * nSide;
   rzinit=0;
 
-  initializeLocmap(binnedData);
+  initializeLocmap(locallyBinnedData);
   initializeFullmap();
-  applyMask(binnedData, mask);
+  applyMask(locallyBinnedData, mask);
   initializeConstraint(constraint);
 
   localMap = std::vector<double>(pixelIndexLocal.size()+1, 0.);
   fullMap = std::vector<double>(pixelIndexFull.size(), 0.);
   ccFull = std::vector<double>(pixelIndexFull.size(), 0.);
   dipolenorm = std::vector<double>(3, 0.);
-  preconditioner = std::vector< std::vector<double> >(binnedData.size(), std::vector<double>(3, 0.));
+  preconditioner = std::vector< std::vector<double> >(locallyBinnedData.size(), std::vector<double>(3, 0.));
 }
 
 /**

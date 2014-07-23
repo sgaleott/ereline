@@ -113,10 +113,10 @@ class daCapo
                  const std::vector<float> & mask);
 
  public:
-  daCapo(std::vector<Dipole_fit_t> & binnedData,
+  daCapo(std::vector<Dipole_fit_t> & locallyBinnedData,
          std::vector<float> & mask, bool constraint,
          const Dipole_parameters_t & dipole_params);
-  daCapo (std::vector<Dipole_fit_t> & binnedData,
+  daCapo (std::vector<Dipole_fit_t> & locallyBinnedData,
           std::vector<float> & mask,
           std::vector<double> & constraint);
 

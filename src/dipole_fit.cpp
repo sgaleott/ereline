@@ -545,7 +545,7 @@ run_dipole_fit(Sqlite_connection_t & ucds,
        last_pid->id != data_range.pid_range.end)
     {
         log->error("Mismatch in the pointing IDs");
-        return;
+        abort();
     }
 
     /* We should now iterate over each pointing period in the range.
@@ -592,6 +592,10 @@ run_dipole_fit(Sqlite_connection_t & ucds,
     }
 
     extract_gains(result.list_of_fits, result.gain_table);
+
+    log->info("Waiting for all the MPI processes to get here...");
+    MPI::COMM_WORLD.Barrier();
+    log->info("...done, merging the results");
 
     // Retrieve the gain table from all the other MPI processes and put
     // them together in results.gain_table
