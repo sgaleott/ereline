@@ -35,12 +35,12 @@ public:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-struct LfiRadiometer {
+struct Lfi_radiometer_t {
     int horn;
     int radiometer;
 
-    LfiRadiometer(const std::string & name);
-    LfiRadiometer(int a_horn = 18, int a_radiometer = 0);
+    Lfi_radiometer_t(const std::string & name);
+    Lfi_radiometer_t(int a_horn = 18, int a_radiometer = 0);
 
     void assign(const std::string & name);
     void assign(int a_horn, int a_radiometer);
@@ -49,7 +49,7 @@ struct LfiRadiometer {
     std::string shortName() const; // E.g. LFI28M
     std::string fullNameWithDetector(int detector = 0) const; // E.g. LFI28M-00
     std::string armName() const;
-    LfiRadiometer twinRadiometer() const;
+    Lfi_radiometer_t twinRadiometer() const;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

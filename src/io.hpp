@@ -15,7 +15,7 @@
 class PlanckVelocity;
 class SQLite3Connection;
 class Gain_table_t;
-class LfiRadiometer;
+class Lfi_radiometer_t;
 struct Dipole_fit_t;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -79,7 +79,7 @@ void load_map(const std::string & file_name,
 }
 
 void loadConvolutionParametersFromUCDS(SQLite3Connection & ucds,
-				       const LfiRadiometer & radiometer,
+				       const Lfi_radiometer_t & radiometer,
 				       PlanckVelocity & vel);
 
 void loadPointingInformation(SQLite3Connection & ucds,
@@ -94,18 +94,18 @@ void loadPointingInformation(SQLite3Connection & ucds,
 
 void saveGainTable(const std::string & file_name,
 		   signed short od,
-		   const LfiRadiometer & radiometer,
+		   const Lfi_radiometer_t & radiometer,
 		   const Gain_table_t & gain_table,
 		   const std::string & comment = "");
 
 void save_tod(const std::string & file_name,
 	      signed short od,
-	      const LfiRadiometer & radiometer,
+	      const Lfi_radiometer_t & radiometer,
 	      const DifferencedData & datadiff,
 	      const std::string & comment = "");
 
 void save_dipole_fit(const std::string & file_name,
-		     const LfiRadiometer & radiometer,
+		     const Lfi_radiometer_t & radiometer,
 		     const Dipole_fit_t & fit,
 		     const std::string & comment = "");
 

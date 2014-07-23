@@ -69,8 +69,8 @@ struct Configuration {
 
 void setup_od_variable(int od, Configuration & conf);
 
-struct LfiRadiometer;
-void setup_variables_for_radiometer(const LfiRadiometer & rad,
+struct Lfi_radiometer_t;
+void setup_variables_for_radiometer(const Lfi_radiometer_t & rad,
 				    Configuration & conf);
 
 

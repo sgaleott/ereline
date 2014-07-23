@@ -157,7 +157,7 @@ void setup_od_variable(int od, Configuration & conf)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-setup_variables_for_radiometer(const LfiRadiometer & rad,
+setup_variables_for_radiometer(const Lfi_radiometer_t & rad,
 			       Configuration & conf)
 {
     conf.set_variable("horn", 

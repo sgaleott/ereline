@@ -140,7 +140,7 @@ inner_main(int argc, const char ** argv)
     const auto radiometer_nodes =
 	program_config.ptree.get_child("common.radiometer");
     for(const auto & cur_node : radiometer_nodes) {
-	LfiRadiometer radiometer(cur_node.second.get<std::string>(""));
+	Lfi_radiometer_t radiometer(cur_node.second.get<std::string>(""));
 
 	log->info(boost::format("Processing radiometer %1%")
 		  % radiometer.shortName());

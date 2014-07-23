@@ -184,9 +184,9 @@ Dipole_fit_t::unload()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static LfiRadiometer
+static Lfi_radiometer_t
 radiometer_to_use(int mpi_rank, 
-		  const LfiRadiometer & user_rad,
+		  const Lfi_radiometer_t & user_rad,
 		  Configuration & program_conf,
 		  Configuration & storage_conf)
 {
@@ -200,7 +200,7 @@ radiometer_to_use(int mpi_rank,
      *
      * (Of course, if the user specified a "side" radiometer in the
      * JSON file, things are reversed.) */
-    LfiRadiometer real_radiometer;
+    Lfi_radiometer_t real_radiometer;
     if(mpi_rank % 2 == 0)
 	real_radiometer = user_rad;
     else
@@ -307,7 +307,7 @@ datadiff_file_path(const Configuration & storage_conf)
 static std::vector<Dipole_fit_t>
 process_one_od(const Configuration & program_conf,
 	       const Configuration & storage_conf,
-	       const LfiRadiometer & radiometer,
+	       const Lfi_radiometer_t & radiometer,
 	       int od,
 	       const Healpix::Map_t<float> & mask,
 	       const ringset & galactic_pickup,
@@ -460,7 +460,7 @@ extract_gains(const std::vector<Dipole_fit_t> & list_of_fits,
 
 void
 run_dipole_fit(SQLite3Connection & ucds,
-	       const LfiRadiometer & rad,
+	       const Lfi_radiometer_t & rad,
 	       Configuration & program_conf,
 	       Configuration & storage_conf,
 	       const std::vector<Pointing_t> & list_of_pointings,
@@ -478,7 +478,7 @@ run_dipole_fit(SQLite3Connection & ucds,
     log->info("Starting module dipoleFit");
     log->increase_indent();
 
-    LfiRadiometer real_radiometer(
+    Lfi_radiometer_t real_radiometer(
 	radiometer_to_use(mpi_rank, rad, program_conf, storage_conf));
 
     // Load all the inputs needed by this module

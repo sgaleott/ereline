@@ -3,18 +3,18 @@
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 
-LfiRadiometer::LfiRadiometer(const std::string & name)
+Lfi_radiometer_t::Lfi_radiometer_t(const std::string & name)
 {
     assign(name);
 }
 
-LfiRadiometer::LfiRadiometer(int a_horn, int a_radiometer)
+Lfi_radiometer_t::Lfi_radiometer_t(int a_horn, int a_radiometer)
 {
     assign(a_horn, a_radiometer);
 }
 
 void
-LfiRadiometer::assign(const std::string & name)
+Lfi_radiometer_t::assign(const std::string & name)
 {
     size_t horn_str_start_pos;
     size_t arm_char_pos;
@@ -63,13 +63,13 @@ LfiRadiometer::assign(const std::string & name)
 }
 
 void 
-LfiRadiometer::assign(int a_horn, int a_radiometer)
+Lfi_radiometer_t::assign(int a_horn, int a_radiometer)
 {
     horn = a_horn;
     radiometer = a_radiometer;
 }
 
-int LfiRadiometer::frequencyInGhz() const
+int Lfi_radiometer_t::frequencyInGhz() const
 {
     if(horn <= 23)
 	return 70;
@@ -79,14 +79,14 @@ int LfiRadiometer::frequencyInGhz() const
 	return 30;
 }
 
-std::string LfiRadiometer::shortName() const
+std::string Lfi_radiometer_t::shortName() const
 {
     auto f = boost::format("LFI%1%%2%") % horn % armName();
     return f.str();
 }
 
 std::string
-LfiRadiometer::fullNameWithDetector(int detector) const
+Lfi_radiometer_t::fullNameWithDetector(int detector) const
 {
     auto f = 
 	boost::format("LFI%1%%2%-%3%%4%") 
@@ -98,7 +98,7 @@ LfiRadiometer::fullNameWithDetector(int detector) const
     return f.str();
 }
 
-std::string LfiRadiometer::armName() const
+std::string Lfi_radiometer_t::armName() const
 {
     if(radiometer == 0)
 	return "M";
@@ -106,9 +106,10 @@ std::string LfiRadiometer::armName() const
 	return "S";
 }
 
-LfiRadiometer LfiRadiometer::twinRadiometer() const
+Lfi_radiometer_t 
+Lfi_radiometer_t::twinRadiometer() const
 {
-    return LfiRadiometer(horn, radiometer == 0 ? 1 : 0);
+    return Lfi_radiometer_t(horn, radiometer == 0 ? 1 : 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

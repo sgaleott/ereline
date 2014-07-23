@@ -8,7 +8,7 @@
 #include "healpix_map.hpp"
 #include "planck_velocity.hpp"
 
-struct LfiRadiometer;
+struct Lfi_radiometer_t;
 
 /* class calib iter*/
 struct Dipole_fit_t
@@ -66,7 +66,7 @@ class Configuration;
 struct SQLite3Connection;
 
 void run_dipole_fit(SQLite3Connection & ucds,
-		    const LfiRadiometer & rad,
+		    const Lfi_radiometer_t & rad,
 		    Configuration & program_conf,
 		    Configuration & storage_conf,
 		    const std::vector<Pointing_t> & list_of_pointings,

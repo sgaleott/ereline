@@ -32,7 +32,7 @@ ensure_path_exists(const std::string & path)
 
 void
 loadConvolutionParametersFromUCDS(SQLite3Connection & ucds,
-				  const LfiRadiometer & radiometer,
+				  const Lfi_radiometer_t & radiometer,
 				  PlanckVelocity & vel)
 {
     Logger * log = Logger::get_instance();
@@ -74,7 +74,7 @@ loadConvolutionParametersFromUCDS(SQLite3Connection & ucds,
 void
 saveGainTable(const std::string & file_name,
 	      signed short od,
-	      const LfiRadiometer & radiometer,
+	      const Lfi_radiometer_t & radiometer,
 	      const Gain_table_t & gain_table,
 	      const std::string & comment)
 {
@@ -152,7 +152,7 @@ loadPointingInformation(SQLite3Connection & ucds,
 
 void save_tod(const std::string & file_name,
 	      signed short od,
-	      const LfiRadiometer & radiometer,
+	      const Lfi_radiometer_t & radiometer,
 	      const DifferencedData & datadiff,
 	      const std::string & comment)
 {
@@ -186,7 +186,7 @@ void save_tod(const std::string & file_name,
 
 void
 save_dipole_fit(const std::string & file_name,
-		const LfiRadiometer & radiometer,
+		const Lfi_radiometer_t & radiometer,
 		const Dipole_fit_t & fit,
 		const std::string & comment)
 {

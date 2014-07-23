@@ -596,7 +596,7 @@ decompress_file(const std::string & file_name,
 					  "created by Squeezer")
 			    % file_name);
     }
-    LfiRadiometer rad(file_header.horn, file_header.arm);
+    Lfi_radiometer_t rad(file_header.horn, file_header.arm);
     log->debug(boost::format("File %1% contains data for %2%, OD %3%")
 	       % file_name % rad.shortName() % file_header.od);
 
