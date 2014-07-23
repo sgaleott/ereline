@@ -23,8 +23,8 @@ struct Od_t {
 
 std::vector<Od_t> build_od_list(const std::vector<Pointing_t> & pointings);
 void get_pid_iterators_for_range(const std::vector<Pointing_t> & list_of_pointings,
-				 const Range_t<int> & pid_range,
-				 std::vector<Pointing_t>::const_iterator & first,
-				 std::vector<Pointing_t>::const_iterator & last);
+                                 const Range_t<int> & pid_range,
+                                 std::vector<Pointing_t>::const_iterator & first,
+                                 std::vector<Pointing_t>::const_iterator & last);
 
 #endif
