@@ -107,32 +107,35 @@ class daCapo
   void initializeConstraint(bool constraint, 
 			    const Dipole_parameters_t & solar_dipole);
   void initializeConstraint(std::vector<double> & constraint);
-  void initializeLocmap(const std::vector<dipoleFit> & binnedData);
+  void initializeLocmap(const std::vector<Dipole_fit_t> & binnedData);
   void initializeFullmap();
-  void applyMask(const std::vector<dipoleFit> & binnedData, 
+  void applyMask(const std::vector<Dipole_fit_t> & binnedData, 
 		 const std::vector<float> & mask);
 
  public:
-  daCapo(std::vector<dipoleFit> & binnedData, std::vector<float> & mask, bool constraint,
+  daCapo(std::vector<Dipole_fit_t> & binnedData, 
+	 std::vector<float> & mask, bool constraint,
 	 const Dipole_parameters_t & dipole_params);
-  daCapo (std::vector<dipoleFit> & binnedData, std::vector<float> & mask, std::vector<double> & constraint);
+  daCapo (std::vector<Dipole_fit_t> & binnedData, 
+	  std::vector<float> & mask, 
+	  std::vector<double> & constraint);
 
-  void constructCCmatrix(const std::vector<dipoleFit> & binnedData);
+  void constructCCmatrix(const std::vector<Dipole_fit_t> & binnedData);
   void updateDipolenorm();
-  void buildPreconditioner(const std::vector<dipoleFit> & binnedData);
-  void toiToLocmap(const std::vector<dipoleFit> & binnedData);
+  void buildPreconditioner(const std::vector<Dipole_fit_t> & binnedData);
+  void toiToLocmap(const std::vector<Dipole_fit_t> & binnedData);
   void locToFullmap();
   void ccMultiply();
   void applyConstraint();
   void fullToLocmap();
   void applyCC();
-  void subtractMapFromTod(const std::vector<dipoleFit> & binnedData, basevec &p);
-  void baseToLocmap(const std::vector<dipoleFit> & binnedData, const basevec &p);
-  void subtractMapFromBase(const std::vector<dipoleFit> & binnedData, basevec &p);
+  void subtractMapFromTod(const std::vector<Dipole_fit_t> & binnedData, basevec &p);
+  void baseToLocmap(const std::vector<Dipole_fit_t> & binnedData, const basevec &p);
+  void subtractMapFromBase(const std::vector<Dipole_fit_t> & binnedData, basevec &p);
   void applyPreconditioner(const basevec &r, basevec &z);
-  void updateSignal(std::vector<dipoleFit> & binnedData);
+  void updateSignal(std::vector<Dipole_fit_t> & binnedData);
 
-  double iterativeCalibration(std::vector<dipoleFit> & binnedData, 
+  double iterativeCalibration(std::vector<Dipole_fit_t> & binnedData, 
 			      bool firstLoop);
 };
 

@@ -11,7 +11,7 @@
 struct LfiRadiometer;
 
 /* class calib iter*/
-struct dipoleFit
+struct Dipole_fit_t
 {
     int qualityFlag;
     int nSide;
@@ -28,9 +28,7 @@ struct dipoleFit
     std::vector<double> pixSumData;
     std::vector<float> pixSumDipole;
 
-    dipoleFit(uint32_t a_qualityFlag, int a_nSide, int a_pointingID);
-
-    ~dipoleFit(){};
+    Dipole_fit_t(uint32_t a_qualityFlag, int a_nSide, int a_pointingID);
 
     bool binData(const std::vector<double> & data, 
 		 const std::vector<uint32_t>& flag,
@@ -60,7 +58,7 @@ struct dipoleFit
 
 struct Dipole_fit_results_t {
     Gain_table_t gain_table;
-    std::vector<dipoleFit> list_of_fits;
+    std::vector<Dipole_fit_t> list_of_fits;
     Healpix::Map_t<float> mask;
 };
 

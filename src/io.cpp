@@ -187,7 +187,7 @@ void save_tod(const std::string & file_name,
 void
 save_dipole_fit(const std::string & file_name,
 		const LfiRadiometer & radiometer,
-		const dipoleFit & fit,
+		const Dipole_fit_t & fit,
 		const std::string & comment)
 {
     Logger * log = Logger::get_instance();

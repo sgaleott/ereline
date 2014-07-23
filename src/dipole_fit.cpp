@@ -24,9 +24,9 @@ extern "C" {
 #include "chealpix.h"
 }
 
-dipoleFit::dipoleFit(uint32_t a_qualityFlag, 
-		     int a_nSide, 
-		     int a_pointingID)
+Dipole_fit_t::Dipole_fit_t(uint32_t a_qualityFlag, 
+			   int a_nSide, 
+			   int a_pointingID)
 {
   gainv = 0.0;
   offset = 0.0;
@@ -41,13 +41,13 @@ dipoleFit::dipoleFit(uint32_t a_qualityFlag,
  * bin the data checkin flags using galactic sidelobes
  */
 bool
-dipoleFit::binData(const std::vector<double> & data, 
-		   const std::vector<uint32_t>& flag,		  
-		   const std::vector<double> & theta, 
-		   const std::vector<double> & phi, 
-		   const std::vector<double> & dipole, 
-		   const Range_t<size_t> & index_range, 
-		   const std::vector<double> & sidelobes)
+Dipole_fit_t::binData(const std::vector<double> & data, 
+		      const std::vector<uint32_t>& flag,		  
+		      const std::vector<double> & theta, 
+		      const std::vector<double> & phi, 
+		      const std::vector<double> & dipole, 
+		      const Range_t<size_t> & index_range, 
+		      const std::vector<double> & sidelobes)
 {
   Logger * log = Logger::get_instance();
   const int numPixs=12*nSide*nSide;
@@ -57,7 +57,7 @@ dipoleFit::binData(const std::vector<double> & data,
   std::vector<double> tmpDipoleConstraint (numPixs,0);
 
   // bin the samples and calculate the "binned" dipole
-  log->debug(boost::format("Running dipoleFit::binData with indexes running in "
+  log->debug(boost::format("Running Dipole_fit_t::binData with indexes in "
 			   "the range [%d, %d] (there are %d samples "
 			   "available). NSIDE is %d")
 	     % index_range.start 
@@ -104,7 +104,7 @@ dipoleFit::binData(const std::vector<double> & data,
 }
 
 bool
-dipoleFit::fitData(const std::vector<float> & maskMap)
+Dipole_fit_t::fitData(const std::vector<float> & maskMap)
 { 
   // Compute size of the masked vectors
   size_t maskedLen = 0;
@@ -146,14 +146,14 @@ dipoleFit::fitData(const std::vector<float> & maskMap)
  * fit the dipole using galactic sidelobes
  */
 bool
-dipoleFit::fit(const std::vector<double> & data, 
-	       const std::vector<uint32_t> & flag,
-	       const std::vector<double> & theta, 
-	       const std::vector<double> & phi, 
-	       const std::vector<double> & dipole, 
-	       const Range_t<size_t> & index_range, 
-	       const std::vector<float> & maskMap, 
-	       const std::vector<double> & sidelobes)
+Dipole_fit_t::fit(const std::vector<double> & data, 
+		  const std::vector<uint32_t> & flag,
+		  const std::vector<double> & theta, 
+		  const std::vector<double> & phi, 
+		  const std::vector<double> & dipole, 
+		  const Range_t<size_t> & index_range, 
+		  const std::vector<float> & maskMap, 
+		  const std::vector<double> & sidelobes)
 {
   if (binData(data, flag, theta, phi, dipole, index_range, sidelobes))
     return fitData(maskMap);
@@ -162,31 +162,19 @@ dipoleFit::fit(const std::vector<double> & data,
 }
 
 void
-dipoleFit::setPixSumDipole(const std::vector<float> & inpArr)
+Dipole_fit_t::setPixSumDipole(const std::vector<float> & inpArr)
 {
   pixSumDipole = inpArr;
 }
 
 double 
-dipoleFit::getDipoleVariance() const
+Dipole_fit_t::getDipoleVariance() const
 {
   return maxDipole-minDipole;
 }
 
-double 
-dipoleFit::getMaxDipole() const
-{
-  return maxDipole;
-}
-
-double 
-dipoleFit::getMinDipole() const
-{
-  return minDipole;
-}
-
 void
-dipoleFit::unload()
+Dipole_fit_t::unload()
 {
   std::vector<double>().swap(pixSumData);
   std::vector<float>().swap(pixSumDipole);
@@ -204,7 +192,7 @@ radiometer_to_use(int mpi_rank,
 {
     Logger * log = Logger::get_instance();
 
-    /* The way MPI processes are split in dipoleFit is the following: 
+    /* The way MPI processes are split in Dipole_fit_t is the following: 
      *
      * 1. Processes with even rank analyze the "main" radiometer;
      *
@@ -245,7 +233,7 @@ get_local_data_range(int mpi_rank,
 	      % mpi_size);
 
     Data_range_t data_range = list_of_data_ranges.at(mpi_rank / 2);
-    log->info(boost::format("Data range for dipoleFit: ODs [%1%, %2%] "
+    log->info(boost::format("Data range for Dipole_fit_t: ODs [%1%, %2%] "
 			    "(pointings [%3%, %4%]), number of pointings: %5%")
 	      % data_range.od_range.start
 	      % data_range.od_range.end
@@ -316,7 +304,7 @@ datadiff_file_path(const Configuration & storage_conf)
  * processed by the MPI process, not only the PIDs within the given
  * OD. The implementation of "process_one_od" will silently skip all
  * the PIDs outside "od". */
-static std::vector<dipoleFit>
+static std::vector<Dipole_fit_t>
 process_one_od(const Configuration & program_conf,
 	       const Configuration & storage_conf,
 	       const LfiRadiometer & radiometer,
@@ -346,7 +334,7 @@ process_one_od(const Configuration & program_conf,
     if(pointings.obt_time.empty()) {
 	log->warning(boost::format("No data for OD %1%, skipping it")
 		     % pid_range.start->od);
-	return std::vector<dipoleFit> {};
+	return std::vector<Dipole_fit_t> {};
     }
 
     assert_consistency(pointings, datadiff);
@@ -401,7 +389,7 @@ process_one_od(const Configuration & program_conf,
     }
 
     // Loop over each pointing period that belongs to the current OD
-    std::vector<dipoleFit> fits;
+    std::vector<Dipole_fit_t> fits;
     for(auto cur_pid = pid_range.start; 
 	cur_pid != pid_range.end + 1; 
 	cur_pid++) 
@@ -420,7 +408,7 @@ process_one_od(const Configuration & program_conf,
 	auto idx_range =
 	    find_boundaries_in_obt_times(pointings.obt_time, obt_range);
 
-	dipoleFit fitter(quality_flag, mask.nside, cur_pid->id);
+	Dipole_fit_t fitter(quality_flag, mask.nside, cur_pid->id);
 	if(fitter.fit(datadiff.sky_load,
 		      datadiff.flags,
 		      pointings.theta,
@@ -451,7 +439,7 @@ process_one_od(const Configuration & program_conf,
 ////////////////////////////////////////////////////////////////////////////////
 
 static void
-extract_gains(const std::vector<dipoleFit> & list_of_fits, 
+extract_gains(const std::vector<Dipole_fit_t> & list_of_fits, 
 	      Gain_table_t & gain_table)
 {
     const size_t num_of_fits = list_of_fits.size();

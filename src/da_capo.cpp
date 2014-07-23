@@ -18,7 +18,7 @@ extern "C" {
  * Take binned data and dipolefit gains as input.
  * It also take the number of streams (single diode/radiometer, horn using all streams)
  **/
-daCapo::daCapo(std::vector<dipoleFit> & binnedData,
+daCapo::daCapo(std::vector<Dipole_fit_t> & binnedData,
 	       std::vector<float> & mask,
 	       bool constraint,
 	       const Dipole_parameters_t & dipole_params)
@@ -42,7 +42,9 @@ daCapo::daCapo(std::vector<dipoleFit> & binnedData,
   preconditioner = std::vector< std::vector<double> >(binnedData.size(), std::vector<double>(3, 0.));
 }
 
-daCapo::daCapo (std::vector<dipoleFit> & binnedData, std::vector<float> & mask, std::vector<double> & constraint)
+daCapo::daCapo (std::vector<Dipole_fit_t> & binnedData, 
+		std::vector<float> & mask, 
+		std::vector<double> & constraint)
 {
   sizeMPI = MPI::COMM_WORLD.Get_size();
   rankMPI = MPI::COMM_WORLD.Get_rank();
@@ -106,7 +108,7 @@ daCapo::initializeConstraint(std::vector<double> & constraint)
  * Output: ipix_loc, iloc
  **/
 void
-daCapo::initializeLocmap(const std::vector<dipoleFit> & binnedData)
+daCapo::initializeLocmap(const std::vector<Dipole_fit_t> & binnedData)
 {
   std::vector<int> tmpPixels;
   for (size_t ipp=0; ipp<binnedData.size(); ipp++)
@@ -215,7 +217,7 @@ daCapo::initializeFullmap()
  * Masked samples are repointed to a dummy pixel.
  **/
 void
-daCapo::applyMask(const std::vector<dipoleFit> & binnedData,
+daCapo::applyMask(const std::vector<Dipole_fit_t> & binnedData,
 		  const std::vector<float> & mask)
 {
   int dummy_pixel = static_cast<int>(pixelIndexLocal.size());
@@ -233,7 +235,7 @@ daCapo::applyMask(const std::vector<dipoleFit> & binnedData,
  * Construct and invert the hit map.
  **/
 void
-daCapo::constructCCmatrix(const std::vector<dipoleFit> & binnedData)
+daCapo::constructCCmatrix(const std::vector<Dipole_fit_t> & binnedData)
 {
   std::vector<double> ccLoc(pixelIndexFullMap.size()+1, 0.);
 
@@ -305,7 +307,7 @@ daCapo::updateDipolenorm()
  * 2: gain x gain
  **/
 void
-daCapo::buildPreconditioner(const std::vector<dipoleFit> & binnedData)
+daCapo::buildPreconditioner(const std::vector<Dipole_fit_t> & binnedData)
 {
   for (size_t ipp=0; ipp<binnedData.size(); ipp++)
     {
@@ -330,7 +332,7 @@ daCapo::buildPreconditioner(const std::vector<dipoleFit> & binnedData)
  * Output: locmap
  **/
 void
-daCapo::toiToLocmap(const std::vector<dipoleFit> & binnedData)
+daCapo::toiToLocmap(const std::vector<Dipole_fit_t> & binnedData)
 {
   for (size_t ipp=0; ipp<pixelIndexLocalMap.size(); ipp++)
     {
@@ -479,7 +481,7 @@ daCapo::applyCC()
  * Output: p
  */
 void
-daCapo::subtractMapFromTod(const std::vector<dipoleFit> & binnedData,
+daCapo::subtractMapFromTod(const std::vector<Dipole_fit_t> & binnedData,
 			   basevec &p)
 {
   int dummy_pixel=static_cast<int>(localMap.size())-1;
@@ -514,7 +516,7 @@ daCapo::subtractMapFromTod(const std::vector<dipoleFit> & binnedData,
  * Output: locmap
  **/
 void
-daCapo::baseToLocmap(const std::vector<dipoleFit> & binnedData,
+daCapo::baseToLocmap(const std::vector<Dipole_fit_t> & binnedData,
 		     const basevec &p)
 {
   for (size_t ipp=0; ipp<pixelIndexLocalMap.size(); ipp++)
@@ -537,7 +539,7 @@ daCapo::baseToLocmap(const std::vector<dipoleFit> & binnedData,
  * Output: p
  **/
 void
-daCapo::subtractMapFromBase(const std::vector<dipoleFit> & binnedData,
+daCapo::subtractMapFromBase(const std::vector<Dipole_fit_t> & binnedData,
 			    basevec &p)
 {
   int dummy_pixel = static_cast<int>(localMap.size())-1;
@@ -588,7 +590,7 @@ daCapo::applyPreconditioner(const basevec &r, basevec &z)
  * Update signal with the current map
  **/
 void
-daCapo::updateSignal(std::vector<dipoleFit> & binnedData)
+daCapo::updateSignal(std::vector<Dipole_fit_t> & binnedData)
 {
   for (size_t ipp=0; ipp<pixelIndexLocalMap.size(); ipp++)
     {
@@ -606,7 +608,7 @@ daCapo::updateSignal(std::vector<dipoleFit> & binnedData)
  * Run Iterative calibration
  **/
 double
-daCapo::iterativeCalibration (std::vector<dipoleFit> & binnedData,
+daCapo::iterativeCalibration (std::vector<Dipole_fit_t> & binnedData,
 			      bool firstLoop)
 {
   constructCCmatrix(binnedData);
