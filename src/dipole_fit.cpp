@@ -1,6 +1,7 @@
 #include "dipole_fit.hpp"
 
 #include "configuration.hpp"
+#include "dipole_fit_results.hpp"
 #include "healpix_map.hpp"
 #include "io.hpp"
 #include "logging.hpp"
@@ -298,6 +299,47 @@ datadiff_file_path(const Configuration & storage_conf)
         storage_conf.getWithSubst("differenced_data.file_name_mask");
 }
 
+inline static std::string
+sidelobes_tod_file_path(const Configuration & program_conf,
+                        const Lfi_radiometer_t & radiometer,
+                        short od)
+{
+     return
+        (boost::format("%s/dipole_fit/tods/sidelobes/%s_sidelobes_OD%04d.fits")
+         % program_conf.getWithSubst("common.base_output_dir")
+         % radiometer.shortName()
+         % od)
+        .str();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+inline static std::string
+dipole_tod_file_path(const Configuration & program_conf,
+                     const Lfi_radiometer_t & radiometer,
+                     short od)
+{
+    return (boost::format("%s/dipole_fit/tods/dipole/%s_dipole_OD%04d.fits")
+         % program_conf.getWithSubst("common.base_output_dir")
+         % radiometer.shortName()
+         % od)
+        .str();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+save_vector_as_tod(const std::string & file_path,
+                   short od,
+                   const Lfi_radiometer_t & radiometer,
+                   const DifferencedData & datadiff_template,
+                   const std::vector<double> vector)
+{
+    DifferencedData datadiff_to_save = datadiff_template;
+    datadiff_to_save.sky_load = vector;
+    save_tod(ensure_path_exists(file_path), od, radiometer, datadiff_to_save);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /* The argument "pid_range" typically contains all the pointings to be
@@ -352,18 +394,8 @@ process_one_od(const Configuration & program_conf,
                                        pointings.psi));
     log->debug("...done");
     if(debug_flag) {
-        std::string file_path =
-            (boost::format("%s/dipole_fit/tods/sidelobes/%s_sidelobes_OD%04d.fits")
-             % program_conf.getWithSubst("common.base_output_dir")
-             % radiometer.shortName()
-             % od)
-            .str();
-        DifferencedData galactic_datadiff;
-        galactic_datadiff.obt_time = datadiff.obt_time;
-        galactic_datadiff.scet_time = datadiff.scet_time;
-        galactic_datadiff.sky_load = sidelobes;
-        galactic_datadiff.flags = datadiff.flags;
-        save_tod(ensure_path_exists(file_path), od, radiometer, galactic_datadiff);
+        std::string file_path(sidelobes_tod_file_path(program_conf, radiometer, od));
+        save_vector_as_tod(file_path, od, radiometer, datadiff, sidelobes);
     }
 
     log->debug("Computing the amplitude of the dipole convolved with 4\u03c0 beams");
@@ -374,18 +406,8 @@ process_one_od(const Configuration & program_conf,
                                            pointings.psi));
     log->debug("...done");
     if(debug_flag) {
-        std::string file_path =
-            (boost::format("%s/dipole_fit/tods/dipole/%s_dipole_OD%04d.fits")
-             % program_conf.getWithSubst("common.base_output_dir")
-             % radiometer.shortName()
-             % od)
-            .str();
-        DifferencedData dipole_datadiff;
-        dipole_datadiff.obt_time = datadiff.obt_time;
-        dipole_datadiff.scet_time = datadiff.scet_time;
-        dipole_datadiff.sky_load = convolved_dipole;
-        dipole_datadiff.flags = datadiff.flags;
-        save_tod(ensure_path_exists(file_path), od, radiometer, dipole_datadiff);
+        std::string file_path(dipole_tod_file_path(program_conf, radiometer, od));
+        save_vector_as_tod(file_path, od, radiometer, datadiff, convolved_dipole);
     }
 
     // Loop over each pointing period that belongs to the current OD
