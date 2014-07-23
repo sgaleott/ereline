@@ -217,10 +217,12 @@ radiometer_to_use(int mpi_rank,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static Data_range_t
+static void
 get_local_data_range(int mpi_rank,
                      int mpi_size,
-                     const std::vector<Pointing_t> & list_of_pointings)
+                     const std::vector<Pointing_t> & list_of_pointings,
+                     std::vector<int> num_of_pids,
+                     Data_range_t & data_range)
 {
     Logger * log = Logger::get_instance();
 
@@ -233,7 +235,12 @@ get_local_data_range(int mpi_rank,
               % list_of_data_ranges.size()
               % mpi_size);
 
-    Data_range_t data_range = list_of_data_ranges.at(mpi_rank / 2);
+    num_of_pids.resize(list_of_data_ranges.size());
+    for(size_t idx = 0; idx < list_of_data_ranges.size(); ++idx) {
+        num_of_pids[idx] = list_of_data_ranges[idx].num_of_pids;
+    }
+
+    data_range = list_of_data_ranges.at(mpi_rank / 2);
     log->info(boost::format("Data range for Dipole_fit_t: ODs [%1%, %2%] "
                             "(pointings [%3%, %4%]), number of pointings: %5%")
               % data_range.od_range.start
@@ -241,8 +248,6 @@ get_local_data_range(int mpi_rank,
               % data_range.pid_range.start
               % data_range.pid_range.end
               % data_range.num_of_pids);
-
-    return data_range;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -526,7 +531,11 @@ run_dipole_fit(Sqlite_connection_t & ucds,
         read_dipole_fit_params(program_conf));
     load_convolution_params(ucds, real_radiometer, planck_velocity);
 
-    auto data_range(get_local_data_range(mpi_rank, mpi_size, list_of_pointings));
+    std::vector<int> pids_per_process;
+    Data_range_t data_range;
+    get_local_data_range(mpi_rank, mpi_size, list_of_pointings,
+                         pids_per_process, data_range);
+
     std::vector<Pointing_t>::const_iterator first_pid, last_pid;
     get_pid_iterators_for_range(list_of_pointings, data_range.pid_range,
                                 first_pid, last_pid);
@@ -583,13 +592,24 @@ run_dipole_fit(Sqlite_connection_t & ucds,
     }
 
     extract_gains(result.list_of_fits, result.gain_table);
-    const std::string gain_file_path(gain_table_file_path(program_conf,
-                                                          real_radiometer));
-    log->info(boost::format("Saving dipoleFit gains into %1%")
-              % gain_file_path);
-    saveGainTable(ensure_path_exists(gain_file_path),
-                  real_radiometer, result.gain_table);
+
+    // Retrieve the gain table from all the other MPI processes and put
+    // them together in results.gain_table
+    result.gain_table.mergeResults();
+    // Since odd and even MPI processes work on different radiometer arms
+    // (M/S), we discard those gains that do not belong to the arm
+    // being analyzed by the current MPI process
+    result.gain_table.selectRadiometerGains(mpi_rank % 2, 2, pids_per_process);
+
+    if(mpi_rank == 0 || mpi_rank == 1) {
+        const std::string gain_file_path(gain_table_file_path(program_conf,
+                                                              real_radiometer));
+        log->info(boost::format("Saving dipoleFit gains into %1%")
+                  % gain_file_path);
+        save_gain_table(ensure_path_exists(gain_file_path),
+                        real_radiometer, result.gain_table);
+    }
+
     log->decrease_indent();
     log->info("Module dipoleFit completed.");
 }
-

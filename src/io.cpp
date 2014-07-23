@@ -72,10 +72,10 @@ load_convolution_params(Sqlite_connection_t & ucds,
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-saveGainTable(const std::string & file_name,
-              const Lfi_radiometer_t & radiometer,
-              const Gain_table_t & gain_table,
-              const std::string & comment)
+save_gain_table(const std::string & file_name,
+                const Lfi_radiometer_t & radiometer,
+                const Gain_table_t & gain_table,
+                const std::string & comment)
 {
     FitsObject gain_file;
 

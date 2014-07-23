@@ -92,10 +92,10 @@ void load_pointing_information(Sqlite_connection_t & ucds,
                                int od,
                                std::vector<Pointing_t> & pointings);
 
-void saveGainTable(const std::string & file_name,
-                   const Lfi_radiometer_t & radiometer,
-                   const Gain_table_t & gain_table,
-                   const std::string & comment = "");
+void save_gain_table(const std::string & file_name,
+                     const Lfi_radiometer_t & radiometer,
+                     const Gain_table_t & gain_table,
+                     const std::string & comment = "");
 
 void save_tod(const std::string & file_name,
               signed short od,
