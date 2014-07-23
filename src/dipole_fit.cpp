@@ -459,7 +459,7 @@ extract_gains(const std::vector<Dipole_fit_t> & list_of_fits,
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-run_dipole_fit(SQLite3Connection & ucds,
+run_dipole_fit(Sqlite_connection_t & ucds,
 	       const Lfi_radiometer_t & rad,
 	       Configuration & program_conf,
 	       Configuration & storage_conf,

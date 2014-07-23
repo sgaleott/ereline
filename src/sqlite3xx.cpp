@@ -23,7 +23,7 @@ signalSqlite3ErrorAndThrow(const char * file_name, sqlite3 * connection)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-SQLite3Connection::SQLite3Connection(const char * a_file_name)
+Sqlite_connection_t::Sqlite_connection_t(const char * a_file_name)
     : file_name(a_file_name)
 {
     Logger * log = Logger::get_instance();
@@ -40,16 +40,16 @@ SQLite3Connection::SQLite3Connection(const char * a_file_name)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-SQLite3Connection::~SQLite3Connection()
+Sqlite_connection_t::~Sqlite_connection_t()
 {
     sqlite3_close(conn);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-SQLite3Statement::SQLite3Statement(SQLite3Connection & a_db,
-				   const char * a_sql,
-				   int num_of_bytes)
+Sqlite_statement_t::Sqlite_statement_t(Sqlite_connection_t & a_db,
+				       const char * a_sql,
+				       int num_of_bytes)
     : db(a_db), sql(a_sql), num_of_rows(0)
 {
     Logger * log = Logger::get_instance();
@@ -70,7 +70,7 @@ SQLite3Statement::SQLite3Statement(SQLite3Connection & a_db,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-SQLite3Statement::~SQLite3Statement() 
+Sqlite_statement_t::~Sqlite_statement_t() 
 { 
     Logger * log = Logger::get_instance();
     sqlite3_finalize(ptr);
@@ -79,7 +79,7 @@ SQLite3Statement::~SQLite3Statement()
 ////////////////////////////////////////////////////////////////////////////////
 
 int 
-SQLite3Statement::step() 
+Sqlite_statement_t::step() 
 { 
     Logger * log = Logger::get_instance();
     int result = sqlite3_step(ptr);

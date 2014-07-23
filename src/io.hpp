@@ -13,7 +13,7 @@
 #include <sqlite3.h>
 
 class PlanckVelocity;
-class SQLite3Connection;
+class Sqlite_connection_t;
 class Gain_table_t;
 class Lfi_radiometer_t;
 struct Dipole_fit_t;
@@ -78,17 +78,17 @@ void load_map(const std::string & file_name,
 	      % file_name);
 }
 
-void loadConvolutionParametersFromUCDS(SQLite3Connection & ucds,
+void loadConvolutionParametersFromUCDS(Sqlite_connection_t & ucds,
 				       const Lfi_radiometer_t & radiometer,
 				       PlanckVelocity & vel);
 
-void loadPointingInformation(SQLite3Connection & ucds,
+void loadPointingInformation(Sqlite_connection_t & ucds,
 			     int first_od,
 			     int last_od,
 			     std::vector<Pointing_t> & pointings);
 // Wrapper around the previous definition, with the assumption that
 // first_od == last_od == od.
-void loadPointingInformation(SQLite3Connection & ucds,
+void loadPointingInformation(Sqlite_connection_t & ucds,
 			     int od,
 			     std::vector<Pointing_t> & pointings);
 

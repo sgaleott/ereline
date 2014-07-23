@@ -80,7 +80,7 @@ read_configuration_and_set_up(const std::string & configuration_file_name,
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-read_ahf_info(SQLite3Connection & ucds,
+read_ahf_info(Sqlite_connection_t & ucds,
 	      const Configuration & program_config,
 	      std::vector<Pointing_t> & list_of_pointings)
 {
@@ -131,7 +131,7 @@ inner_main(int argc, const char ** argv)
     // Open a connection with the UCDS database
     std::string ucds_file_path = storage_config.getWithSubst("ucds_file_path");
     log->info(boost::format("UCDS file path: %1%") % ucds_file_path);
-    SQLite3Connection ucds(ucds_file_path.c_str());
+    Sqlite_connection_t ucds(ucds_file_path.c_str());
 
     // Convert pointing information into appropriate C++ structures
     std::vector<Pointing_t> list_of_pointings;

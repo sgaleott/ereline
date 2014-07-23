@@ -63,9 +63,9 @@ struct Dipole_fit_results_t {
 };
 
 class Configuration;
-struct SQLite3Connection;
+struct Sqlite_connection_t;
 
-void run_dipole_fit(SQLite3Connection & ucds,
+void run_dipole_fit(Sqlite_connection_t & ucds,
 		    const Lfi_radiometer_t & rad,
 		    Configuration & program_conf,
 		    Configuration & storage_conf,

@@ -31,7 +31,7 @@ ensure_path_exists(const std::string & path)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-loadConvolutionParametersFromUCDS(SQLite3Connection & ucds,
+loadConvolutionParametersFromUCDS(Sqlite_connection_t & ucds,
 				  const Lfi_radiometer_t & radiometer,
 				  PlanckVelocity & vel)
 {
@@ -44,7 +44,7 @@ loadConvolutionParametersFromUCDS(SQLite3Connection & ucds,
 	  << "\n\t   AND radiometer = " << radiometer.radiometer
 	  << "\n\t";
 
-    SQLite3Statement statement(ucds, query.str().c_str());
+    Sqlite_statement_t statement(ucds, query.str().c_str());
 
     int result = statement.step();
     if(result != SQLITE_ROW) {
@@ -103,7 +103,7 @@ saveGainTable(const std::string & file_name,
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-loadPointingInformation(SQLite3Connection & db,
+loadPointingInformation(Sqlite_connection_t & db,
 			int first_od,
 			int last_od,
 			std::vector<Pointing_t> & pointings)
@@ -118,7 +118,7 @@ loadPointingInformation(SQLite3Connection & db,
 	  << "\n\t   AND od_int <= " << last_od
 	  << "\n\t";
 
-    SQLite3Statement statement(db, query.str().c_str());
+    Sqlite_statement_t statement(db, query.str().c_str());
 
     int result = statement.step();
     pointings.resize(0);
@@ -141,7 +141,7 @@ loadPointingInformation(SQLite3Connection & db,
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-loadPointingInformation(SQLite3Connection & ucds,
+loadPointingInformation(Sqlite_connection_t & ucds,
 			int od,
 			std::vector<Pointing_t> & pointings)
 {

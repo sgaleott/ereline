@@ -7,26 +7,26 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // Wrapper to sqlite3 in order to allow RAII
-struct SQLite3Connection {
+struct Sqlite_connection_t {
     sqlite3 * conn;
     std::string file_name;
-    SQLite3Connection(const char * a_file_name);
-    ~SQLite3Connection() noexcept;
+    Sqlite_connection_t(const char * a_file_name);
+    ~Sqlite_connection_t() noexcept;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // Wrapper to sqlite3_stmt in order to allow RAII
-struct SQLite3Statement {
-    SQLite3Connection & db;
+struct Sqlite_statement_t {
+    Sqlite_connection_t & db;
     std::string sql;
     sqlite3_stmt * ptr;
     int num_of_rows;
 
-    SQLite3Statement(SQLite3Connection & a_db,
-		     const char * a_sql,
-		     int num_of_bytes = -1);
-    ~SQLite3Statement() noexcept;
+    Sqlite_statement_t(Sqlite_connection_t & a_db,
+		       const char * a_sql,
+		       int num_of_bytes = -1);
+    ~Sqlite_statement_t() noexcept;
 
     int step();
 
