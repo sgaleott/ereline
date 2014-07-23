@@ -328,6 +328,17 @@ dipole_tod_file_path(const Configuration & program_conf,
 
 ////////////////////////////////////////////////////////////////////////////////
 
+inline static std::string
+gain_table_file_path(const Configuration & program_conf,
+                     const Lfi_radiometer_t & radiometer)
+{
+    return (boost::format("%s/dipole_fit/%s_dipole_fit_gains.fits")
+        % program_conf.getWithSubst("common.base_output_dir")
+        % radiometer.shortName()).str();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void
 save_vector_as_tod(const std::string & file_path,
                    short od,
@@ -572,6 +583,12 @@ run_dipole_fit(Sqlite_connection_t & ucds,
     }
 
     extract_gains(result.list_of_fits, result.gain_table);
+    const std::string gain_file_path(gain_table_file_path(program_conf,
+                                                          real_radiometer));
+    log->info(boost::format("Saving dipoleFit gains into %1%")
+              % gain_file_path);
+    saveGainTable(ensure_path_exists(gain_file_path),
+                  real_radiometer, result.gain_table);
     log->decrease_indent();
     log->info("Module dipoleFit completed.");
 }
