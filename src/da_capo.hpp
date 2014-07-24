@@ -106,19 +106,20 @@ class daCapo
 
   void initializeConstraint(bool constraint,
                             const Dipole_parameters_t & solar_dipole);
-  void initializeConstraint(std::vector<double> & constraint);
+  void initializeConstraint(const std::vector<double> & constraint);
   void initializeLocmap(const std::vector<Dipole_fit_t> & binnedData);
   void initializeFullmap();
   void applyMask(const std::vector<Dipole_fit_t> & binnedData,
                  const std::vector<float> & mask);
 
  public:
-  daCapo(std::vector<Dipole_fit_t> & locallyBinnedData,
-         std::vector<float> & mask, bool constraint,
+  daCapo(const std::vector<Dipole_fit_t> & locallyBinnedData,
+         const std::vector<float> & mask,
+         bool constraint,
          const Dipole_parameters_t & dipole_params);
-  daCapo (std::vector<Dipole_fit_t> & locallyBinnedData,
-          std::vector<float> & mask,
-          std::vector<double> & constraint);
+  daCapo (const std::vector<Dipole_fit_t> & locallyBinnedData,
+          const std::vector<float> & mask,
+          const std::vector<double> & constraint);
 
   void constructCCmatrix(const std::vector<Dipole_fit_t> & binnedData);
   void updateDipolenorm();
@@ -140,8 +141,15 @@ class daCapo
 };
 
 class Configuration;
+struct Dipole_fit_results_t;
+struct Da_capo_results_t;
+struct Lfi_radiometer_t;
 
 void run_da_capo(const Configuration & program_conf,
-                 const Configuration & storage_conf);
+                 const Configuration & storage_conf,
+                 const Lfi_radiometer_t & radiometer,
+                 const std::vector<Pointing_t> & list_of_pointings,
+                 Dipole_fit_results_t & dipole_fit_results,
+                 Da_capo_results_t & da_capo_results);
 
 #endif
