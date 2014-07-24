@@ -3,6 +3,7 @@
 #include "dipole_fit.hpp"
 #include "dipole_fit_results.hpp"
 #include "da_capo.hpp"
+#include "da_capo_results.hpp"
 #include "datatypes.hpp"
 #include "smooth_gains.hpp"
 #include "sqlite3xx.hpp"
@@ -146,14 +147,22 @@ inner_main(int argc, const char ** argv)
         log->info(boost::format("Processing radiometer %1%")
                   % radiometer.shortName());
 
-        Dipole_fit_results_t result;
+        Dipole_fit_results_t dipole_fit_results;
         run_dipole_fit(ucds,
                        radiometer,
                        program_config,
                        storage_config,
                        list_of_pointings,
-                       result);
-        run_da_capo(program_config, storage_config);
+                       dipole_fit_results);
+
+        Da_capo_results_t da_capo_results;
+        run_da_capo(program_config,
+                    storage_config,
+                    radiometer,
+                    list_of_pointings,
+                    dipole_fit_results,
+                    da_capo_results);
+
         run_smooth_gains(program_config, storage_config);
     }
 

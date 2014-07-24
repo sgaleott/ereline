@@ -1,4 +1,7 @@
 #include "da_capo.hpp"
+#include "da_capo_results.hpp"
+#include "dipole_fit_results.hpp"
+#include "io.hpp"
 #include "misc.hpp"
 #include "configuration.hpp"
 #include "logging.hpp"
@@ -18,8 +21,8 @@ extern "C" {
  * Take binned data and dipolefit gains as input.
  * It also take the number of streams (single diode/radiometer, horn using all streams)
  **/
-daCapo::daCapo(std::vector<Dipole_fit_t> & locallyBinnedData,
-               std::vector<float> & mask,
+daCapo::daCapo(const std::vector<Dipole_fit_t> & locallyBinnedData,
+               const std::vector<float> & mask,
                bool constraint,
                const Dipole_parameters_t & dipole_params)
 {
@@ -42,9 +45,9 @@ daCapo::daCapo(std::vector<Dipole_fit_t> & locallyBinnedData,
   preconditioner = std::vector< std::vector<double> >(locallyBinnedData.size(), std::vector<double>(3, 0.));
 }
 
-daCapo::daCapo (std::vector<Dipole_fit_t> & locallyBinnedData,
-                std::vector<float> & mask,
-                std::vector<double> & constraint)
+daCapo::daCapo (const std::vector<Dipole_fit_t> & locallyBinnedData,
+                const std::vector<float> & mask,
+                const std::vector<double> & constraint)
 {
   sizeMPI = MPI::COMM_WORLD.Get_size();
   rankMPI = MPI::COMM_WORLD.Get_rank();
@@ -92,7 +95,7 @@ daCapo::initializeConstraint(bool constraint,
  * Initialize a Solar Dipole Map
  **/
 void
-daCapo::initializeConstraint(std::vector<double> & constraint)
+daCapo::initializeConstraint(const std::vector<double> & constraint)
 {
   // Build Dipole Constraint Map
   for (size_t idx=0; idx<pixelIndexFull.size(); idx++)
@@ -608,8 +611,8 @@ daCapo::updateSignal(std::vector<Dipole_fit_t> & binnedData)
  * Run Iterative calibration
  **/
 double
-daCapo::iterativeCalibration (std::vector<Dipole_fit_t> & binnedData,
-                              bool firstLoop)
+daCapo::iterativeCalibration(std::vector<Dipole_fit_t> & binnedData,
+                             bool firstLoop)
 {
   constructCCmatrix(binnedData);
   updateDipolenorm();
@@ -728,12 +731,118 @@ daCapo::iterativeCalibration (std::vector<Dipole_fit_t> & binnedData,
   return dmax;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+inline static std::string
+gain_table_file_path(const Configuration & program_conf,
+                     const Lfi_radiometer_t & radiometer)
+{
+    return (boost::format("%s/da_capo/%s_da_capo_gains.fits")
+        % program_conf.getWithSubst("common.base_output_dir")
+        % radiometer.shortName()).str();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/* Note that this function will manipulate the values in
+ * "dipole_fit_results". */
 void
 run_da_capo(const Configuration & program_conf,
-            const Configuration & storage_conf)
+            const Configuration & storage_conf,
+            const Lfi_radiometer_t & radiometer,
+            const std::vector<Pointing_t> & list_of_pointings,
+            Dipole_fit_results_t & dipole_fit_results,
+            Da_capo_results_t & da_capo_results)
 {
-  Logger * log = Logger::get_instance();
+    Logger * log = Logger::get_instance();
+    const int mpi_size = MPI::COMM_WORLD.Get_size();
+    const int mpi_rank = MPI::COMM_WORLD.Get_rank();
 
-  log->info("Starting module daCapo");
-  log->info("Quitting module daCapo");
+    log->info("Starting module daCapo");
+    log->increase_indent();
+
+    daCapo calibrator(dipole_fit_results.list_of_fits,
+                      dipole_fit_results.mask.pixels,
+                      program_conf.get<bool>("da_capo.constraint"),
+                      read_dipole_fit_params(program_conf));
+    bool firstLoop = true;
+    for (size_t iteration=0; iteration<10000; ++iteration)
+    {
+        if (mpi_rank == 0)
+            log->debug(boost::format("CG iteration %d") % iteration);
+
+        double init =
+            calibrator.iterativeCalibration(dipole_fit_results.list_of_fits,
+                                            firstLoop);
+        firstLoop = false;
+        if (init < 1.e-6)
+        {
+            if (mpi_rank == 0)
+                log->debug(boost::format("Break at CG iteration %1%, "
+                                         "rzInit = %2%")
+                           % iteration % init);
+            break;
+        }
+    }
+    MPI::COMM_WORLD.Barrier();
+
+    {
+        std::string pointings("[");
+        for(auto cur_fit = dipole_fit_results.list_of_fits.begin();
+            cur_fit != dipole_fit_results.list_of_fits.end();
+            ++cur_fit)
+        {
+            if(cur_fit != dipole_fit_results.list_of_fits.begin())
+                pointings += ", ";
+            pointings += (boost::format("%1%") % cur_fit->pointingID).str();
+        }
+
+        log->info("The pointings contained in the list of dipole fits are "
+                  + pointings);
+    }
+
+    Gain_table_t & gain_table = da_capo_results.gain_table;
+    gain_table.pointingIds.resize(list_of_pointings.size());
+    gain_table.gain.assign(list_of_pointings.size(), 0.0);
+    gain_table.offset.assign(list_of_pointings.size(), 0.0);
+
+    for(size_t idx = 0; idx < gain_table.pointingIds.size(); ++idx) {
+        gain_table.pointingIds[idx] = list_of_pointings[idx].id;
+    }
+
+    for(size_t fit_idx = 0;
+        fit_idx < dipole_fit_results.list_of_fits.size();
+        ++fit_idx)
+    {
+        auto const & fit = dipole_fit_results.list_of_fits[fit_idx];
+        auto const item =
+            std::lower_bound(gain_table.pointingIds.begin(),
+                             gain_table.pointingIds.end(),
+                             fit.pointingID);
+        if(item == gain_table.pointingIds.end() ||
+           *item != fit.pointingID)
+        {
+            log->error(boost::format("Da Capo fitted pointing ID"
+                                     "%1%, but this was not in the"
+                                     "list of pIDs to process")
+                       % fit.pointingID);
+            continue;
+        }
+
+        const int pid_idx = std::distance(gain_table.pointingIds.begin(), item);
+        gain_table.gain.at(pid_idx) = 1.0 / fit.gainv;
+        gain_table.offset.at(pid_idx) = fit.offset;
+    }
+
+    if(mpi_rank == 0/* || mpi_rank == 1*/) {
+        const std::string gain_file_path(gain_table_file_path(program_conf,
+                                                              radiometer));
+        log->info(boost::format("Saving dipoleFit gains into %1%")
+                  % gain_file_path);
+        save_gain_table(ensure_path_exists(gain_file_path),
+                        radiometer, gain_table);
+    }
+
+    log->decrease_indent();
+    log->info("Quitting module daCapo");
 }

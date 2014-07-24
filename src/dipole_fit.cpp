@@ -221,7 +221,7 @@ static void
 get_local_data_range(int mpi_rank,
                      int mpi_size,
                      const std::vector<Pointing_t> & list_of_pointings,
-                     std::vector<int> num_of_pids,
+                     std::vector<int> & num_of_pids,
                      Data_range_t & data_range)
 {
     Logger * log = Logger::get_instance();
