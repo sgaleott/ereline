@@ -531,10 +531,9 @@ run_dipole_fit(Sqlite_connection_t & ucds,
         read_dipole_fit_params(program_conf));
     load_convolution_params(ucds, real_radiometer, planck_velocity);
 
-    std::vector<int> pids_per_process;
     Data_range_t data_range;
     get_local_data_range(mpi_rank, mpi_size, list_of_pointings,
-                         pids_per_process, data_range);
+                         result.pids_per_process, data_range);
 
     std::vector<Pointing_t>::const_iterator first_pid, last_pid;
     get_pid_iterators_for_range(list_of_pointings, data_range.pid_range,
@@ -603,7 +602,8 @@ run_dipole_fit(Sqlite_connection_t & ucds,
     // Since odd and even MPI processes work on different radiometer arms
     // (M/S), we discard those gains that do not belong to the arm
     // being analyzed by the current MPI process
-    result.gain_table.selectRadiometerGains(mpi_rank % 2, 2, pids_per_process);
+    result.gain_table.selectRadiometerGains(mpi_rank % 2, 2,
+                                            result.pids_per_process);
 
     if(mpi_rank == 0 || mpi_rank == 1) {
         const std::string gain_file_path(gain_table_file_path(program_conf,

@@ -749,7 +749,7 @@ gain_table_file_path(const Configuration & program_conf,
 void
 run_da_capo(const Configuration & program_conf,
             const Configuration & storage_conf,
-            const Lfi_radiometer_t & radiometer,
+            const Lfi_radiometer_t & user_rad,
             const std::vector<Pointing_t> & list_of_pointings,
             Dipole_fit_results_t & dipole_fit_results,
             Da_capo_results_t & da_capo_results)
@@ -834,13 +834,27 @@ run_da_capo(const Configuration & program_conf,
         gain_table.offset.at(pid_idx) = fit.offset;
     }
 
-    if(mpi_rank == 0/* || mpi_rank == 1*/) {
+    // To understand the following lines, have a look at the implementation
+    // of "run_dipole_fit" (in dipole_fit.cpp).
+
+    Lfi_radiometer_t real_radiometer;
+    if(mpi_rank % 2 == 0)
+        real_radiometer = user_rad;
+    else
+        real_radiometer = user_rad.twinRadiometer();
+
+    gain_table.mergeResults();
+    gain_table.selectRadiometerGains(mpi_rank % 2, 2,
+                                     dipole_fit_results.pids_per_process);
+
+    if(mpi_rank == 0 || mpi_rank == 1) {
         const std::string gain_file_path(gain_table_file_path(program_conf,
-                                                              radiometer));
-        log->info(boost::format("Saving dipoleFit gains into %1%")
-                  % gain_file_path);
+                                                              real_radiometer));
+        log->info(boost::format("Saving dipoleFit gains for "
+                                "radiometer %1% into %2%")
+                  % real_radiometer.shortName() % gain_file_path);
         save_gain_table(ensure_path_exists(gain_file_path),
-                        radiometer, gain_table);
+                        real_radiometer, gain_table);
     }
 
     log->decrease_indent();

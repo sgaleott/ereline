@@ -147,7 +147,7 @@ struct Lfi_radiometer_t;
 
 void run_da_capo(const Configuration & program_conf,
                  const Configuration & storage_conf,
-                 const Lfi_radiometer_t & radiometer,
+                 const Lfi_radiometer_t & user_rad,
                  const std::vector<Pointing_t> & list_of_pointings,
                  Dipole_fit_results_t & dipole_fit_results,
                  Da_capo_results_t & da_capo_results);
