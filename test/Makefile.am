@@ -49,7 +49,8 @@ test_io_SOURCES = \
 	../src/logging.cpp \
 	../src/misc.cpp \
 	../src/planck_velocity.cpp \
-	../src/sqlite3xx.cpp
+	../src/sqlite3xx.cpp \
+	../src/squeezer.cpp
 test_io_LDADD = $(BOOST_UNIT_TEST_FRAMEWORK_LIB) \
 	$(BOOST_SYSTEM_LIB) \
 	$(BOOST_FILESYSTEM_LIB) \

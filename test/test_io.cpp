@@ -13,7 +13,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-BOOST_AUTO_TEST_CASE(load_pointings)
+BOOST_AUTO_TEST_CASE(pointings)
 {
     Sqlite_connection_t ucds(TEST_DATA_DIR "/ucds.db");
     std::vector<Pointing_t> pointings;

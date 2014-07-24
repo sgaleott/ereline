@@ -8,7 +8,6 @@
 #include "misc.hpp"
 #include "mpi_processes.hpp"
 #include "ringset.hpp"
-#include "squeezer.hpp"
 
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
@@ -386,8 +385,8 @@ process_one_od(const Configuration & program_conf,
     // Load pointing information and differenced data for this OD
     log->debug(boost::format("Going to read pointings and differenced "
                              "data for OD %1%") % od);
-    decompress_pointings(pnt_file_path, pointings);
-    decompress_differenced_data(ddf_file_path, datadiff);
+    load_pointings(pnt_file_path, pointings);
+    load_differenced_data(ddf_file_path, datadiff);
 
     if(pointings.obt_time.empty()) {
         log->warning(boost::format("No data for OD %1%, skipping it")

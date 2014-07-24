@@ -6,6 +6,7 @@
 #include "logging.hpp"
 #include "datatypes.hpp"
 #include "sqlite3xx.hpp"
+#include "squeezer.hpp"
 
 #include <sstream>
 #include <boost/filesystem.hpp>
@@ -219,3 +220,47 @@ save_dipole_fit(const std::string & file_name,
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+void
+load_pointings(const std::string & file_name,
+               PointingData & pointings)
+{
+    if(is_a_squeezer_file(file_name)) {
+        decompress_pointings(file_name, pointings);
+        return;
+    }
+
+    FitsObject fits_file;
+    fits_file.openTable(file_name);
+
+    fits_file.getColumn(1, pointings.obt_time);
+    fits_file.getColumn(2, pointings.scet_time);
+    fits_file.getColumn(3, pointings.theta);
+    fits_file.getColumn(4, pointings.phi);
+    fits_file.getColumn(5, pointings.psi);
+
+    fits_file.close();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+load_differenced_data(const std::string & file_name,
+                      DifferencedData & datadiff)
+{
+    if(is_a_squeezer_file(file_name)) {
+        decompress_differenced_data(file_name, datadiff);
+        return;
+    }
+
+    FitsObject fits_file;
+    fits_file.openTable(file_name);
+
+    fits_file.getColumn(1, datadiff.obt_time);
+    fits_file.getColumn(2, datadiff.scet_time);
+    fits_file.getColumn(3, datadiff.sky_load);
+    fits_file.getColumn(4, datadiff.flags);
+
+    fits_file.close();
+}

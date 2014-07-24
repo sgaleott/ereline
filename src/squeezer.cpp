@@ -747,3 +747,18 @@ decompress_differenced_data(const std::string & file_name,
     Process_datadiff_chunk process_fn(datadiff, file_name);
     decompress_file(file_name, process_fn, SQZ_DIFFERENCED_DATA);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool
+is_a_squeezer_file(const std::string & file_name)
+{
+    std::ifstream input_stream(file_name);
+    if(input_stream.bad()) {
+        throw SqueezerError(boost::format("Unable to open file %1%")
+                            % file_name);
+    }
+
+    Squeezer_file_header_t file_header(input_stream);
+    return file_header.is_valid();
+}

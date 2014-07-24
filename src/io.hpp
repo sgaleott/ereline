@@ -108,4 +108,10 @@ void save_dipole_fit(const std::string & file_name,
                      const Dipole_fit_t & fit,
                      const std::string & comment = "");
 
+void load_pointings(const std::string & file_name,
+                    PointingData & pointings);
+
+void load_differenced_data(const std::string & file_name,
+                           DifferencedData & datadiff);
+
 #endif

@@ -16,6 +16,8 @@ public:
     : std::runtime_error(a_description.str()) { }
 };
 
+bool is_a_squeezer_file(const std::string & file_name);
+
 void decompress_pointings(const std::string & file_name,
                           PointingData & pointings);
 
