@@ -117,3 +117,21 @@ BOOST_AUTO_TEST_CASE(MpiProcesses)
     BOOST_CHECK_EQUAL_COLLECTIONS(result.begin(), result.end(),
 				  expected.begin(), expected.end());
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+BOOST_AUTO_TEST_CASE(ShortOdList)
+{
+    const std::vector<Od_t> list_of_ods {
+	// Od  firstPid  lastPid  numOfPids
+	{   1,        1,     10,         10 }
+    };
+
+    std::vector<Data_range_t> result;
+    std::vector<Data_range_t> expected;
+
+    splitOdsIntoMpiProcesses(2, list_of_ods, result);
+    expected = std::vector<Data_range_t> { { { 1, 1 }, { 1, 10 }, 1, 10 } };
+    BOOST_CHECK_EQUAL_COLLECTIONS(result.begin(), result.end(),
+				  expected.begin(), expected.end());
+}

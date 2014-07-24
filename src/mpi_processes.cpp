@@ -20,7 +20,7 @@ splitOdsIntoMpiProcesses(int numOfMpiProcesses,
 
         Data_range_t cur_range;
 
-        if(start < numOfOds && stop > start) {
+        if(start < numOfOds && stop >= start) {
             cur_range = {
                 { list_of_ods.at(start).od, list_of_ods.at(stop).od },
                 { list_of_ods.at(start).first_pointing_id, list_of_ods.at(stop).last_pointing_id },
