@@ -226,11 +226,15 @@ void
 load_pointings(const std::string & file_name,
                PointingData & pointings)
 {
+    Logger * log = Logger::get_instance();
+
     if(is_a_squeezer_file(file_name)) {
         decompress_pointings(file_name, pointings);
         return;
     }
 
+    log->info(boost::format("Reading pointings from FITS file %1%")
+              % file_name);
     FitsObject fits_file;
     fits_file.openTable(file_name);
 
@@ -249,11 +253,15 @@ void
 load_differenced_data(const std::string & file_name,
                       DifferencedData & datadiff)
 {
+    Logger * log = Logger::get_instance();
+
     if(is_a_squeezer_file(file_name)) {
         decompress_differenced_data(file_name, datadiff);
         return;
     }
 
+    log->info(boost::format("Reading differenced data from FITS file %1%")
+              % file_name);
     FitsObject fits_file;
     fits_file.openTable(file_name);
 
