@@ -126,10 +126,10 @@ public:
                                         const int64& firstRow, const int64& lastRow);
 
   template <typename T> void getColumn (const std::string &columnName, std::vector<T>& outData)
-  { getColumn (columnName, outData, 0, -1); };
+  { getColumn (columnName, outData, 1, -1); };
 
   template <typename T> void getColumn (int colNum, std::vector<T>& outData)
-  { getColumn (colNum, outData, 0, -1); };
+  { getColumn (colNum, outData, 1, -1); };
 
   /* Write data in a column in the current HDU */
   template <typename T> void writeColumn (const std::string& columnName,
@@ -179,7 +179,6 @@ FitsObject::getColumn (int colNum, std::vector<T>& outData, const int64& firstEl
   if(lastElem == -1)
     if (fits_get_num_rows (ptr, &nElements, &status))
       fits_report_error (stderr, status);
-
 
   int64 repc=1;
   char * tmp1=NULL;
