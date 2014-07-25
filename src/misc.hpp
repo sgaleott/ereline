@@ -128,7 +128,9 @@ void mpiError (int rankMPI, int start, int stop);
 
 void invert2_eig (std::vector<double> & cc);
 std::vector<int> sortAndCount(std::vector<int> & pixels);
-std::string getTFem (int horn);
+
+struct Lfi_radiometer_t;
+const char * closest_fp_sensor_to_radiometer (const Lfi_radiometer_t & rad);
 
 template<typename T> std::vector<T> sumVectors (std::vector<T> add1, std::vector<T> add2)
 {

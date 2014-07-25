@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <stdlib.h>
+#include <stdexcept>
 #include <numeric>
 #include <iomanip>
 #include <mpi.h>
@@ -15,6 +16,7 @@
 #include <gsl/gsl_eigen.h>
 
 #include "misc.hpp"
+#include "datatypes.hpp"
 
 using namespace std;
 
@@ -218,34 +220,23 @@ vector<int> sortAndCount(vector<int> & pixels)
 }
 
 /* Get the Temperature termometer given the horn */
-std::string getTFem (int horn)
+const char *
+closest_fp_sensor_to_radiometer (const Lfi_radiometer_t & rad)
 {
-  switch(horn)
-    {
-    case 18:
-      return std::string("LM302332");
-    case 19:
-      return std::string("LM302332");
-    case 20:
-      return std::string("LM302332");
-    case 21:
-      return std::string("LM206332");
-    case 22:
-      return std::string("LM206332");
-    case 23:
-      return std::string("LM206332");
-    case 24:
-      return std::string("LM203332");
-    case 25:
-      return std::string("LM204332");
-    case 26:
-      return std::string("LM306332");
-    case 27:
-      return std::string("LM202332");
-    case 28:
-      return std::string("LM203332");
-    default:
-      std::cout << "Invalid horn" << std::endl;
+    switch(rad.horn) {
+        case 18: return "feu_cone_right_part";
+        case 19: return "feu_cone_right_part";
+        case 20: return "feu_cone_right_part";
+        case 21: return "feu_cone_left_part";
+        case 22: return "feu_cone_left_part";
+        case 23: return "feu_cone_left_part";
+        case 24: return "feu_cold_plate_right_inner";
+        case 25: return "feu_left_bottom_fh25";
+        case 26: return "feu_right_bottom_fh26";
+        case 27: return "feu_cold_plate_left_inner";
+        case 28: return "feu_cold_plate_right_inner";
     }
-  return std::string("");
+
+    throw std::runtime_error((boost::format("Invalid horn number: %1%")
+                              % rad.horn).str());
 }
