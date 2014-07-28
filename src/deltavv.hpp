@@ -5,6 +5,12 @@
 
 #include "dipole_fit.hpp"
 
+struct Delta_vv_state_t {
+    int pid;
+    double gain;
+    double dipole;
+};
+
 /* class calib iter*/
 struct Delta_vv_t {
     std::vector<int> pid;
@@ -21,6 +27,12 @@ struct Delta_vv_t {
     void appendPidValue (int a_pid);
     void appendGainValue (double a_gain);
     void appendDipoleValue (double a_dipole);
+
+    void append(const Delta_vv_state_t & state) {
+        appendPidValue(state.pid);
+        appendGainValue(state.gain);
+        appendDipoleValue(state.dipole);
+    }
 
     void mergeResults();
     void selectRadiometerGains(int detectorIdIdx,

@@ -14,6 +14,12 @@
 #include <cstdlib>
 #include <vector>
 
+struct Gain_state_t {
+    int pid;
+    double gain;
+    double offset;
+};
+
 struct Gain_table_t {
   std::vector<int> pointingIds;
   std::vector<double> gain;
@@ -38,6 +44,13 @@ struct Gain_table_t {
   void appendPidValue (int a_pid);
   void appendGainValue (double a_gain);
   void appendOffsetValue (double a_offset);
+
+  void append(const Gain_state_t & state) {
+      appendPidValue(state.pid);
+      appendGainValue(state.gain);
+      appendOffsetValue(state.offset);
+  }
+
   void setWindowVector (std::vector<int> & a_windowVector);
 
   void mergeResults();
