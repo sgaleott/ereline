@@ -114,7 +114,7 @@ getDetectorId(int diode)
   return string("");
 }
 
-int getDetectorIdasInt(string detectorId)
+int getDetectorIdasInt(const std::string & detectorId)
 {
   int horn = stringToData<int>(detectorId.substr(3,2));
   int rad = stringToData<int>(detectorId.substr(7,1));
@@ -136,14 +136,14 @@ void mpiError (int rankMPI, int start, int stop)
   MPI::COMM_WORLD.Barrier();
 }
 
-double computeMean(vector<double> & input)
+double computeMean(const std::vector<double> & input)
 {
   double sum = 0.0;
   double correction = 0.0;
 
-  for(size_t index = 0; index < input.size(); ++index)
+  for(auto item : input)
     {
-      double cur_element_corrected = input[index] - correction;
+      double cur_element_corrected = item - correction;
       double new_sum = sum + cur_element_corrected;
       correction = (new_sum - sum) - cur_element_corrected;
       sum = new_sum;
@@ -152,14 +152,14 @@ double computeMean(vector<double> & input)
   return sum/static_cast<double>(input.size());
 }
 
-double computeVariance(vector<double> & input)
+double computeVariance(const std::vector<double> & input)
 {
   double mean = computeMean(input);
 
   double sum = 0.0;
-  for(size_t index = 0; index < input.size(); ++index)
+  for(auto item : input)
     {
-      sum += pow((input[index]-mean),2);
+      sum += pow((item - mean),2);
     }
 
   return sqrt(sum/static_cast<double>(input.size()));

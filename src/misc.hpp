@@ -79,10 +79,10 @@ std::vector<double> cartToAng(std::vector<double> cart);
 
 std::vector<std::string> getDetectorIds(int frequency);
 std::string getDetectorId(int diode);
-int getDetectorIdasInt(std::string detectorId);
+int getDetectorIdasInt(const std::string & detectorId);
 
-double computeMean(std::vector<double> & input);
-double computeVariance(std::vector<double> & input);
+double computeMean(const std::vector<double> & input);
+double computeVariance(const std::vector<double> & input);
 
 /*
  * Template function to transform a number
