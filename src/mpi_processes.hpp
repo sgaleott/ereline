@@ -40,5 +40,8 @@ splitOdsIntoMpiProcesses(int numOfMpiProcesses,
 Range_t<int>
 range_of_ods_for_this_process(const std::vector<Od_t> & list_of_ods);
 
-#endif
+void merge_tables(std::vector<int> & pointingIds,
+                  std::vector<double> & vec1,
+                  std::vector<double> & vec2);
 
+#endif

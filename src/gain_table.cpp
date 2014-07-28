@@ -1,5 +1,6 @@
 #include "gain_table.hpp"
 #include "misc.hpp"
+#include "mpi_processes.hpp"
 
 #include <algorithm>
 #include <iomanip>
@@ -49,63 +50,7 @@ Gain_table_t::setWindowVector (std::vector<int> & a_windowVector)
 void
 Gain_table_t::mergeResults()
 {
-    int rankMPI = MPI::COMM_WORLD.Get_rank();
-    int sizeMPI = MPI::COMM_WORLD.Get_size();
-
-    // Collect the number of pointing periods processed by each MPI
-    // process into the "lengths" vector, and the total number of
-    // periods into "overallLength".
-    int length = static_cast<int>(pointingIds.size());
-    int overallLength;
-    MPI::COMM_WORLD.Allreduce(&length, &overallLength, 1, MPI::INT, MPI::SUM);
-
-    std::vector<int> lengths(sizeMPI);
-    MPI::COMM_WORLD.Gather(&length, 1, MPI::INT,
-                           lengths.data(), 1, MPI::INT, 0);
-    MPI::COMM_WORLD.Bcast(lengths.data(), lengths.size(), MPI::INT, 0);
-
-    // Now use MPI's "gatherv" function to concatenate pIDs, gains, and
-    // offsets into "overallPointings, overallGains, and overallOffsets.
-    std::vector<int> displacement(sizeMPI);
-    for(int i = 0; i < sizeMPI; ++i) {
-        if(i == 0)
-            displacement[i] = 0;
-        else
-            displacement[i] = displacement.at(i - 1) + lengths.at(i - 1);
-    }
-
-    std::vector<int> overallPointings(overallLength);
-    std::vector<double> overallGains(overallLength);
-    std::vector<double> overallOffsets(overallLength);
-
-    MPI::COMM_WORLD.Gatherv(pointingIds.data(), pointingIds.size(), MPI::INT,
-                            overallPointings.data(), lengths.data(),
-                            displacement.data(), MPI::INT, 0);
-
-    MPI::COMM_WORLD.Gatherv(gain.data(), gain.size(), MPI::DOUBLE,
-                            overallGains.data(), lengths.data(),
-                            displacement.data(), MPI::DOUBLE, 0);
-
-    MPI::COMM_WORLD.Gatherv(offset.data(), offset.size(), MPI::DOUBLE,
-                            overallOffsets.data(), lengths.data(),
-                            displacement.data(), MPI::DOUBLE, 0);
-
-    if(rankMPI == 0) {
-        pointingIds = overallPointings;
-        gain = overallGains;
-        offset = overallOffsets;
-    } else {
-        pointingIds.resize(overallLength);
-        gain.resize(overallLength);
-        offset.resize(overallLength);
-    }
-
-    // So far overallPointings, overallGains, and overallOffsets have
-    // been set up in the root process only. Broadcast them to every
-    // other process.
-    MPI::COMM_WORLD.Bcast(pointingIds.data(), pointingIds.size(), MPI::INT, 0);
-    MPI::COMM_WORLD.Bcast(gain.data(), gain.size(), MPI::DOUBLE, 0);
-    MPI::COMM_WORLD.Bcast(offset.data(), offset.size(), MPI::DOUBLE, 0);
+    merge_tables(pointingIds, gain, offset);
 }
 
 std::vector<double>

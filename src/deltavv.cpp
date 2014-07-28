@@ -8,6 +8,7 @@
 
 #include "deltavv.hpp"
 #include "misc.hpp"
+#include "mpi_processes.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -155,66 +156,7 @@ Delta_vv_t::setDipoleValue (double a_dipole)
 void
 Delta_vv_t::mergeResults()
 {
-    // Get MPI infos
-    int rankMPI = MPI::COMM_WORLD.Get_rank();
-    int sizeMPI = MPI::COMM_WORLD.Get_size();
-
-    // Set gain and pid arrays
-    int length = static_cast<int>(pid.size());
-    int * lengths = new int[sizeMPI];
-    std::fill (lengths,lengths+sizeMPI,0);
-    for (int jj=0; jj<sizeMPI; ++jj) {
-        if (jj==rankMPI)
-            lengths[jj] = length;
-        else
-            lengths[jj] = 0.0;
-    }
-
-    MPI::COMM_WORLD.Allreduce(MPI::IN_PLACE, lengths, sizeMPI, MPI::INT, MPI::SUM);
-    MPI::COMM_WORLD.Barrier();
-
-    MPI::COMM_WORLD.Allreduce(&length, &length, 1, MPI::INT, MPI::SUM);
-    MPI::COMM_WORLD.Barrier();
-
-  // Retrieve data from other processes
-    int startPid=0;
-    for (int jj=0; jj<rankMPI; ++jj)
-        startPid+=lengths[jj];
-
-    int * pids = new int[length];
-    std::fill (pids, pids+length, 0);
-    double * gainArr = new double[length];
-    std::fill (gainArr, gainArr+length, 0.0);
-    double * dipoleArr = new double[length];
-    std::fill (dipoleArr, dipoleArr+length, 0);
-
-    for (unsigned int jj = 0; jj < pid.size(); ++jj) {
-      pids[startPid+jj] = pid[jj];
-      gainArr[startPid+jj] = gain[jj];
-      dipoleArr[startPid+jj] = dipole[jj];
-    }
-
-    MPI::COMM_WORLD.Allreduce(MPI::IN_PLACE, pids, length, MPI::INT, MPI::SUM);
-    MPI::COMM_WORLD.Barrier();
-
-    MPI::COMM_WORLD.Allreduce(MPI::IN_PLACE, gainArr, length, MPI::DOUBLE, MPI::SUM);
-    MPI::COMM_WORLD.Barrier();
-
-    MPI::COMM_WORLD.Allreduce(MPI::IN_PLACE, dipoleArr, length, MPI::DOUBLE, MPI::SUM);
-    MPI::COMM_WORLD.Barrier();
-
-    std::vector<int>().swap(pid);
-    std::vector<double>().swap(gain);
-    std::vector<double>().swap(dipole);
-
-    pid.assign(pids, pids+length);
-    gain.assign(gainArr, gainArr+length);
-    dipole.assign(dipoleArr, dipoleArr+length);
-
-    delete [] lengths;
-    delete [] gainArr;
-    delete [] pids;
-    delete [] dipoleArr;
+    merge_tables(pid, gain, dipole);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
