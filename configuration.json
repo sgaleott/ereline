@@ -52,6 +52,8 @@
 
     "smooth_gains": {
 	"run": true,
+	"hybrid_fit_first_pid": 1,
+	"hybrid_fit_last_pid": 45957,
 	"fast_variations": {
 	    "window_length": null,
 	    "percent": null
