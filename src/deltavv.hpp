@@ -16,11 +16,11 @@ struct Delta_vv_t {
     void hybridFit(const std::vector<double> & subData,
                    const std::vector<double> & subSensor);
 
-    std::vector<double> eval(const std::vector<int> & pointingIDs);
+    std::vector<double> eval(const std::vector<int> & pointingIDs) const;
 
-    void setPidValue (int a_pid);
-    void setGainValue (double a_gain);
-    void setDipoleValue (double a_dipole);
+    void appendPidValue (int a_pid);
+    void appendGainValue (double a_gain);
+    void appendDipoleValue (double a_dipole);
 
     void mergeResults();
     void selectRadiometerGains(int detectorIdIdx,

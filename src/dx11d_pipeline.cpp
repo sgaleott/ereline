@@ -163,7 +163,13 @@ inner_main(int argc, const char ** argv)
                     dipole_fit_results,
                     da_capo_results);
 
-        run_smooth_gains(program_config, storage_config);
+        run_smooth_gains(ucds,
+                         program_config,
+                         storage_config,
+                         radiometer,
+                         list_of_pointings,
+                         dipole_fit_results,
+                         da_capo_results);
     }
 
     return 0;

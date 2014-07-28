@@ -272,3 +272,43 @@ load_differenced_data(const std::string & file_name,
 
     fits_file.close();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+void
+load_subsampled_ref_and_hk_data(Sqlite_connection_t & ucds,
+                                const Lfi_radiometer_t & radiometer,
+                                const std::string & hk_sensor_name,
+                                Range_t<int> pointing_range,
+                                std::vector<int> pointing_id,
+                                std::vector<double> ref_data,
+                                std::vector<double> hk_data)
+{
+    const std::string table_name((boost::format("sci%1%%2%_weighted")
+                                  % radiometer.horn
+                                  % radiometer.radiometer).str());
+
+    auto query =
+        boost::format("SELECT pointingID, mean_ref, hk.%1% AS temp"
+                      "FROM %2% JOIN lfi_hk_temperatures AS hk ON (pointingID)"
+                      "WHERE pointingID >= %3% AND pointingID <= %4% "
+                      "AND mean_ref > 0 AND temp > 0")
+        % hk_sensor_name
+        % table_name
+        % pointing_range.start
+        % pointing_range.end;
+
+    Sqlite_statement_t statement(ucds, query.str().c_str());
+
+    int result = statement.step();
+    pointing_id.resize(0);
+    ref_data.resize(0);
+    while(result == SQLITE_ROW) {
+        pointing_id.push_back(statement.column_int(0));
+        ref_data.push_back(statement.column_double(1));
+        hk_data.push_back(statement.column_double(2));
+
+        result = statement.step();
+    }
+}

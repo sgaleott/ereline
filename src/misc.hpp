@@ -132,11 +132,13 @@ std::vector<int> sortAndCount(std::vector<int> & pixels);
 struct Lfi_radiometer_t;
 const char * closest_fp_sensor_to_radiometer (const Lfi_radiometer_t & rad);
 
-template<typename T> std::vector<T> sumVectors (std::vector<T> add1, std::vector<T> add2)
+template<typename T> std::vector<T>
+sumVectors (const std::vector<T> add1,
+            const std::vector<T> add2)
 {
   if (add1.size() != add2.size())
-      throw std::runtime_error(boost::format("Error: the vectors must have the same size: %d / %d")
-                               % add1.size() % add2.size());
+      throw std::runtime_error((boost::format("Error: the vectors must have the same size: %d / %d")
+                                % add1.size() % add2.size()).str());
 
   std::vector<T> retVec(add1.size());
   for (size_t idx = 0; idx < retVec.size(); ++idx)

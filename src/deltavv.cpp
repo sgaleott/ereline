@@ -105,7 +105,7 @@ Delta_vv_t::hybridFit(const std::vector<double> & subData,
 ////////////////////////////////////////////////////////////////////////////////
 
 std::vector<double>
-Delta_vv_t::eval(const std::vector<int> & pointingIDs)
+Delta_vv_t::eval(const std::vector<int> & pointingIDs) const
 {
     std::vector<double> interpGain;
     unsigned int locIdx=0;
@@ -130,7 +130,7 @@ Delta_vv_t::eval(const std::vector<int> & pointingIDs)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-Delta_vv_t::setPidValue (int a_pid)
+Delta_vv_t::appendPidValue (int a_pid)
 {
     pid.push_back(a_pid);
 }
@@ -138,7 +138,7 @@ Delta_vv_t::setPidValue (int a_pid)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-Delta_vv_t::setGainValue (double a_gain)
+Delta_vv_t::appendGainValue (double a_gain)
 {
     gain.push_back(a_gain);
 }
@@ -146,7 +146,7 @@ Delta_vv_t::setGainValue (double a_gain)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-Delta_vv_t::setDipoleValue (double a_dipole)
+Delta_vv_t::appendDipoleValue (double a_dipole)
 {
     dipole.push_back(a_dipole);
 }
