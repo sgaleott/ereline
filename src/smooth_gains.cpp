@@ -2,6 +2,7 @@
 #include "configuration.hpp"
 #include "dipole_fit_results.hpp"
 #include "da_capo_results.hpp"
+#include "smooth_gains_results.hpp"
 #include "deltavv.hpp"
 #include "io.hpp"
 #include "logging.hpp"
@@ -111,7 +112,8 @@ run_smooth_gains(Sqlite_connection_t & ucds,
                  const Lfi_radiometer_t & rad,
                  const std::vector<Pointing_t> & list_of_pointings,
                  const Dipole_fit_results_t & fit_results,
-                 const Da_capo_results_t & da_capo_results)
+                 const Da_capo_results_t & da_capo_results,
+                 Smooth_gain_results_t & smooth_results)
 {
     Logger * log = Logger::get_instance();
     const int mpi_rank = MPI::COMM_WORLD.Get_rank();
@@ -252,8 +254,6 @@ run_smooth_gains(Sqlite_connection_t & ucds,
 
     /****************SAVE GAINS AND REDUCED******************/
 
-    Gain_table_t gTable;
-    Gain_table_t slowTable;
     for (auto const & cur_pointing : list_of_pointings)
     {
         const int locPid = cur_pointing.id;
@@ -261,30 +261,30 @@ run_smooth_gains(Sqlite_connection_t & ucds,
         const double gain = smoothedGains[locIdx];
         const double offset = smoothedOffsets[locIdx];
 
-        gTable.append(Gain_state_t { locPid, gain, offset });
+        smooth_results.gain_table.append(Gain_state_t { locPid, gain, offset });
 
         const double gainSlow = smoothedRaw[locIdx];
-        slowTable.append(Gain_state_t { locPid, gainSlow, offset });
+        smooth_results.slow_table.append(Gain_state_t { locPid, gainSlow, offset });
     }
 
     MPI::COMM_WORLD.Barrier();
 
     // Merge Results and Select Gains
-    gTable.mergeResults();
-    gTable.selectRadiometerGains(real_radiometer.radiometer, 2,
-                                 fit_results.pids_per_process);
-    slowTable.mergeResults();
-    slowTable.selectRadiometerGains(real_radiometer.radiometer, 2,
-                                    fit_results.pids_per_process);
+    smooth_results.gain_table.mergeResults();
+    smooth_results.gain_table.selectRadiometerGains(real_radiometer.radiometer, 2,
+                                                    fit_results.pids_per_process);
+    smooth_results.slow_table.mergeResults();
+    smooth_results.slow_table.selectRadiometerGains(real_radiometer.radiometer, 2,
+                                                    fit_results.pids_per_process);
 
     if (mpi_rank < 2)
     {
         save_gain_table(ensure_path_exists(gain_table_file_path(program_conf, real_radiometer)),
                         real_radiometer,
-                        gTable);
+                        smooth_results.gain_table);
         save_gain_table(ensure_path_exists(slow_gain_table_file_path(program_conf, real_radiometer)),
                         real_radiometer,
-                        slowTable);
+                        smooth_results.slow_table);
     }
 
     log->decrease_indent();

@@ -9,6 +9,7 @@ struct Sqlite_connection_t;
 struct Lfi_radiometer_t;
 struct Dipole_fit_results_t;
 struct Da_capo_results_t;
+struct Smooth_gains_results_t;
 
 void run_smooth_gains(Sqlite_connection_t & ucds,
                       const Configuration & program_conf,
@@ -16,6 +17,7 @@ void run_smooth_gains(Sqlite_connection_t & ucds,
                       const Lfi_radiometer_t & rad,
                       const std::vector<Pointing_t> & list_of_pointings,
                       const Dipole_fit_results_t & fit_results,
-                      const Da_capo_results_t & da_capo_results);
+                      const Da_capo_results_t & da_capo_results,
+                      Smooth_gains_results_t & smooth_results);
 
 #endif
