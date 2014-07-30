@@ -75,7 +75,7 @@ public:
   ~FitsObject(){if (ptr != NULL) close();};
 
   /* create a new fits file */
-  void create (const std::string& fileName, bool overwrite=false);
+  void create (const std::string& fileName, bool overwrite=true);
 
 
   /* write/update file checksum keyword*/
