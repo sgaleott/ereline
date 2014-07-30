@@ -4,6 +4,6 @@
 struct Smooth_gains_results_t {
     Gain_table_t gain_table;
     Gain_table_t slow_table;
-}
+};
 
 #endif

@@ -113,7 +113,7 @@ run_smooth_gains(Sqlite_connection_t & ucds,
                  const std::vector<Pointing_t> & list_of_pointings,
                  const Dipole_fit_results_t & fit_results,
                  const Da_capo_results_t & da_capo_results,
-                 Smooth_gain_results_t & smooth_results)
+                 Smooth_gains_results_t & smooth_results)
 {
     Logger * log = Logger::get_instance();
     const int mpi_rank = MPI::COMM_WORLD.Get_rank();

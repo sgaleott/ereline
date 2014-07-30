@@ -6,6 +6,7 @@
 #include "da_capo_results.hpp"
 #include "datatypes.hpp"
 #include "smooth_gains.hpp"
+#include "smooth_gains_results.hpp"
 #include "sqlite3xx.hpp"
 #include "ahf_info.hpp"
 #include "io.hpp"
@@ -154,6 +155,9 @@ inner_main(int argc, const char ** argv)
                        storage_config,
                        list_of_pointings,
                        dipole_fit_results);
+#error Change the file name
+        save_dipole_fit_results("test.fits", radiometer, dipole_fit_results);
+
 
         Da_capo_results_t da_capo_results;
         run_da_capo(program_config,
@@ -163,13 +167,15 @@ inner_main(int argc, const char ** argv)
                     dipole_fit_results,
                     da_capo_results);
 
+        Smooth_gains_results_t smooth_results;
         run_smooth_gains(ucds,
                          program_config,
                          storage_config,
                          radiometer,
                          list_of_pointings,
                          dipole_fit_results,
-                         da_capo_results);
+                         da_capo_results,
+                         smooth_results);
     }
 
     return 0;

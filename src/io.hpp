@@ -92,6 +92,11 @@ void load_pointing_information(Sqlite_connection_t & ucds,
                                int od,
                                std::vector<Pointing_t> & pointings);
 
+void save_gain_table(FitsObject & file,
+                     const Lfi_radiometer_t & radiometer,
+                     const Gain_table_t & gain_table,
+                     const std::string & comment = "");
+
 void save_gain_table(const std::string & file_name,
                      const Lfi_radiometer_t & radiometer,
                      const Gain_table_t & gain_table,
@@ -102,6 +107,11 @@ void save_tod(const std::string & file_name,
               const Lfi_radiometer_t & radiometer,
               const DifferencedData & datadiff,
               const std::string & comment = "");
+
+void save_dipole_fit(FitsObject & file,
+                     const Lfi_radiometer_t & radiometer,
+                     const Dipole_fit_t & fit,
+                     const std::string & comment = "");
 
 void save_dipole_fit(const std::string & file_name,
                      const Lfi_radiometer_t & radiometer,

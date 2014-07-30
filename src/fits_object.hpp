@@ -132,6 +132,12 @@ public:
   { getColumn (colNum, outData, 1, -1); };
 
   /* Write data in a column in the current HDU */
+  template <typename T> void writeElement (const std::string& columnName,
+                                           const T & datum,
+                                           const int64& offset);
+  template <typename T> void writeElement (const int& columnNumber,
+                                           const T & datum,
+                                           const int64& offset);
   template <typename T> void writeColumn (const std::string& columnName,
                                           const std::vector<T>& data,
                                           const int64& offset);
@@ -241,6 +247,35 @@ FitsObject::writeColumn (const int& colNum,
     fits_report_error (stderr, status);
 }
 
+
+/* Write data in a column in the current HDU */
+template <typename T> void
+FitsObject::writeElement (const std::string &columnName,
+                         const T & datum,
+                         const int64& offset=1)
+{
+  int status = 0;
+  // get column number from name
+  int colNum=0;
+  if (fits_get_colnum (ptr, CASESEN, const_cast<char*>(columnName.c_str()), &colNum, &status))
+    fits_report_error (stderr, status);
+  writeElement (colNum, datum, offset);
+}
+
+
+
+template <typename T> void
+FitsObject::writeElement (const int& colNum,
+                         const T & datum,
+                         const int64& offset=1)
+{
+  int status = 0;
+  int firstElem=1;
+
+  if (fits_write_col (ptr, fitsType<T>(), colNum, offset, firstElem, 1,
+                      const_cast<T *>(&datum), &status))
+    fits_report_error (stderr, status);
+}
 
 
 
