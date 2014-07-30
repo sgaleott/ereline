@@ -107,17 +107,17 @@ read_ahf_info(Sqlite_connection_t & ucds,
 
 const std::string
 dipole_fit_name(const Configuration & program_config,
-		const Lfi_radiometer_t & radiometer,
-		bool da_capo)
+        const Lfi_radiometer_t & radiometer,
+        bool da_capo)
 {
     if(da_capo) {
-	return (boost::format("%s/da_capo_dipole_fit_table_%s.fits")
-		% program_config.getWithSubst("common.base_output_dir")
-		% radiometer.shortName()).str();
+    return (boost::format("%s/da_capo_dipole_fit_table_%s.fits")
+        % program_config.getWithSubst("common.base_output_dir")
+        % radiometer.shortName()).str();
     } else {
-	return (boost::format("%s/dipole_fit/dipole_fit_table_%s.fits")
-		% program_config.getWithSubst("common.base_output_dir")
-		% radiometer.shortName()).str();
+    return (boost::format("%s/dipole_fit/dipole_fit_table_%s.fits")
+        % program_config.getWithSubst("common.base_output_dir")
+        % radiometer.shortName()).str();
     }
 }
 
@@ -176,12 +176,11 @@ inner_main(int argc, const char ** argv)
                        storage_config,
                        list_of_pointings,
                        dipole_fit_results);
-	if(mpi_rank < 2) {
-	    save_dipole_fit_results(ensure_path_exists(dipole_fit_name(program_config,
-								       radiometer, false)),
-				    radiometer, dipole_fit_results);
-	}
-
+        if(mpi_rank < 2) {
+            save_dipole_fit_results(ensure_path_exists(dipole_fit_name(program_config,
+                                                                       radiometer, false)),
+                                    radiometer, dipole_fit_results);
+        }
 
         Da_capo_results_t da_capo_results;
         run_da_capo(program_config,
@@ -190,11 +189,11 @@ inner_main(int argc, const char ** argv)
                     list_of_pointings,
                     dipole_fit_results,
                     da_capo_results);
-	if(mpi_rank < 2) {
-	    save_dipole_fit_results(ensure_path_exists(dipole_fit_name(program_config,
-								       radiometer, true)),
-				    radiometer, dipole_fit_results);
-	}
+    if(mpi_rank < 2) {
+        save_dipole_fit_results(ensure_path_exists(dipole_fit_name(program_config,
+                                       radiometer, true)),
+                    radiometer, dipole_fit_results);
+    }
 
         Smooth_gains_results_t smooth_results;
         run_smooth_gains(ucds,
