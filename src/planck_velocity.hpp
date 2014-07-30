@@ -46,6 +46,8 @@ struct Planck_velocity_t
   std::vector<double> getVelocity (double scetTime) const;
   std::vector<double> getAbsoluteVelocity(double scetTime) const;
 
+  void use_pencil_beam();
+
   double getConvolvedDipole(double scetTime,
                             double theta,
                             double phi, double psi) const;

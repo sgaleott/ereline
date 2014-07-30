@@ -29,6 +29,7 @@
 
     "dipole_fit": {
 	"run": true,
+	"use_pencil_beam": false,
 	"monopole_K_CMB": 2.72548,
 	"solar_dipole": {
 	    "theta_ecl_rad": 1.7656131194951572,

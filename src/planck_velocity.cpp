@@ -152,3 +152,10 @@ Planck_velocity_t::getConvolvedDipole(const std::vector<double> & scetTime,
 
   return local_dipole;
 }
+
+void
+Planck_velocity_t::use_pencil_beam()
+{
+    M100 = M010 = M200 = M110 = M101 = M020 = M011 = 0.0;
+    M001 = M002 = 1.0;
+}

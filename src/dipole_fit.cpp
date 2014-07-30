@@ -528,7 +528,11 @@ run_dipole_fit(Sqlite_connection_t & ucds,
     Planck_velocity_t planck_velocity(
         storage_conf.getWithSubst("spacecraft_velocity_file"),
         read_dipole_fit_params(program_conf));
-    load_convolution_params(ucds, real_radiometer, planck_velocity);
+    if(program_conf.get<bool>("dipole_fit.pencil_beam")) {
+        planck_velocity.use_pencil_beam();
+    } else {
+        load_convolution_params(ucds, real_radiometer, planck_velocity);
+    }
 
     Data_range_t data_range;
     get_local_data_range(mpi_rank, mpi_size, list_of_pointings,
