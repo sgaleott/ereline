@@ -59,8 +59,8 @@
 	    "percent": null
 	},
 	"smooth_window": {
-	    "dipole_min": 2400,
-	    "dipole_max": 600,
+	    "near_dipole_min": 2400,
+	    "near_dipole_max": 600,
 	    "window_length": null
 	},
 	"slow_var_percentile": null,

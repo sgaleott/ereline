@@ -69,9 +69,9 @@ read_smoother_parameters(const Configuration & program_conf,
         program_conf.get<double>("smooth_gains.fast_variations.percent");
 
     params.window_len_dipole.start =
-        program_conf.get<int>("smooth_gains.smooth_window.dipole_min");
+        program_conf.get<int>("smooth_gains.smooth_window.near_dipole_min");
     params.window_len_dipole.end =
-        program_conf.get<int>("smooth_gains.smooth_window.dipole_max");
+        program_conf.get<int>("smooth_gains.smooth_window.near_dipole_max");
     params.window_len =
         program_conf.get<int>("smooth_gains.smooth_window.window_length");
 
