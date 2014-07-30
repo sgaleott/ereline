@@ -136,8 +136,11 @@ Dipole_fit_t::fitData(const std::vector<float> & maskMap)
   gainv = c1;
   offset = c0;
 
-  if (gainv < 0)
+  if (gainv < 0) {
+    gainv = 0.0;
+    offset = 0.0;
     return false;
+  }
 
   return true;
 }
@@ -155,10 +158,13 @@ Dipole_fit_t::fit(const std::vector<double> & data,
                   const std::vector<float> & maskMap,
                   const std::vector<double> & sidelobes)
 {
-  if (binData(data, flag, theta, phi, dipole, index_range, sidelobes))
+  if (binData(data, flag, theta, phi, dipole, index_range, sidelobes)) {
     return fitData(maskMap);
-
-  return false;
+  } else {
+      gainv = 0.0;
+      offset = 0.0;
+      return false;
+  }
 }
 
 void
@@ -453,8 +459,10 @@ process_one_od(const Configuration & program_conf,
                       convolved_dipole,
                       idx_range,
                       mask.pixels,
-                      sidelobes)) {
+                      sidelobes))
+        {
             fits.push_back(fitter);
+
             if(debug_flag) {
                 std::string file_path =
                     (boost::format("%s/dipole_fit/fits/%s_fit_OD%04d_pid%06d.fits")
@@ -467,6 +475,12 @@ process_one_od(const Configuration & program_conf,
                 save_dipole_fit(ensure_path_exists(file_path), radiometer,
                                 fitter);
             }
+        } else {
+            log->info(boost::format("Unable to fit the data with the dipole "
+                                    "at pID %1% (OD %2%) for radiometer %3%")
+                      % cur_pid->id
+                      % cur_pid->od
+                      % radiometer.shortName());
         }
     }
 
@@ -477,19 +491,28 @@ process_one_od(const Configuration & program_conf,
 
 static void
 extract_gains(const std::vector<Dipole_fit_t> & list_of_fits,
+              const Range_t<int> & pid_range,
               Gain_table_t & gain_table)
 {
-    const size_t num_of_fits = list_of_fits.size();
+    const size_t num_of_fits = pid_range.end - pid_range.start + 1;
     gain_table.pointingIds.resize(num_of_fits);
     gain_table.gain.resize(num_of_fits);
     gain_table.offset.resize(num_of_fits);
 
+    auto cur_fit = list_of_fits.begin();
     for(size_t idx = 0; idx < num_of_fits; ++idx) {
-        const auto & cur_fit = list_of_fits.at(idx);
+        const int pid = pid_range.start + idx;
+        gain_table.pointingIds[idx] = pid;
 
-        gain_table.pointingIds[idx] = cur_fit.pointingID;
-        gain_table.gain[idx] = 1. / cur_fit.gainv;
-        gain_table.offset[idx] = cur_fit.offset;
+        if(cur_fit != list_of_fits.end() && cur_fit->pointingID == pid) {
+            gain_table.gain[idx] = 1. / cur_fit->gainv;
+            gain_table.offset[idx] = cur_fit->offset;
+
+            ++cur_fit;
+        } else {
+            gain_table.gain[idx] = 0.0;
+            gain_table.offset[idx] = 0.0;
+        }
     }
 }
 
@@ -528,7 +551,7 @@ run_dipole_fit(Sqlite_connection_t & ucds,
     Planck_velocity_t planck_velocity(
         storage_conf.getWithSubst("spacecraft_velocity_file"),
         read_dipole_fit_params(program_conf));
-    if(program_conf.get<bool>("dipole_fit.pencil_beam")) {
+    if(program_conf.get<bool>("dipole_fit.use_pencil_beam")) {
         planck_velocity.use_pencil_beam();
     } else {
         load_convolution_params(ucds, real_radiometer, planck_velocity);
@@ -593,7 +616,15 @@ run_dipole_fit(Sqlite_connection_t & ucds,
         log->info(boost::format("Nothing more to do with OD %1%.") % od);
     }
 
-    extract_gains(result.list_of_fits, result.gain_table);
+    log->debug(boost::format("Looping dipoleFit on the ODs \u2208 [%1%, %2%]"
+                             "completed, %3% valid fits found")
+               % data_range.od_range.start
+               % data_range.od_range.end
+               % result.list_of_fits.size());
+
+    extract_gains(result.list_of_fits,
+                  Range_t<int> { first_pid->id, last_pid->id },
+                  result.gain_table);
 
     log->info("Waiting for all the MPI processes to get here...");
     MPI::COMM_WORLD.Barrier();
