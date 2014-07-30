@@ -126,8 +126,11 @@ dipole_fit_name(const Configuration & program_config,
 int
 inner_main(int argc, const char ** argv)
 {
-    if(MPI::COMM_WORLD.Get_size() % 2 != 0) {
-        if(MPI::COMM_WORLD.Get_rank() == 0) {
+    const int mpi_size = MPI::COMM_WORLD.Get_size();
+    const int mpi_rank = MPI::COMM_WORLD.Get_rank();
+
+    if(mpi_size % 2 != 0) {
+        if(mpi_rank == 0) {
             std::cerr << "Error: the program expects to be run on "
                 "an even number of MPI processes.\n";
         }
@@ -135,7 +138,7 @@ inner_main(int argc, const char ** argv)
     }
 
     if(argc != 2) {
-        if(MPI::COMM_WORLD.Get_rank() == 0)
+        if(mpi_rank == 0)
             print_help();
 
         return 1;
@@ -173,9 +176,11 @@ inner_main(int argc, const char ** argv)
                        storage_config,
                        list_of_pointings,
                        dipole_fit_results);
-        save_dipole_fit_results(ensure_path_exists(dipole_fit_name(program_config,
-								   radiometer, false)),
-				radiometer, dipole_fit_results);
+	if(mpi_rank < 2) {
+	    save_dipole_fit_results(ensure_path_exists(dipole_fit_name(program_config,
+								       radiometer, false)),
+				    radiometer, dipole_fit_results);
+	}
 
 
         Da_capo_results_t da_capo_results;
@@ -185,9 +190,11 @@ inner_main(int argc, const char ** argv)
                     list_of_pointings,
                     dipole_fit_results,
                     da_capo_results);
-        save_dipole_fit_results(ensure_path_exists(dipole_fit_name(program_config,
-								   radiometer, true)),
-				radiometer, dipole_fit_results);
+	if(mpi_rank < 2) {
+	    save_dipole_fit_results(ensure_path_exists(dipole_fit_name(program_config,
+								       radiometer, true)),
+				    radiometer, dipole_fit_results);
+	}
 
         Smooth_gains_results_t smooth_results;
         run_smooth_gains(ucds,
