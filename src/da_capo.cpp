@@ -75,8 +75,14 @@ void
 daCapo::initializeConstraint(bool constraint,
                              const Dipole_parameters_t & solar_dipole)
 {
+  Logger * log = Logger::get_instance();
+
   if (!constraint)
     return;
+
+  log->debug(boost::format("Running daCapo::initializeConstraint"
+                           "(%1%, solar_dipole)")
+             % constraint);
 
   // Build Dipole Constraint Map
   for (size_t idx=0; idx<pixelIndexFull.size(); idx++)
@@ -97,6 +103,9 @@ daCapo::initializeConstraint(bool constraint,
 void
 daCapo::initializeConstraint(const std::vector<double> & constraint)
 {
+  Logger * log = Logger::get_instance();
+  log->debug("Running daCapo::initializeConstraint(constraint)");
+
   // Build Dipole Constraint Map
   for (size_t idx=0; idx<pixelIndexFull.size(); idx++)
     {
@@ -113,6 +122,11 @@ daCapo::initializeConstraint(const std::vector<double> & constraint)
 void
 daCapo::initializeLocmap(const std::vector<Dipole_fit_t> & binnedData)
 {
+  Logger * log = Logger::get_instance();
+  log->debug(boost::format("Running daCapo::initializeLocmap(binnedData), "
+                           "binnedData has %1% elements")
+             % binnedData.size());
+
   std::vector<int> tmpPixels;
   for (size_t ipp=0; ipp<binnedData.size(); ipp++)
     {
@@ -155,6 +169,9 @@ daCapo::initializeLocmap(const std::vector<Dipole_fit_t> & binnedData)
 void
 daCapo::initializeFullmap()
 {
+  Logger * log = Logger::get_instance();
+  log->debug("Running daCapo::initializeFullmap");
+
   int ipixMax=pixelIndexLocal[pixelIndexLocal.size()-1];
   MPI::COMM_WORLD.Allreduce(&ipixMax, &ipixMax, 1, MPI_INT, MPI_MAX);
   MPI::COMM_WORLD.Barrier();
@@ -223,6 +240,11 @@ void
 daCapo::applyMask(const std::vector<Dipole_fit_t> & binnedData,
                   const std::vector<float> & mask)
 {
+  Logger * log = Logger::get_instance();
+  log->debug(boost::format("Running daCapo::applyMask(binnedData, mask), "
+                           "binnedData has %1% elements")
+             % binnedData.size());
+
   int dummy_pixel = static_cast<int>(pixelIndexLocal.size());
   for (size_t ipp=0; ipp<binnedData.size(); ipp++)
     {
@@ -240,6 +262,11 @@ daCapo::applyMask(const std::vector<Dipole_fit_t> & binnedData,
 void
 daCapo::constructCCmatrix(const std::vector<Dipole_fit_t> & binnedData)
 {
+  Logger * log = Logger::get_instance();
+  log->debug(boost::format("Running daCapo::constructCCmatrix(binnedData), "
+                           "binnedData has %1% elements")
+             % binnedData.size());
+
   std::vector<double> ccLoc(pixelIndexFullMap.size()+1, 0.);
 
   for (size_t ipp=0; ipp<binnedData.size(); ipp++)
@@ -283,6 +310,9 @@ daCapo::constructCCmatrix(const std::vector<Dipole_fit_t> & binnedData)
 void
 daCapo::updateDipolenorm()
 {
+  Logger * log = Logger::get_instance();
+  log->debug("Running daCapo::updateDipolenorm()");
+
   if (constraintMap.size()==0)
     return;
 
@@ -312,6 +342,11 @@ daCapo::updateDipolenorm()
 void
 daCapo::buildPreconditioner(const std::vector<Dipole_fit_t> & binnedData)
 {
+  Logger * log = Logger::get_instance();
+  log->debug(boost::format("Running daCapo::buildPreconditioner(binnedData), "
+                           "binnedData has %1% elements")
+             % binnedData.size());
+
   for (size_t ipp=0; ipp<binnedData.size(); ipp++)
     {
       std::vector<int> hits = binnedData[ipp].pixSumHits;
@@ -337,6 +372,11 @@ daCapo::buildPreconditioner(const std::vector<Dipole_fit_t> & binnedData)
 void
 daCapo::toiToLocmap(const std::vector<Dipole_fit_t> & binnedData)
 {
+  Logger * log = Logger::get_instance();
+  log->debug(boost::format("Running daCapo::toiToLocmap(binnedData), "
+                           "binnedData has %1% elements")
+             % binnedData.size());
+
   for (size_t ipp=0; ipp<pixelIndexLocalMap.size(); ipp++)
     {
       std::vector<double> signal = binnedData[ipp].pixSumData;
@@ -358,6 +398,9 @@ daCapo::toiToLocmap(const std::vector<Dipole_fit_t> & binnedData)
 void
 daCapo::locToFullmap()
 {
+  Logger * log = Logger::get_instance();
+  log->debug("Running daCapo::locToFullmap()");
+
   fullMap.assign(fullMap.size(), 0.);
 
   int offset = 0;
@@ -387,6 +430,9 @@ daCapo::locToFullmap()
 void
 daCapo::ccMultiply()
 {
+  Logger * log = Logger::get_instance();
+  log->debug("Running daCapo::ccMultiply()");
+
   for (size_t ip=0; ip<fullMap.size(); ip++)
     {
       if (ccFull[ip]>0)
@@ -403,6 +449,9 @@ daCapo::ccMultiply()
 void
 daCapo::applyConstraint()
 {
+  Logger * log = Logger::get_instance();
+  log->debug("Running daCapo::applyConstraint()");
+
   if (constraintMap.size()==0)
     return;
 
@@ -441,6 +490,9 @@ daCapo::applyConstraint()
 void
 daCapo::fullToLocmap()
 {
+  Logger * log = Logger::get_instance();
+  log->debug("Running daCapo::fullToLocmap()");
+
   localMap.assign(localMap.size(), 0.);
 
   int offset=0;
@@ -473,10 +525,17 @@ Map binning operation, including constraint
 void
 daCapo::applyCC()
 {
+  Logger * log = Logger::get_instance();
+  log->debug("Running daCapo::applyCC()");
+  log->increase_indent();
+
   locToFullmap();
   ccMultiply();
   applyConstraint();
   fullToLocmap();
+
+  log->decrease_indent();
+  log->debug("daCapo::applyCC() completed");
 }
 
 /**
@@ -487,6 +546,11 @@ void
 daCapo::subtractMapFromTod(const std::vector<Dipole_fit_t> & binnedData,
                            basevec &p)
 {
+  Logger * log = Logger::get_instance();
+  log->debug(boost::format("Running daCapo::subtractMapFromTod(binnedData, p), "
+                           "binnedData has %1% elements")
+             % binnedData.size());
+
   int dummy_pixel=static_cast<int>(localMap.size())-1;
 
   p.SetZero();
@@ -522,6 +586,11 @@ void
 daCapo::baseToLocmap(const std::vector<Dipole_fit_t> & binnedData,
                      const basevec &p)
 {
+  Logger * log = Logger::get_instance();
+  log->debug(boost::format("Running daCapo::baseToLocmap(binnedData, p), "
+                           "binnedData has %1% elements")
+             % binnedData.size());
+
   for (size_t ipp=0; ipp<pixelIndexLocalMap.size(); ipp++)
     {
       std::vector<int> hits = binnedData[ipp].pixSumHits;
@@ -545,6 +614,11 @@ void
 daCapo::subtractMapFromBase(const std::vector<Dipole_fit_t> & binnedData,
                             basevec &p)
 {
+  Logger * log = Logger::get_instance();
+  log->debug(boost::format("Running daCapo::subtractMapFromBase(binnedData, p), "
+                           "binnedData has %1% elements")
+             % binnedData.size());
+
   int dummy_pixel = static_cast<int>(localMap.size())-1;
 
   basevec r=p;
@@ -582,6 +656,9 @@ daCapo::subtractMapFromBase(const std::vector<Dipole_fit_t> & binnedData,
 void
 daCapo::applyPreconditioner(const basevec &r, basevec &z)
 {
+  Logger * log = Logger::get_instance();
+  log->debug("Running daCapo::applyPreconditioner(r, z)");
+
   for (size_t i=0; i<preconditioner.size(); i++)
     {
       z.base[i] = preconditioner[i][0]*r.base[i] +preconditioner[i][1]*r.gain[i];
@@ -595,6 +672,11 @@ daCapo::applyPreconditioner(const basevec &r, basevec &z)
 void
 daCapo::updateSignal(std::vector<Dipole_fit_t> & binnedData)
 {
+  Logger * log = Logger::get_instance();
+  log->debug(boost::format("Running daCapo::updateSignal(binnedData), "
+                           "binnedData has %1% elements")
+             % binnedData.size());
+
   for (size_t ipp=0; ipp<pixelIndexLocalMap.size(); ipp++)
     {
       std::vector<float> dipole = binnedData[ipp].pixSumDipole;
@@ -614,6 +696,12 @@ double
 daCapo::iterativeCalibration(std::vector<Dipole_fit_t> & binnedData,
                              bool firstLoop)
 {
+  Logger * log = Logger::get_instance();
+  log->debug(boost::format("Running daCapo::iterativeCalibration(binnedData, %2%), "
+                           "binnedData has %1% elements")
+             % binnedData.size() % firstLoop);
+  log->increase_indent();
+
   constructCCmatrix(binnedData);
   updateDipolenorm();
   buildPreconditioner(binnedData);
@@ -727,6 +815,11 @@ daCapo::iterativeCalibration(std::vector<Dipole_fit_t> & binnedData,
       binnedData[point].offset = aa.base[point];
       binnedData[point].gainv = aa.gain[point];
     }
+
+  log->decrease_indent();
+  log->debug(boost::format("daCapo::iterativeCalibration completed "
+                           "with result %1%")
+             % dmax);
 
   return dmax;
 }
