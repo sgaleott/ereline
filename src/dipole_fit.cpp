@@ -363,6 +363,22 @@ save_vector_as_tod(const std::string & file_path,
 
 ////////////////////////////////////////////////////////////////////////////////
 
+std::string
+dipole_fit_file_name(const Configuration & program_conf,
+                     const Lfi_radiometer_t & radiometer,
+                     int od,
+                     int pid)
+{
+    return (boost::format("%s/dipole_fit/fits/%s_fit_OD%04d_pid%06d.fits")
+        % program_conf.getWithSubst("common.base_output_dir")
+        % radiometer.shortName()
+        % od
+        % pid)
+        .str();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 /* The argument "pid_range" typically contains all the pointings to be
  * processed by the MPI process, not only the PIDs within the given
  * OD. The implementation of "process_one_od" will silently skip all
@@ -464,13 +480,10 @@ process_one_od(const Configuration & program_conf,
             fits.push_back(fitter);
 
             if(debug_flag) {
-                std::string file_path =
-                    (boost::format("%s/dipole_fit/fits/%s_fit_OD%04d_pid%06d.fits")
-                     % program_conf.getWithSubst("common.base_output_dir")
-                     % radiometer.shortName()
-                     % cur_pid->od
-                     % cur_pid->id)
-                    .str();
+                std::string file_path(dipole_fit_file_name(program_conf,
+                                                           radiometer,
+                                                           cur_pid->od,
+                                                           cur_pid->id));
 
                 save_dipole_fit(ensure_path_exists(file_path), radiometer,
                                 fitter);
