@@ -184,20 +184,22 @@ inner_main(int argc, const char ** argv)
         }
 
         Da_capo_results_t da_capo_results;
-        if(program_config.get<bool>("da_capo.use_mademoiselle")) {
-            run_mademoiselle(program_config,
-                             storage_config,
-                             radiometer,
-                             list_of_pointings,
-                             dipole_fit_results,
-                             da_capo_results);
-        } else {
-            run_da_capo(program_config,
-                        storage_config,
-                        radiometer,
-                        list_of_pointings,
-                        dipole_fit_results,
-                        da_capo_results);
+        if(program_config.get<bool>("da_capo.run")) {
+            if(program_config.get<bool>("da_capo.use_mademoiselle")) {
+                run_mademoiselle(program_config,
+                                 storage_config,
+                                 radiometer,
+                                 list_of_pointings,
+                                 dipole_fit_results,
+                                 da_capo_results);
+            } else {
+                run_da_capo(program_config,
+                            storage_config,
+                            radiometer,
+                            list_of_pointings,
+                            dipole_fit_results,
+                            da_capo_results);
+            }
         }
 
         if(mpi_rank < 2) {
