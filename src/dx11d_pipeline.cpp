@@ -5,6 +5,7 @@
 #include "da_capo.hpp"
 #include "da_capo_results.hpp"
 #include "datatypes.hpp"
+#include "mademoiselle.hpp"
 #include "smooth_gains.hpp"
 #include "smooth_gains_results.hpp"
 #include "sqlite3xx.hpp"
@@ -183,17 +184,27 @@ inner_main(int argc, const char ** argv)
         }
 
         Da_capo_results_t da_capo_results;
-        run_da_capo(program_config,
-                    storage_config,
-                    radiometer,
-                    list_of_pointings,
-                    dipole_fit_results,
-                    da_capo_results);
-    if(mpi_rank < 2) {
-        save_dipole_fit_results(ensure_path_exists(dipole_fit_name(program_config,
-                                       radiometer, true)),
-                    radiometer, dipole_fit_results);
-    }
+        if(program_config.get<bool>("da_capo.use_mademoiselle")) {
+            run_mademoiselle(program_config,
+                             storage_config,
+                             radiometer,
+                             list_of_pointings,
+                             dipole_fit_results,
+                             da_capo_results);
+        } else {
+            run_da_capo(program_config,
+                        storage_config,
+                        radiometer,
+                        list_of_pointings,
+                        dipole_fit_results,
+                        da_capo_results);
+        }
+
+        if(mpi_rank < 2) {
+            save_dipole_fit_results(ensure_path_exists(dipole_fit_name(program_config,
+                                                                       radiometer, true)),
+                                    radiometer, dipole_fit_results);
+        }
 
         Smooth_gains_results_t smooth_results;
         run_smooth_gains(ucds,

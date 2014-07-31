@@ -16,6 +16,7 @@ dx11d_pipeline_SOURCES = \
 	fits_object.cpp \
 	dipole_fit.cpp \
 	da_capo.cpp \
+	mademoiselle.cpp \
 	deltavv.cpp \
 	gain_table.cpp \
 	smooth_gains.cpp \

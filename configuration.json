@@ -29,6 +29,7 @@
 
     "dipole_fit": {
 	"run": true,
+	"use_mademoiselle": true,
 	"use_pencil_beam": false,
 	"monopole_K_CMB": 2.72548,
 	"solar_dipole": {
