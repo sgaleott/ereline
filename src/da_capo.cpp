@@ -26,11 +26,17 @@ daCapo::daCapo(const std::vector<Dipole_fit_t> & locallyBinnedData,
                bool constraint,
                const Dipole_parameters_t & dipole_params)
 {
+  Logger * log = Logger::get_instance();
+  log->debug(boost::format("Creating daCapo object using daCapo::daCapo("
+			   "locallyBinnedData, mask, %1%, dipole_params)")
+	     % constraint);
+
   sizeMPI = MPI::COMM_WORLD.Get_size();
   rankMPI = MPI::COMM_WORLD.Get_rank();
 
-  nSide = locallyBinnedData[0].nSide;
+  nSide = locallyBinnedData.at(0).nSide;
   nPixelMap = 12 * nSide * nSide;
+  log->debug(boost::format("DaCapo will create maps with NSIDE = %1%") % nSide);
   rzinit=0;
 
   initializeLocmap(locallyBinnedData);
@@ -49,6 +55,10 @@ daCapo::daCapo (const std::vector<Dipole_fit_t> & locallyBinnedData,
                 const std::vector<float> & mask,
                 const std::vector<double> & constraint)
 {
+  Logger * log = Logger::get_instance();
+  log->debug("Creating daCapo object using daCapo::daCapo("
+	     "locallyBinnedData, mask, constraint)");
+
   sizeMPI = MPI::COMM_WORLD.Get_size();
   rankMPI = MPI::COMM_WORLD.Get_rank();
 
