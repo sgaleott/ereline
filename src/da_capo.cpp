@@ -43,9 +43,9 @@ daCapo::daCapo(const std::vector<Dipole_fit_t> & locallyBinnedData,
   sizeMPI = MPI::COMM_WORLD.Get_size();
   rankMPI = MPI::COMM_WORLD.Get_rank();
 
-  nSide = locallyBinnedData.at(0).nSide;
-  nPixelMap = 12 * nSide * nSide;
-  log->debug(boost::format("DaCapo will create maps with NSIDE = %1%") % nSide);
+  nside = locallyBinnedData.at(0).binned_data.nside;
+  nPixelMap = 12 * nside * nside;
+  log->debug(boost::format("DaCapo will create maps with NSIDE = %1%") % nside);
   rzinit=0;
 
   initializeLocmap(locallyBinnedData);
@@ -71,8 +71,8 @@ daCapo::daCapo (const std::vector<Dipole_fit_t> & locallyBinnedData,
   sizeMPI = MPI::COMM_WORLD.Get_size();
   rankMPI = MPI::COMM_WORLD.Get_rank();
 
-  nSide = locallyBinnedData[0].nSide;
-  nPixelMap = 12 * nSide * nSide;
+  nside = locallyBinnedData.at(0).binned_data.nside;
+  nPixelMap = 12 * nside * nside;
   rzinit=0;
 
   initializeLocmap(locallyBinnedData);
@@ -107,7 +107,7 @@ daCapo::initializeConstraint(bool constraint,
   for (size_t idx=0; idx<pixelIndexFull.size(); idx++)
     {
       double theta, phi;
-      pix2ang_nest(nSide, pixelIndexFull[idx], &theta, &phi);
+      pix2ang_nest(nside, pixelIndexFull[idx], &theta, &phi);
       double cartesianPixel[3];
       angToCart(theta, phi, cartesianPixel);
       constraintMap.push_back(solar_dipole.axis[0] * cartesianPixel[0] +
@@ -149,10 +149,10 @@ daCapo::initializeLocmap(const std::vector<Dipole_fit_t> & binnedData)
   std::vector<int> tmpPixels;
   for (size_t ipp=0; ipp<binnedData.size(); ipp++)
     {
-      std::vector<int> pixIndexPid = binnedData[ipp].pixIndex;
-      for (size_t i=0; i<pixIndexPid.size(); i++)
+      std::vector<int> pix_indexPid = binnedData[ipp].binned_data.pix_index;
+      for (size_t i=0; i<pix_indexPid.size(); i++)
         {
-          tmpPixels.push_back(pixIndexPid[i]);
+          tmpPixels.push_back(pix_indexPid[i]);
         }
     }
 
@@ -167,11 +167,11 @@ daCapo::initializeLocmap(const std::vector<Dipole_fit_t> & binnedData)
   //Construct a pointer from toi to the local map
   for (size_t ipp=0; ipp<binnedData.size(); ipp++)
     {
-      std::vector<int> pixIndexPid = binnedData[ipp].pixIndex;
+      std::vector<int> pix_indexPid = binnedData[ipp].binned_data.pix_index;
       std::vector<int> pixMap;
-      for (size_t i=0; i<pixIndexPid.size(); i++)
+      for (size_t i=0; i<pix_indexPid.size(); i++)
         {
-          pixMap.push_back(search_table[pixIndexPid[i]]);
+          pixMap.push_back(search_table[pix_indexPid[i]]);
         }
       pixelIndexLocalMap.push_back(pixMap);
     }
@@ -267,10 +267,10 @@ daCapo::applyMask(const std::vector<Dipole_fit_t> & binnedData,
   int dummy_pixel = static_cast<int>(pixelIndexLocal.size());
   for (size_t ipp=0; ipp<binnedData.size(); ipp++)
     {
-      std::vector<int> pixIndexPid = binnedData[ipp].pixIndex;
-      for (size_t i=0; i<pixIndexPid.size(); i++)
+      std::vector<int> pix_indexPid = binnedData[ipp].binned_data.pix_index;
+      for (size_t i=0; i<pix_indexPid.size(); i++)
         {
-          if (mask[pixIndexPid[i]]==0) pixelIndexLocalMap[ipp][i]=dummy_pixel;
+          if (mask[pix_indexPid[i]]==0) pixelIndexLocalMap[ipp][i]=dummy_pixel;
         }
     }
 }
@@ -290,7 +290,7 @@ daCapo::constructCCmatrix(const std::vector<Dipole_fit_t> & binnedData)
 
   for (size_t ipp=0; ipp<binnedData.size(); ipp++)
     {
-      std::vector<int> hits = binnedData[ipp].pixSumHits;
+      std::vector<int> hits = binnedData[ipp].binned_data.pix_num_of_hits;
       double gain = binnedData[ipp].gainv;
       for (size_t i=0; i<hits.size(); i++)
         {
@@ -326,8 +326,8 @@ daCapo::constructCCmatrix(const std::vector<Dipole_fit_t> & binnedData)
             msg = (boost::format("Empty \"cbuf\" in daCapo::constructCCmatrix, "
                                  "pID range is [%1%, %2%], irank=%3%, "
                                  "sendcnt[irank]=%4%")
-                   % binnedData.front().pointingID
-                   % binnedData.back().pointingID
+                   % binnedData.front().binned_data.pointing_id
+                   % binnedData.back().binned_data.pointing_id
                    % irank
                    % sendcnt.at(irank)).str();
         }
@@ -387,8 +387,8 @@ daCapo::buildPreconditioner(const std::vector<Dipole_fit_t> & binnedData)
 
   for (size_t ipp=0; ipp<binnedData.size(); ipp++)
     {
-      std::vector<int> hits = binnedData[ipp].pixSumHits;
-      std::vector<float> signal = binnedData[ipp].pixSumDipole;
+      std::vector<int> hits = binnedData[ipp].binned_data.pix_num_of_hits;
+      std::vector<float> signal = binnedData[ipp].binned_data.pix_model_mean;
 
        std::vector<double> ippPrec(3, 0.);
        for (size_t i=0; i<hits.size(); i++)
@@ -417,7 +417,7 @@ daCapo::toiToLocmap(const std::vector<Dipole_fit_t> & binnedData)
 
   for (size_t ipp=0; ipp<pixelIndexLocalMap.size(); ipp++)
     {
-      std::vector<double> signal = binnedData[ipp].pixSumData;
+      std::vector<double> signal = binnedData[ipp].binned_data.pix_data_sum;
 
       const double gain = binnedData[ipp].gainv;
 
@@ -599,9 +599,9 @@ daCapo::subtractMapFromTod(const std::vector<Dipole_fit_t> & binnedData,
       size_t nn = pixelIndexLocalMap[ipp].size();
       std::vector<double> tmp1(nn,0.);
 
-      std::vector<double> signal = binnedData[ipp].pixSumData;
-      std::vector<float> dipole = binnedData[ipp].pixSumDipole;
-      std::vector<int> hits = binnedData[ipp].pixSumHits;
+      std::vector<double> signal = binnedData[ipp].binned_data.pix_data_sum;
+      std::vector<float> dipole = binnedData[ipp].binned_data.pix_model_mean;
+      std::vector<int> hits = binnedData[ipp].binned_data.pix_num_of_hits;
       const double gain = binnedData[ipp].gainv;
 
       for (size_t i=0; i<nn; i++)
@@ -633,8 +633,8 @@ daCapo::baseToLocmap(const std::vector<Dipole_fit_t> & binnedData,
 
   for (size_t ipp=0; ipp<pixelIndexLocalMap.size(); ipp++)
     {
-      std::vector<int> hits = binnedData[ipp].pixSumHits;
-      std::vector<float> dipole = binnedData[ipp].pixSumDipole;
+      std::vector<int> hits = binnedData[ipp].binned_data.pix_num_of_hits;
+      std::vector<float> dipole = binnedData[ipp].binned_data.pix_model_mean;
 
       const double gain = binnedData[ipp].gainv;
 
@@ -666,8 +666,8 @@ daCapo::subtractMapFromBase(const std::vector<Dipole_fit_t> & binnedData,
 
   for (size_t ipp=0; ipp<binnedData.size(); ipp++)
     {
-      std::vector<int> hits = binnedData[ipp].pixSumHits;
-      std::vector<float> dipole = binnedData[ipp].pixSumDipole;
+      std::vector<int> hits = binnedData[ipp].binned_data.pix_num_of_hits;
+      std::vector<float> dipole = binnedData[ipp].binned_data.pix_model_mean;
 
       const double gain = binnedData[ipp].gainv;
 
@@ -719,13 +719,13 @@ daCapo::updateSignal(std::vector<Dipole_fit_t> & binnedData)
 
   for (size_t ipp=0; ipp<pixelIndexLocalMap.size(); ipp++)
     {
-      std::vector<float> dipole = binnedData[ipp].pixSumDipole;
+      std::vector<float> dipole = binnedData[ipp].binned_data.pix_model_mean;
       std::vector<float> localDipole;
       for (size_t i=0; i<pixelIndexLocalMap[ipp].size(); i++)
         {
           localDipole.push_back(dipole[i] + static_cast<float>(localMap[pixelIndexLocalMap[ipp][i]]));
         }
-      binnedData[ipp].setPixSumDipole(localDipole);
+      binnedData[ipp].binned_data.pix_model_mean = localDipole;
     }
 }
 
@@ -894,7 +894,7 @@ run_da_capo(const Configuration & program_conf,
     log->info("Starting module daCapo");
     log->increase_indent();
 
-    daCapo calibrator(dipole_fit_results.list_of_fits,
+    daCapo calibrator(dipole_fit_results.dipole_fits,
                       dipole_fit_results.mask.pixels,
                       program_conf.get<bool>("da_capo.constraint"),
                       read_dipole_fit_params(program_conf));
@@ -905,7 +905,7 @@ run_da_capo(const Configuration & program_conf,
             log->debug(boost::format("CG iteration %d") % iteration);
 
         double init =
-            calibrator.iterativeCalibration(dipole_fit_results.list_of_fits,
+            calibrator.iterativeCalibration(dipole_fit_results.dipole_fits,
                                             firstLoop);
         firstLoop = false;
         if (init < 1.e-6)
@@ -921,13 +921,15 @@ run_da_capo(const Configuration & program_conf,
 
     {
         std::string pointings("[");
-        for(auto cur_fit = dipole_fit_results.list_of_fits.begin();
-            cur_fit != dipole_fit_results.list_of_fits.end();
+        for(auto cur_fit = dipole_fit_results.dipole_fits.begin();
+            cur_fit != dipole_fit_results.dipole_fits.end();
             ++cur_fit)
         {
-            if(cur_fit != dipole_fit_results.list_of_fits.begin())
+            if(cur_fit != dipole_fit_results.dipole_fits.begin())
                 pointings += ", ";
-            pointings += (boost::format("%1%") % cur_fit->pointingID).str();
+            pointings += 
+                (boost::format("%1%") 
+                 % cur_fit->binned_data.pointing_id).str();
         }
 
         log->info("The pointings contained in the list of dipole fits are "
@@ -944,21 +946,21 @@ run_da_capo(const Configuration & program_conf,
     }
 
     for(size_t fit_idx = 0;
-        fit_idx < dipole_fit_results.list_of_fits.size();
+        fit_idx < dipole_fit_results.dipole_fits.size();
         ++fit_idx)
     {
-        auto const & fit = dipole_fit_results.list_of_fits[fit_idx];
+        auto const & fit = dipole_fit_results.dipole_fits[fit_idx];
         auto const item =
             std::lower_bound(gain_table.pointingIds.begin(),
                              gain_table.pointingIds.end(),
-                             fit.pointingID);
+                             fit.binned_data.pointing_id);
         if(item == gain_table.pointingIds.end() ||
-           *item != fit.pointingID)
+           *item != fit.binned_data.pointing_id)
         {
             log->error(boost::format("Da Capo fitted pointing ID"
                                      "%1%, but this was not in the"
                                      "list of pIDs to process")
-                       % fit.pointingID);
+                       % fit.binned_data.pointing_id);
             continue;
         }
 

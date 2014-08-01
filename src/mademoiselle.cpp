@@ -110,8 +110,8 @@ mademoiselle(const std::vector<float> & maskMap,
     }
 
     // get the nside of the binned tod map
-    const int nSide = calibratedPID[0].nSide;
-    const int nPixelMap = 12 * nSide * nSide;
+    const int nside = calibratedPID[0].binned_data.nside;
+    const int nPixelMap = 12 * nside * nside;
 
     // build initial map && ffstd::vector for each PID
     int *hMap = new int[nPixelMap];
@@ -121,11 +121,11 @@ mademoiselle(const std::vector<float> & maskMap,
 
     std::vector< std::vector<double> > ff (3,std::vector<double>(calibratedPID.size(),0.));
     for (size_t point = 0; point < calibratedPID.size(); point++) {
-        std::vector<float> dipole = calibratedPID[point].pixSumDipole;
-        std::vector<int> hits      = calibratedPID[point].pixSumHits;
-        std::vector<int> iPix      = calibratedPID[point].pixIndex;
+        std::vector<float> dipole = calibratedPID[point].binned_data.pix_model_mean;
+        std::vector<int> hits      = calibratedPID[point].binned_data.pix_num_of_hits;
+        std::vector<int> iPix      = calibratedPID[point].binned_data.pix_index;
 
-        std::vector<double> data   = calibratedPID[point].pixSumData;
+        std::vector<double> data   = calibratedPID[point].binned_data.pix_data_sum;
         const double gain   = 1.0 / calibratedPID[point].gainv;
         const double gainV  = calibratedPID[point].gainv;
         const double offset = calibratedPID[point].offset;
@@ -169,11 +169,11 @@ mademoiselle(const std::vector<float> & maskMap,
         double p1 = 0.;
         double p2 = 0.;
 
-        std::vector<float> dipole = calibratedPID[point].pixSumDipole;
-        std::vector<int> hits      = calibratedPID[point].pixSumHits;
-        std::vector<int> iPix      = calibratedPID[point].pixIndex;
+        auto dipole = calibratedPID[point].binned_data.pix_model_mean;
+        auto hits   = calibratedPID[point].binned_data.pix_num_of_hits;
+        auto iPix   = calibratedPID[point].binned_data.pix_index;
 
-        std::vector<double> data   = calibratedPID[point].pixSumData;
+        auto data = calibratedPID[point].binned_data.pix_data_sum;
         double gain   = 1.0 / calibratedPID[point].gainv;
         double gainV  = calibratedPID[point].gainv;
         double offset = calibratedPID[point].offset;
@@ -218,9 +218,9 @@ mademoiselle(const std::vector<float> & maskMap,
 
         // calculate new map
         for (size_t point = 0; point < calibratedPID.size(); point++) {
-            std::vector<int> hits     = calibratedPID[point].pixSumHits;
-            std::vector<float> dipole = calibratedPID[point].pixSumDipole;
-            std::vector<int> iPix     = calibratedPID[point].pixIndex;
+            auto hits   = calibratedPID[point].binned_data.pix_num_of_hits;
+            auto dipole = calibratedPID[point].binned_data.pix_model_mean;
+            auto iPix   = calibratedPID[point].binned_data.pix_index;
 
             if (calibratedPID[point].gainv != 0.0) {
                 for (size_t sample=0; sample < hits.size(); sample++) {
@@ -255,9 +255,9 @@ mademoiselle(const std::vector<float> & maskMap,
             double pw1 = 0.0;
             double pw2 = 0.0;
 
-            std::vector<int> hits      = calibratedPID[point].pixSumHits;
-            std::vector<float> dipole = calibratedPID[point].pixSumDipole;
-            std::vector<int> iPix      = calibratedPID[point].pixIndex;
+            auto hits   = calibratedPID[point].binned_data.pix_num_of_hits;
+            auto dipole = calibratedPID[point].binned_data.pix_model_mean;
+            auto iPix   = calibratedPID[point].binned_data.pix_index;
 
             if (calibratedPID[point].gainv != 0.0) {
                 for (size_t sample = 0; sample < hits.size(); sample++) {
@@ -354,7 +354,7 @@ run_mademoiselle(const Configuration & program_conf,
         log->debug(boost::format("CG iteration %1%") % iteration);
 
         const double init = mademoiselle(dipole_fit_results.mask.pixels,
-                                         dipole_fit_results.list_of_fits);
+                                         dipole_fit_results.dipole_fits);
         if (init < 1.e-10) {
             if (mpi_rank == 0)
                 log->info(boost::format("Break at CG iteration %1%")
@@ -366,13 +366,15 @@ run_mademoiselle(const Configuration & program_conf,
 
     {
         std::string pointings("[");
-        for(auto cur_fit = dipole_fit_results.list_of_fits.begin();
-            cur_fit != dipole_fit_results.list_of_fits.end();
+        for(auto cur_fit = dipole_fit_results.dipole_fits.begin();
+            cur_fit != dipole_fit_results.dipole_fits.end();
             ++cur_fit)
         {
-            if(cur_fit != dipole_fit_results.list_of_fits.begin())
+            if(cur_fit != dipole_fit_results.dipole_fits.begin())
                 pointings += ", ";
-            pointings += (boost::format("%1%") % cur_fit->pointingID).str();
+            pointings += 
+                (boost::format("%1%") 
+                 % cur_fit->binned_data.pointing_id).str();
         }
 
         log->info("The pointings contained in the list of dipole fits are "
@@ -389,21 +391,21 @@ run_mademoiselle(const Configuration & program_conf,
     }
 
     for(size_t fit_idx = 0;
-        fit_idx < dipole_fit_results.list_of_fits.size();
+        fit_idx < dipole_fit_results.dipole_fits.size();
         ++fit_idx)
     {
-        auto const & fit = dipole_fit_results.list_of_fits[fit_idx];
+        auto const & fit = dipole_fit_results.dipole_fits[fit_idx];
         auto const item =
             std::lower_bound(gain_table.pointingIds.begin(),
                              gain_table.pointingIds.end(),
-                             fit.pointingID);
+                             fit.binned_data.pointing_id);
         if(item == gain_table.pointingIds.end() ||
-           *item != fit.pointingID)
+           *item != fit.binned_data.pointing_id)
         {
             log->error(boost::format("Mademoiselle fitted pointing ID"
                                      "%1%, but this was not in the"
                                      "list of pIDs to process")
-                       % fit.pointingID);
+                       % fit.binned_data.pointing_id);
             continue;
         }
 

@@ -44,4 +44,16 @@ void merge_tables(std::vector<int> & pointingIds,
                   std::vector<double> & vec1,
                   std::vector<double> & vec2);
 
+void get_local_data_range(int mpi_rank,
+                          int mpi_size,
+                          const std::vector<Pointing_t> & list_of_pointings,
+                          std::vector<int> & num_of_pids,
+                          Data_range_t & data_range);
+
+struct Configuration;
+Lfi_radiometer_t radiometer_to_use(int mpi_rank,
+                                   const Lfi_radiometer_t & user_rad,
+                                   Configuration & program_conf,
+                                   Configuration & storage_conf);
+
 #endif

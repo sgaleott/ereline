@@ -174,21 +174,22 @@ inner_main(int argc, const char ** argv)
         log->info(boost::format("Processing radiometer %1%")
                   % radiometer.shortName());
 
+        Data_binning_results_t binned_data;
+        run_data_binning(ucds,
+                         radiometer,
+                         program_config,
+                         storage_config,
+                         list_of_pointings,
+                         binned_data);
+
         Dipole_fit_results_t dipole_fit_results;
         run_dipole_fit(ucds,
                        radiometer,
                        program_config,
                        storage_config,
                        list_of_pointings,
+                       binned_data,
                        dipole_fit_results);
-        if(mpi_rank < 2) {
-            std::string file_name(dipole_fit_name(program_config,
-                                                  radiometer, false));
-            log->info(boost::format("Saving dipole fits into %1%")
-                      % file_name);
-            save_dipole_fit_results(ensure_path_exists(file_name),
-                                    radiometer, dipole_fit_results);
-        }
 
         Da_capo_results_t da_capo_results;
         if(program_config.get<bool>("da_capo.run", true)) {
@@ -207,15 +208,6 @@ inner_main(int argc, const char ** argv)
                             dipole_fit_results,
                             da_capo_results);
             }
-        }
-
-        if(mpi_rank < 2) {
-            std::string file_name(dipole_fit_name(program_config,
-                                                  radiometer, true));
-            log->info(boost::format("Saving dipole fits into %1%")
-                      % file_name);
-            save_dipole_fit_results(ensure_path_exists(file_name),
-                                    radiometer, dipole_fit_results);
         }
 
         Smooth_gains_results_t smooth_results;

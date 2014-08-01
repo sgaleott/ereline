@@ -84,7 +84,7 @@ class daCapo
  protected:
 
   int nPixelMap;
-  int nSide;
+  int nside;
 
   int sizeMPI;
   int rankMPI;

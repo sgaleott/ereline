@@ -27,9 +27,8 @@
 	"output_tod": "{common.base_output_dir}/datadiff/LFI{horn}{arm}_{od}_datadiff.fits"
     },
 
-    "dipole_fit": {
-	"run": true,
-	"use_mademoiselle": true,
+    "bin_data": {
+        "run": true,
 	"use_pencil_beam": false,
 	"monopole_K_CMB": 2.72548,
 	"solar_dipole": {
@@ -41,6 +40,12 @@
 	"galactic_pickup": "/datastor/tomasi/ringsets/ringset_LFI{horn}{arm}_{od}.fits",
 	"total_convolve_order": 9,
 	"mask": "/datastor/tomasi/maps/mask_70GHz.fits.gz",
+        "output_fit": "{common.base_output_dir}/binned_data/LFI{horn}{arm}/{odNNNN}/binned_data_{pointing_idNNNNNN}.fits"
+    },
+
+    "dipole_fit": {
+	"run": true,
+	"use_mademoiselle": true,
 	"output_gains": "{common.base_output_dir}/gains/LFI{horn}{arm}_{od}_gains.fits",
 	"output_fit": "{common.base_output_dir}/gains/LFI{horn}{arm}_{od}_fit.fits",
 	"debug": true

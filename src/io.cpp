@@ -1,4 +1,5 @@
 #include "io.hpp"
+#include "data_binning.hpp"
 #include "dipole_fit.hpp"
 #include "planck_velocity.hpp"
 #include "fits_object.hpp"
@@ -194,29 +195,27 @@ void save_tod(const std::string & file_name,
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-save_dipole_fit(FitsObject & file,
-                const Lfi_radiometer_t & radiometer,
-                const Dipole_fit_t & fit,
-                const std::string & comment)
+save_binned_data(FitsObject & file,
+                 const Lfi_radiometer_t & radiometer,
+                 const Binned_data_t & bin,
+                 const std::string & comment)
 {
     std::vector<fitscolumn> columns {
         { "PIXIDX", "", fitsTypeC<int>(), 1 },
         { "PIXHITS", "", fitsTypeC<int>(), 1 },
-        { "PIXDATA", "", fitsTypeC<double>(), 1 },
-        { "PIXDIP", "", fitsTypeC<float>(), 1 } };
+        { "DATASUM", "", fitsTypeC<double>(), 1 },
+        { "MODAVG", "", fitsTypeC<float>(), 1 } };
     file.insertBINtable(columns, radiometer.shortName());
-    file.writeColumn(1, fit.pixIndex);
-    file.writeColumn(2, fit.pixSumHits);
-    file.writeColumn(3, fit.pixSumData);
-    file.writeColumn(4, fit.pixSumDipole);
+    file.writeColumn(1, bin.pix_index);
+    file.writeColumn(2, bin.pix_num_of_hits);
+    file.writeColumn(3, bin.pix_data_sum);
+    file.writeColumn(4, bin.pix_model_mean);
 
-    file.setKey("NSIDE", fit.nSide);
-    file.setKey("PID", fit.pointingID);
-    file.setKey("FLAG", fit.qualityFlag);
-    file.setKey("GAINV", fit.gainv);
-    file.setKey("OFFSET", fit.offset);
-    file.setKey("DIPMIN", fit.minDipole);
-    file.setKey("DIPMAX", fit.maxDipole);
+    file.setKey("NSIDE", bin.nside);
+    file.setKey("PID", bin.pointing_id);
+    file.setKey("FLAG", bin.quality_flag);
+    file.setKey("DIPMIN", bin.min_dipole);
+    file.setKey("DIPMAX", bin.max_dipole);
 
     if(! comment.empty()) {
         file.setComment(comment);
@@ -226,19 +225,19 @@ save_dipole_fit(FitsObject & file,
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-save_dipole_fit(const std::string & file_name,
-                const Lfi_radiometer_t & radiometer,
-                const Dipole_fit_t & fit,
-                const std::string & comment)
+save_binned_data(const std::string & file_name,
+                 const Lfi_radiometer_t & radiometer,
+                 const Binned_data_t & bin,
+                 const std::string & comment)
 {
     Logger * log = Logger::get_instance();
-    log->info(boost::format("Going to write a dipoleFit result "
-                            "into %1%") % file_name);
+    log->info(boost::format("Going to write a binned pID into %1%")
+              % file_name);
 
-    FitsObject dipole_fit_file;
-    dipole_fit_file.create(file_name, true);
+    FitsObject file;
+    file.create(file_name, true);
 
-    save_dipole_fit(dipole_fit_file, radiometer, fit, comment);
+    save_binned_data(file, radiometer, bin, comment);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

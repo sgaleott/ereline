@@ -108,15 +108,16 @@ void save_tod(const std::string & file_name,
               const DifferencedData & datadiff,
               const std::string & comment = "");
 
-void save_dipole_fit(FitsObject & file,
-                     const Lfi_radiometer_t & radiometer,
-                     const Dipole_fit_t & fit,
-                     const std::string & comment = "");
+struct Binned_data_t;
+void save_binned_data(FitsObject & file,
+                      const Lfi_radiometer_t & radiometer,
+                      const Binned_data_t & fit,
+                      const std::string & comment = "");
 
-void save_dipole_fit(const std::string & file_name,
-                     const Lfi_radiometer_t & radiometer,
-                     const Dipole_fit_t & fit,
-                     const std::string & comment = "");
+void save_binned_data(const std::string & file_name,
+                      const Lfi_radiometer_t & radiometer,
+                      const Binned_data_t & fit,
+                      const std::string & comment = "");
 
 void load_pointings(const std::string & file_name,
                     PointingData & pointings);

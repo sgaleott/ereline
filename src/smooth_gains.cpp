@@ -136,29 +136,29 @@ run_smooth_gains(Sqlite_connection_t & ucds,
     Gain_table_t outRawTable;
     Delta_vv_t smoother;
     Gain_table_t outMinMaxTable;
-    auto cur_dipole_fit = fit_results.list_of_fits.begin();
+    auto cur_dipole_fit = fit_results.dipole_fits.begin();
     for (auto const & cur_pointing : list_of_pointings)
     {
         const int pid = cur_pointing.id;
         double gain = 0.0;
         double offset = 0.0;
         double dipole = 0.0;
-        double minDipole = 0.0;
-        double maxDipole = 0.0;
-        if (cur_dipole_fit != fit_results.list_of_fits.end() &&
-            cur_dipole_fit->pointingID == pid)
+        double min_dipole = 0.0;
+        double max_dipole = 0.0;
+        if (cur_dipole_fit != fit_results.dipole_fits.end() &&
+            cur_dipole_fit->binned_data.pointing_id == pid)
         {
             gain = cur_dipole_fit->gainv;
             offset = cur_dipole_fit->offset;
-            dipole = cur_dipole_fit->getDipoleVariance();
-            minDipole = cur_dipole_fit->minDipole;
-            maxDipole = cur_dipole_fit->maxDipole;
+            dipole = cur_dipole_fit->binned_data.getDipolePeakToPeak();
+            min_dipole = cur_dipole_fit->binned_data.min_dipole;
+            max_dipole = cur_dipole_fit->binned_data.max_dipole;
             cur_dipole_fit++;
         }
 
         outRawTable.append({ pid, gain, offset });
         smoother.append(Delta_vv_state_t { pid, gain, dipole });
-        outMinMaxTable.append(Gain_state_t { pid, maxDipole, minDipole });
+        outMinMaxTable.append(Gain_state_t { pid, max_dipole, min_dipole });
     }
 
     MPI::COMM_WORLD.Barrier();

@@ -24,107 +24,31 @@ extern "C" {
 #include "chealpix.h"
 }
 
-Dipole_fit_t::Dipole_fit_t(uint32_t a_qualityFlag,
-                           int a_nSide,
-                           int a_pointingID)
-{
-  gainv = 0.0;
-  offset = 0.0;
-  maxDipole = 0.0;
-  minDipole = 0.0;
-  qualityFlag = a_qualityFlag;
-  nSide = a_nSide;
-  pointingID = a_pointingID;
-}
-
-/*
- * bin the data checkin flags using galactic sidelobes
- */
 bool
-Dipole_fit_t::binData(const std::vector<double> & data,
-                      const std::vector<uint32_t>& flag,
-                      const std::vector<double> & theta,
-                      const std::vector<double> & phi,
-                      const std::vector<double> & dipole,
-                      const Range_t<size_t> & index_range,
-                      const std::vector<double> & sidelobes)
-{
-  Logger * log = Logger::get_instance();
-  const int numPixs=12*nSide*nSide;
-  std::vector<int> tmpHits (numPixs,0);
-  std::vector<double> tmpData (numPixs,0);
-  std::vector<float> tmpDipole (numPixs,0);
-  std::vector<double> tmpDipoleConstraint (numPixs,0);
-
-  // bin the samples and calculate the "binned" dipole
-  log->debug(boost::format("Running Dipole_fit_t::binData with indexes in "
-                           "the range [%d, %d] (there are %d samples "
-                           "available). NSIDE is %d")
-             % index_range.start
-             % index_range.end
-             % data.size()
-             % nSide);
-  for (size_t sampleNum = index_range.start; sampleNum <= index_range.end; sampleNum++)
-    {
-      // select "good" samples
-      if ((flag[sampleNum]&qualityFlag) == 0)
-        {
-          // get pixel number in map
-          long pixelNum = 0;
-          ang2pix_nest(nSide, theta[sampleNum], phi[sampleNum], &pixelNum);
-
-          tmpData[pixelNum] += data[sampleNum];
-          tmpDipole[pixelNum] += static_cast<float>(dipole[sampleNum]+sidelobes[sampleNum]);
-
-          if (dipole[sampleNum] > maxDipole)
-            maxDipole = dipole[sampleNum];
-          if (dipole[sampleNum] < minDipole)
-            minDipole = dipole[sampleNum];
-
-          tmpHits[pixelNum] += 1;
-        }
-    }
-
-  for (int i=0; i<numPixs; i++)
-    {
-      if (tmpHits[i] != 0)
-        {
-          pixSumData.push_back (tmpData[i]);
-          pixSumDipole.push_back (tmpDipole[i]/static_cast<float>(tmpHits[i]));
-          pixSumHits.push_back (tmpHits[i]);
-          pixIndex.push_back (i);
-        }
-    }
-
-  if (pixIndex.size() < 2)
-    return false;
-
-  return true;
-
-}
-
-bool
-Dipole_fit_t::fitData(const std::vector<float> & maskMap)
+fit_model_and_data(const Binned_data_t & binned_data,
+                   const std::vector<float> & maskMap,
+                   Dipole_fit_t & dipole_fit)
 {
   // Compute size of the masked vectors
   size_t maskedLen = 0;
-  for (size_t idx=0; idx<pixSumDipole.size(); ++idx)
-    if (maskMap[pixIndex[idx]] != 0)
-      ++maskedLen;
+  for (size_t idx = 0; idx < binned_data.pix_model_mean.size(); ++idx) {
+      if (maskMap[binned_data.pix_index[idx]] != 0)
+          ++maskedLen;
+  }
 
   // Build masked array
   std::vector<double> dipole(maskedLen);
   std::vector<double> data(maskedLen);
   size_t maskedIdx = 0;
-  for (size_t idx=0; idx<pixSumDipole.size(); ++idx)
-    {
-      if (maskMap[pixIndex[idx]] != 0)
-        {
-          dipole[maskedIdx] = pixSumDipole[idx];
-          data[maskedIdx] = pixSumData[idx] / pixSumHits[idx];
-          ++maskedIdx;
-        }
-    }
+  for (size_t idx = 0; idx < binned_data.pix_model_mean.size(); ++idx) {
+      if (maskMap[binned_data.pix_index[idx]] != 0)
+      {
+          dipole[maskedIdx] = binned_data.pix_model_mean[idx];
+          data[maskedIdx] = 
+              binned_data.pix_data_sum[idx] / binned_data.pix_num_of_hits[idx];
+          maskedIdx++;
+      }
+  }
 
   // Un-weighted linear fit
   double c0, c1, cov00, cov01, cov11, chisq;
@@ -133,207 +57,15 @@ Dipole_fit_t::fitData(const std::vector<float> & maskMap)
                   maskedLen, &c0, &c1, &cov00, &cov01, &cov11, &chisq);
 
   // Set gain and offset
-  gainv = c1;
-  offset = c0;
-
-  if (gainv < 0) {
-    gainv = 0.0;
-    offset = 0.0;
-    return false;
-  }
-
-  return true;
-}
-
-/*
- * fit the dipole using galactic sidelobes
- */
-bool
-Dipole_fit_t::fit(const std::vector<double> & data,
-                  const std::vector<uint32_t> & flag,
-                  const std::vector<double> & theta,
-                  const std::vector<double> & phi,
-                  const std::vector<double> & dipole,
-                  const Range_t<size_t> & index_range,
-                  const std::vector<float> & maskMap,
-                  const std::vector<double> & sidelobes)
-{
-  if (binData(data, flag, theta, phi, dipole, index_range, sidelobes)) {
-    return fitData(maskMap);
+  if (c1 > 0) {
+      dipole_fit.gainv = c1;
+      dipole_fit.offset = c0;
+      return true;
   } else {
-      gainv = 0.0;
-      offset = 0.0;
+      dipole_fit.gainv = 0.0;
+      dipole_fit.offset = 0.0;
       return false;
   }
-}
-
-void
-Dipole_fit_t::setPixSumDipole(const std::vector<float> & inpArr)
-{
-  pixSumDipole = inpArr;
-}
-
-double
-Dipole_fit_t::getDipoleVariance() const
-{
-  return maxDipole-minDipole;
-}
-
-void
-Dipole_fit_t::unload()
-{
-  std::vector<double>().swap(pixSumData);
-  std::vector<float>().swap(pixSumDipole);
-  std::vector<int>().swap(pixIndex);
-  std::vector<int>().swap(pixSumHits);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-static Lfi_radiometer_t
-radiometer_to_use(int mpi_rank,
-                  const Lfi_radiometer_t & user_rad,
-                  Configuration & program_conf,
-                  Configuration & storage_conf)
-{
-    Logger * log = Logger::get_instance();
-
-    /* The way MPI processes are split in Dipole_fit_t is the following:
-     *
-     * 1. Processes with even rank analyze the "main" radiometer;
-     *
-     * 2. Processes with odd rank analyze the "side" radiometer.
-     *
-     * (Of course, if the user specified a "side" radiometer in the
-     * JSON file, things are reversed.) */
-    Lfi_radiometer_t real_radiometer;
-    if(mpi_rank % 2 == 0)
-        real_radiometer = user_rad;
-    else
-        real_radiometer = user_rad.twinRadiometer();
-
-    setup_variables_for_radiometer(real_radiometer, program_conf);
-    setup_variables_for_radiometer(real_radiometer, storage_conf);
-    log->info(boost::format("Going to process data for radiometer %1%")
-              % real_radiometer.shortName());
-
-    return real_radiometer;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-static void
-get_local_data_range(int mpi_rank,
-                     int mpi_size,
-                     const std::vector<Pointing_t> & list_of_pointings,
-                     std::vector<int> & num_of_pids,
-                     Data_range_t & data_range)
-{
-    Logger * log = Logger::get_instance();
-
-    auto list_of_ods = build_od_list(list_of_pointings);
-
-    std::vector<Data_range_t> list_of_data_ranges;
-    splitOdsIntoMpiProcesses(mpi_size, list_of_ods, list_of_data_ranges);
-    log->info(boost::format("The data to analyze will be split in %1% chunks "
-                            "(there are %2% MPI jobs running)")
-              % list_of_data_ranges.size()
-              % mpi_size);
-
-    num_of_pids.resize(list_of_data_ranges.size());
-    for(size_t idx = 0; idx < list_of_data_ranges.size(); ++idx) {
-        num_of_pids[idx] = list_of_data_ranges[idx].num_of_pids;
-    }
-
-    data_range = list_of_data_ranges.at(mpi_rank / 2);
-    log->info(boost::format("Data range for Dipole_fit_t: ODs [%1%, %2%] "
-                            "(pointings [%3%, %4%]), number of pointings: %5%")
-              % data_range.od_range.start
-              % data_range.od_range.end
-              % data_range.pid_range.start
-              % data_range.pid_range.end
-              % data_range.num_of_pids);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-/* Determine if the pointings and the differenced samples in
- * "pointings" and "datadiff" are compatible or not. (Typically, they
- * are not compatible when they refer to different ODs.) */
-static void
-assert_consistency(const PointingData & pointings,
-                   const DifferencedData & datadiff)
-{
-    if(pointings.obt_time.size() != datadiff.obt_time.size()) {
-        auto msg = boost::format("Mismatch in the number of pointings and "
-                                 "differenced samples: %1% against %2%")
-            % pointings.obt_time.size()
-            % datadiff.obt_time.size();
-        throw std::runtime_error(msg.str());
-    }
-
-    if(pointings.obt_time.front() != datadiff.obt_time.front()) {
-        auto msg = boost::format("OBT times do not match between pointings and "
-                                 "differenced samples: the first time is "
-                                 "%1% against %2%")
-            % pointings.obt_time.front()
-            % datadiff.obt_time.front();
-        throw std::runtime_error(msg.str());
-    }
-
-    if(pointings.obt_time.back() != datadiff.obt_time.back()) {
-        auto msg = boost::format("OBT times do not match between pointings and "
-                                 "differenced samples: the last time is "
-                                 "%1% against %2%")
-            % pointings.obt_time.back()
-            % datadiff.obt_time.back();
-        throw std::runtime_error(msg.str());
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-inline std::string
-pointings_file_path(const Configuration & storage_conf)
-{
-    return storage_conf.getWithSubst("pointings.base_path") + "/" +
-        storage_conf.getWithSubst("pointings.file_name_mask");
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-inline std::string
-datadiff_file_path(const Configuration & storage_conf)
-{
-    return storage_conf.getWithSubst("differenced_data.base_path") + "/" +
-        storage_conf.getWithSubst("differenced_data.file_name_mask");
-}
-
-inline static std::string
-sidelobes_tod_file_path(const Configuration & program_conf,
-                        const Lfi_radiometer_t & radiometer,
-                        short od)
-{
-     return
-        (boost::format("%s/dipole_fit/tods/sidelobes/%s_sidelobes_OD%04d.fits")
-         % program_conf.getWithSubst("common.base_output_dir")
-         % radiometer.shortName()
-         % od)
-        .str();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-inline static std::string
-dipole_tod_file_path(const Configuration & program_conf,
-                     const Lfi_radiometer_t & radiometer,
-                     short od)
-{
-    return (boost::format("%s/dipole_fit/tods/dipole/%s_dipole_OD%04d.fits")
-         % program_conf.getWithSubst("common.base_output_dir")
-         % radiometer.shortName()
-         % od)
-        .str();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -345,20 +77,6 @@ gain_table_file_path(const Configuration & program_conf,
     return (boost::format("%s/dipole_fit/%s_dipole_fit_gains.fits")
         % program_conf.getWithSubst("common.base_output_dir")
         % radiometer.shortName()).str();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void
-save_vector_as_tod(const std::string & file_path,
-                   short od,
-                   const Lfi_radiometer_t & radiometer,
-                   const DifferencedData & datadiff_template,
-                   const std::vector<double> vector)
-{
-    DifferencedData datadiff_to_save = datadiff_template;
-    datadiff_to_save.sky_load = vector;
-    save_tod(ensure_path_exists(file_path), od, radiometer, datadiff_to_save);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -379,129 +97,6 @@ dipole_fit_file_name(const Configuration & program_conf,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/* The argument "pid_range" typically contains all the pointings to be
- * processed by the MPI process, not only the PIDs within the given
- * OD. The implementation of "process_one_od" will silently skip all
- * the PIDs outside "od". */
-static std::vector<Dipole_fit_t>
-process_one_od(const Configuration & program_conf,
-               const Configuration & storage_conf,
-               const Lfi_radiometer_t & radiometer,
-               int od,
-               const Healpix::Map_t<float> & mask,
-               const ringset & galactic_pickup,
-               const Planck_velocity_t & planck_velocity,
-               Range_t<std::vector<Pointing_t>::const_iterator> pid_range)
-{
-    Logger * log = Logger::get_instance();
-    const uint32_t quality_flag =
-        program_conf.get<uint32_t>("dipole_fit.quality_flag", 6111248);
-    const bool debug_flag = program_conf.get<bool>("dipole_fit.debug", false);
-
-    const std::string pnt_file_path(pointings_file_path(storage_conf));
-    const std::string ddf_file_path(datadiff_file_path(storage_conf));
-
-    PointingData pointings;
-    DifferencedData datadiff;
-
-    // Load pointing information and differenced data for this OD
-    log->debug(boost::format("Going to read pointings and differenced "
-                             "data for OD %1%") % od);
-    load_pointings(pnt_file_path, pointings);
-    load_differenced_data(ddf_file_path, datadiff);
-
-    if(pointings.obt_time.empty()) {
-        log->warning(boost::format("No data for OD %1%, skipping it")
-                     % pid_range.start->od);
-        return std::vector<Dipole_fit_t> {};
-    }
-
-    assert_consistency(pointings, datadiff);
-    log->debug(boost::format("Pointings and differenced data "
-                             "look consistent. There are %d samples, "
-                             "going from OBT time %.0f to %.0f")
-               % pointings.obt_time.size()
-               % pointings.obt_time.front()
-               % pointings.obt_time.back());
-
-    log->debug("Computing Galactic pickup through sidelobes...");
-    std::vector<double> sidelobes(
-        galactic_pickup.getIntensities(pointings.theta,
-                                       pointings.phi,
-                                       pointings.psi));
-    log->debug("...done");
-    if(debug_flag) {
-        std::string file_path(sidelobes_tod_file_path(program_conf, radiometer, od));
-        save_vector_as_tod(file_path, od, radiometer, datadiff, sidelobes);
-    }
-
-    log->debug("Computing the amplitude of the dipole convolved with 4\u03c0 beams");
-    std::vector<double> convolved_dipole(
-        planck_velocity.getConvolvedDipole(datadiff.scet_time,
-                                           pointings.theta,
-                                           pointings.phi,
-                                           pointings.psi));
-    log->debug("...done");
-    if(debug_flag) {
-        std::string file_path(dipole_tod_file_path(program_conf, radiometer, od));
-        save_vector_as_tod(file_path, od, radiometer, datadiff, convolved_dipole);
-    }
-
-    // Loop over each pointing period that belongs to the current OD
-    std::vector<Dipole_fit_t> fits;
-    for(auto cur_pid = pid_range.start;
-        cur_pid != pid_range.end + 1;
-        cur_pid++)
-    {
-        if(cur_pid->od != od)
-            continue;
-
-        log->debug(boost::format("Processing pointing with ID %d "
-                       "(OBT times go from %.0f to %0.f)")
-                   % cur_pid->id
-                   % cur_pid->start_time
-                   % cur_pid->end_time);
-
-        const Range_t<uint64_t> obt_range {
-            cur_pid->start_time, cur_pid->end_time };
-        auto idx_range =
-            find_boundaries_in_obt_times(pointings.obt_time, obt_range);
-
-        Dipole_fit_t fitter(quality_flag, mask.nside, cur_pid->id);
-        if(fitter.fit(datadiff.sky_load,
-                      datadiff.flags,
-                      pointings.theta,
-                      pointings.phi,
-                      convolved_dipole,
-                      idx_range,
-                      mask.pixels,
-                      sidelobes))
-        {
-            fits.push_back(fitter);
-
-            if(debug_flag) {
-                std::string file_path(dipole_fit_file_name(program_conf,
-                                                           radiometer,
-                                                           cur_pid->od,
-                                                           cur_pid->id));
-
-                save_dipole_fit(ensure_path_exists(file_path), radiometer,
-                                fitter);
-            }
-        } else {
-            log->info(boost::format("Unable to fit the data with the dipole "
-                                    "at pID %1% (OD %2%) for radiometer %3%")
-                      % cur_pid->id
-                      % cur_pid->od
-                      % radiometer.shortName());
-        }
-    }
-
-    return fits;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 static void
 extract_gains(const std::vector<Dipole_fit_t> & list_of_fits,
               const Range_t<int> & pid_range,
@@ -517,7 +112,8 @@ extract_gains(const std::vector<Dipole_fit_t> & list_of_fits,
         const int pid = pid_range.start + idx;
         gain_table.pointingIds[idx] = pid;
 
-        if(cur_fit != list_of_fits.end() && cur_fit->pointingID == pid) {
+        if(cur_fit != list_of_fits.end() && 
+           cur_fit->binned_data.pointing_id == pid) {
             gain_table.gain[idx] = 1. / cur_fit->gainv;
             gain_table.offset[idx] = cur_fit->offset;
 
@@ -537,16 +133,12 @@ run_dipole_fit(Sqlite_connection_t & ucds,
                Configuration & program_conf,
                Configuration & storage_conf,
                const std::vector<Pointing_t> & list_of_pointings,
+               const Data_binning_results_t & binned_data,
                Dipole_fit_results_t & result)
 {
     Logger * log = Logger::get_instance();
     const int mpi_size = MPI::COMM_WORLD.Get_size();
     const int mpi_rank = MPI::COMM_WORLD.Get_rank();
-
-    if(! program_conf.get<bool>("dipole_fit.run", true)) {
-        log->info("dipoleFit will not be run");
-        return;
-    }
 
     log->info("Starting module dipoleFit");
     log->increase_indent();
@@ -554,22 +146,30 @@ run_dipole_fit(Sqlite_connection_t & ucds,
     Lfi_radiometer_t real_radiometer(
         radiometer_to_use(mpi_rank, rad, program_conf, storage_conf));
 
-    // Load all the inputs needed by this module
-    load_map(program_conf.getWithSubst("dipole_fit.mask"), 1, result.mask);
+    // Copy a few fields from the Data_binning_results_t structure
+    // into the Dipole_fit_results_t structure (they'll be handy to Da
+    // Capo).
+    result.mask = binned_data.mask;
+    result.pids_per_process = binned_data.pids_per_process;
 
-    ringset galactic_pickup(program_conf.getWithSubst("dipole_fit.galactic_pickup"),
-                            program_conf.get<int>("dipole_fit.total_convolve_order", 9),
-                            false);
-
-    Planck_velocity_t planck_velocity(
-        storage_conf.getWithSubst("spacecraft_velocity_file"),
-        read_dipole_fit_params(program_conf));
-    if(program_conf.get<bool>("dipole_fit.use_pencil_beam", false)) {
-        planck_velocity.use_pencil_beam();
-    } else {
-        load_convolution_params(ucds, real_radiometer, planck_velocity);
+    // Run the fitting routine on every pID in binned_data
+    result.dipole_fits.clear();
+    for(auto const & binned_pid : binned_data.binned_pids) {
+        Dipole_fit_t dipole_fit(binned_pid);
+        if(fit_model_and_data(binned_pid, 
+                              binned_data.mask.pixels,
+                              dipole_fit))
+        {
+            result.dipole_fits.push_back(dipole_fit);
+        }
     }
 
+    // So far each MPI process worked on its own pIDs. Now we collect
+    // all the gains and offsets in one large vector and save it into
+    // a FITS file.
+
+    log->debug("Gathering all gains for this MPI process from the "
+               "Dipole_fit_t structures...");
     Data_range_t data_range;
     get_local_data_range(mpi_rank, mpi_size, list_of_pointings,
                          result.pids_per_process, data_range);
@@ -586,58 +186,10 @@ run_dipole_fit(Sqlite_connection_t & ucds,
         abort();
     }
 
-    /* We should now iterate over each pointing period in the range.
-     * The problem is that data are saved in larger chunks, each of
-     * them spanning one OD (operational day). Therefore we need two
-     * nested loops: the first loops over the range of OD, and within
-     * each step loads data one OD long; the second loop iterates over
-     * the subset of pointing periods falling within the OD. The inner
-     * loop is implemented within the function "process_one_od". */
-    for(int od = data_range.od_range.start; od <= data_range.od_range.end; ++od) {
-        log->info(boost::format("Processing OD %1%") % od);
-
-        setup_od_variable(od, program_conf);
-        setup_od_variable(od, storage_conf);
-
-        // Determine the extents of each pointings within this OD
-        try {
-            auto od_fits =
-                process_one_od(program_conf, storage_conf, real_radiometer, od,
-                               result.mask, galactic_pickup, planck_velocity,
-                               Range_t<std::vector<Pointing_t>::const_iterator> { first_pid, last_pid });
-            if(od_fits.empty()) {
-                log->warning(boost::format("No fits between dipole and TODs "
-                                           "found, skipping OD %1%")
-                             % od);
-                continue;
-            }
-
-            result.list_of_fits.insert(result.list_of_fits.end(),
-                                       od_fits.begin(), od_fits.end());
-        }
-        catch(std::runtime_error & exc) {
-            log->error(boost::format("Error: %1%. Skipping OD %2%")
-                       % exc.what() % od);
-            continue;
-        }
-        catch(std::bad_alloc & exc) {
-            log->error("I'm not able to allocate memory for pointings"
-                       "and/or differenced data, so I'm aborting");
-            break;
-        }
-
-        log->info(boost::format("Nothing more to do with OD %1%.") % od);
-    }
-
-    log->debug(boost::format("Looping dipoleFit on the ODs \u2208 [%1%, %2%]"
-                             "completed, %3% valid fits found")
-               % data_range.od_range.start
-               % data_range.od_range.end
-               % result.list_of_fits.size());
-
-    extract_gains(result.list_of_fits,
+    Gain_table_t gain_table;
+    extract_gains(result.dipole_fits,
                   Range_t<int> { first_pid->id, last_pid->id },
-                  result.gain_table);
+                  gain_table);
 
     log->info("Waiting for all the MPI processes to get here...");
     MPI::COMM_WORLD.Barrier();
@@ -645,12 +197,12 @@ run_dipole_fit(Sqlite_connection_t & ucds,
 
     // Retrieve the gain table from all the other MPI processes and put
     // them together in results.gain_table
-    result.gain_table.mergeResults();
+    gain_table.mergeResults();
     // Since odd and even MPI processes work on different radiometer arms
     // (M/S), we discard those gains that do not belong to the arm
     // being analyzed by the current MPI process
-    result.gain_table.selectRadiometerGains(mpi_rank % 2, 2,
-                                            result.pids_per_process);
+    gain_table.selectRadiometerGains(mpi_rank % 2, 2,
+                                     result.pids_per_process);
 
     if(mpi_rank == 0 || mpi_rank == 1) {
         const std::string gain_file_path(gain_table_file_path(program_conf,
@@ -658,7 +210,7 @@ run_dipole_fit(Sqlite_connection_t & ucds,
         log->info(boost::format("Saving dipoleFit gains into %1%")
                   % gain_file_path);
         save_gain_table(ensure_path_exists(gain_file_path),
-                        real_radiometer, result.gain_table);
+                        real_radiometer, gain_table);
     }
 
     log->decrease_indent();

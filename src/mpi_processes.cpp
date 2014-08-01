@@ -1,5 +1,8 @@
-#include "mpi_processes.hpp"
 #include <mpi.h>
+
+#include "mpi_processes.hpp"
+#include "configuration.hpp"
+#include "logging.hpp"
 #include <cstddef>
 
 void
@@ -120,4 +123,72 @@ merge_tables(std::vector<int> & pointingIds,
     MPI::COMM_WORLD.Bcast(pointingIds.data(), pointingIds.size(), MPI::INT, 0);
     MPI::COMM_WORLD.Bcast(vec1.data(), vec1.size(), MPI::DOUBLE, 0);
     MPI::COMM_WORLD.Bcast(vec2.data(), vec2.size(), MPI::DOUBLE, 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void
+get_local_data_range(int mpi_rank,
+                     int mpi_size,
+                     const std::vector<Pointing_t> & list_of_pointings,
+                     std::vector<int> & num_of_pids,
+                     Data_range_t & data_range)
+{
+    Logger * log = Logger::get_instance();
+
+    auto list_of_ods = build_od_list(list_of_pointings);
+
+    std::vector<Data_range_t> list_of_data_ranges;
+    splitOdsIntoMpiProcesses(mpi_size, list_of_ods, list_of_data_ranges);
+    log->info(boost::format("The data to analyze will be split in %1% chunks "
+                            "(there are %2% MPI jobs running)")
+              % list_of_data_ranges.size()
+              % mpi_size);
+
+    num_of_pids.resize(list_of_data_ranges.size());
+    for(size_t idx = 0; idx < list_of_data_ranges.size(); ++idx) {
+        num_of_pids[idx] = list_of_data_ranges[idx].num_of_pids;
+    }
+
+    data_range = list_of_data_ranges.at(mpi_rank / 2);
+    log->info(boost::format("Data range for this MPI process: ODs [%1%, %2%] "
+                            "(pointings [%3%, %4%]), number of pointings: %5%")
+              % data_range.od_range.start
+              % data_range.od_range.end
+              % data_range.pid_range.start
+              % data_range.pid_range.end
+              % data_range.num_of_pids);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+Lfi_radiometer_t
+radiometer_to_use(int mpi_rank,
+                  const Lfi_radiometer_t & user_rad,
+                  Configuration & program_conf,
+                  Configuration & storage_conf)
+{
+    Logger * log = Logger::get_instance();
+
+    /* The way MPI processes are split during binning is the
+     * following:
+     *
+     * 1. Processes with even rank analyze the "main" radiometer;
+     *
+     * 2. Processes with odd rank analyze the "side" radiometer.
+     *
+     * (Of course, if the user specified a "side" radiometer in the
+     * JSON file, things are reversed.) */
+    Lfi_radiometer_t real_radiometer;
+    if(mpi_rank % 2 == 0)
+        real_radiometer = user_rad;
+    else
+        real_radiometer = user_rad.twinRadiometer();
+
+    setup_variables_for_radiometer(real_radiometer, program_conf);
+    setup_variables_for_radiometer(real_radiometer, storage_conf);
+    log->info(boost::format("Going to process data for radiometer %1%")
+              % real_radiometer.shortName());
+
+    return real_radiometer;
 }

@@ -37,13 +37,13 @@ Dipole_parameters_t
 read_dipole_fit_params(const Configuration & conf)
 {
     const double ecl_theta =
-        conf.get<double>("dipole_fit.solar_dipole.theta_ecl_rad");
+        conf.get<double>("bin_data.solar_dipole.theta_ecl_rad");
     const double ecl_phi =
-        conf.get<double>("dipole_fit.solar_dipole.phi_ecl_rad");
+        conf.get<double>("bin_data.solar_dipole.phi_ecl_rad");
     const double speed =
-        conf.get<double>("dipole_fit.solar_dipole.speed_m_s");
+        conf.get<double>("bin_data.solar_dipole.speed_m_s");
     const double monopole =
-        conf.get<double>("dipole_fit.monopole_K_CMB");
+        conf.get<double>("bin_data.monopole_K_CMB");
 
     return Dipole_parameters_t(ecl_theta, ecl_phi, speed, monopole);
 }
