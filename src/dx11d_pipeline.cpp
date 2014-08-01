@@ -184,8 +184,8 @@ inner_main(int argc, const char ** argv)
         }
 
         Da_capo_results_t da_capo_results;
-        if(program_config.get<bool>("da_capo.run")) {
-            if(program_config.get<bool>("da_capo.use_mademoiselle")) {
+        if(program_config.get<bool>("da_capo.run", true)) {
+            if(program_config.get<bool>("da_capo.use_mademoiselle", false)) {
                 run_mademoiselle(program_config,
                                  storage_config,
                                  radiometer,

@@ -395,8 +395,8 @@ process_one_od(const Configuration & program_conf,
 {
     Logger * log = Logger::get_instance();
     const uint32_t quality_flag =
-        program_conf.get<uint32_t>("dipole_fit.quality_flag");
-    const bool debug_flag = program_conf.get<bool>("dipole_fit.debug");
+        program_conf.get<uint32_t>("dipole_fit.quality_flag", 6111248);
+    const bool debug_flag = program_conf.get<bool>("dipole_fit.debug", false);
 
     const std::string pnt_file_path(pointings_file_path(storage_conf));
     const std::string ddf_file_path(datadiff_file_path(storage_conf));
@@ -543,7 +543,7 @@ run_dipole_fit(Sqlite_connection_t & ucds,
     const int mpi_size = MPI::COMM_WORLD.Get_size();
     const int mpi_rank = MPI::COMM_WORLD.Get_rank();
 
-    if(! program_conf.get<bool>("dipole_fit.run")) {
+    if(! program_conf.get<bool>("dipole_fit.run", true)) {
         log->info("dipoleFit will not be run");
         return;
     }
@@ -558,13 +558,13 @@ run_dipole_fit(Sqlite_connection_t & ucds,
     load_map(program_conf.getWithSubst("dipole_fit.mask"), 1, result.mask);
 
     ringset galactic_pickup(program_conf.getWithSubst("dipole_fit.galactic_pickup"),
-                            program_conf.get<int>("dipole_fit.total_convolve_order"),
+                            program_conf.get<int>("dipole_fit.total_convolve_order", 9),
                             false);
 
     Planck_velocity_t planck_velocity(
         storage_conf.getWithSubst("spacecraft_velocity_file"),
         read_dipole_fit_params(program_conf));
-    if(program_conf.get<bool>("dipole_fit.use_pencil_beam")) {
+    if(program_conf.get<bool>("dipole_fit.use_pencil_beam", false)) {
         planck_velocity.use_pencil_beam();
     } else {
         load_convolution_params(ucds, real_radiometer, planck_velocity);

@@ -58,10 +58,29 @@ struct Configuration {
             return value.get();
         }
     }
+    template<typename T> T get(const std::string & key, T default_val) const
+    {
+        try {
+            return get<T>(key);
+        }
+        catch(const Configuration_error & err) {
+            return default_val;
+        }
+    }
 
     std::string getWithSubst(const std::string & key) const
     {
         return substitute_variables(get<std::string>(key));
+    }
+    std::string getWithSubst(const std::string & key,
+                             const std::string & default_val) const
+    {
+        try {
+            return getWithSubst(key);
+        }
+        catch(const Configuration_error & err) {
+            return default_val;
+        }
     }
 
     void configure_logging() const;
