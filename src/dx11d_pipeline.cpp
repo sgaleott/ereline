@@ -111,15 +111,19 @@ dipole_fit_name(const Configuration & program_config,
         const Lfi_radiometer_t & radiometer,
         bool da_capo)
 {
+    std::string subdir;
     if(da_capo) {
-    return (boost::format("%s/da_capo_dipole_fit_table_%s.fits")
-        % program_config.getWithSubst("common.base_output_dir")
-        % radiometer.shortName()).str();
-    } else {
-    return (boost::format("%s/dipole_fit/dipole_fit_table_%s.fits")
-        % program_config.getWithSubst("common.base_output_dir")
-        % radiometer.shortName()).str();
-    }
+        if(program_config.get<bool>("da_capo.use_mademoiselle", false))
+            subdir = "mademoiselle";
+        else
+            subdir = "da_capo";
+    } else
+        subdir = "dipole_fit";
+
+    return (boost::format("%s/%s/dipole_fit_table_%s.fits")
+            % program_config.getWithSubst("common.base_output_dir")
+            % subdir
+            % radiometer.shortName()).str();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -178,8 +182,11 @@ inner_main(int argc, const char ** argv)
                        list_of_pointings,
                        dipole_fit_results);
         if(mpi_rank < 2) {
-            save_dipole_fit_results(ensure_path_exists(dipole_fit_name(program_config,
-                                                                       radiometer, false)),
+            std::string file_name(dipole_fit_name(program_config,
+                                                  radiometer, false));
+            log->info(boost::format("Saving dipole fits into %1%")
+                      % file_name);
+            save_dipole_fit_results(ensure_path_exists(file_name),
                                     radiometer, dipole_fit_results);
         }
 
@@ -203,8 +210,11 @@ inner_main(int argc, const char ** argv)
         }
 
         if(mpi_rank < 2) {
-            save_dipole_fit_results(ensure_path_exists(dipole_fit_name(program_config,
-                                                                       radiometer, true)),
+            std::string file_name(dipole_fit_name(program_config,
+                                                  radiometer, true));
+            log->info(boost::format("Saving dipole fits into %1%")
+                      % file_name);
+            save_dipole_fit_results(ensure_path_exists(file_name),
                                     radiometer, dipole_fit_results);
         }
 

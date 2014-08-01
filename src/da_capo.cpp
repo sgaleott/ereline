@@ -13,6 +13,15 @@
 #include <fstream>
 #include <sstream>
 
+#define MPI_BARRIER { \
+    Logger * private_log = Logger::get_instance(); \
+    private_log->debug(boost::format("Entering MPI::COMM_WORLD.Barrier() at %1%, line %2% (%3%)") \
+               % __FILE__ % __LINE__ % __PRETTY_FUNCTION__); \
+    MPI::COMM_WORLD.Barrier(); \
+    private_log->debug(boost::format("Exiting MPI::COMM_WORLD.Barrier() at %1%, line %2% (%3%)") \
+               % __FILE__ % __LINE__ % __PRETTY_FUNCTION__); \
+}
+
 extern "C" {
 #include "chealpix.h"
 }
@@ -28,8 +37,8 @@ daCapo::daCapo(const std::vector<Dipole_fit_t> & locallyBinnedData,
 {
   Logger * log = Logger::get_instance();
   log->debug(boost::format("Creating daCapo object using daCapo::daCapo("
-			   "locallyBinnedData, mask, %1%, dipole_params)")
-	     % constraint);
+               "locallyBinnedData, mask, %1%, dipole_params)")
+         % constraint);
 
   sizeMPI = MPI::COMM_WORLD.Get_size();
   rankMPI = MPI::COMM_WORLD.Get_rank();
@@ -57,7 +66,7 @@ daCapo::daCapo (const std::vector<Dipole_fit_t> & locallyBinnedData,
 {
   Logger * log = Logger::get_instance();
   log->debug("Creating daCapo object using daCapo::daCapo("
-	     "locallyBinnedData, mask, constraint)");
+         "locallyBinnedData, mask, constraint)");
 
   sizeMPI = MPI::COMM_WORLD.Get_size();
   rankMPI = MPI::COMM_WORLD.Get_rank();
@@ -184,7 +193,7 @@ daCapo::initializeFullmap()
 
   int ipixMax=pixelIndexLocal[pixelIndexLocal.size()-1];
   MPI::COMM_WORLD.Allreduce(&ipixMax, &ipixMax, 1, MPI_INT, MPI_MAX);
-  MPI::COMM_WORLD.Barrier();
+  MPI_BARRIER;
   int pixPerProc = 1+ipixMax/sizeMPI;
 
   sendcnt = std::vector<int>(sizeMPI, 0);
@@ -194,7 +203,7 @@ daCapo::initializeFullmap()
   std::vector<int> dummy(sizeMPI, 0);
   MPI::COMM_WORLD.Alltoall (sendcnt.data(), static_cast<int>(sendcnt.size()/sizeMPI), MPI_INT,
                             dummy.data(), static_cast<int>(sendcnt.size()/sizeMPI), MPI_INT);
-  MPI::COMM_WORLD.Barrier();
+  MPI_BARRIER;
 
   std::vector<int> disin(sizeMPI, 0);
   std::vector<int> disout(sizeMPI, 0);
@@ -227,7 +236,7 @@ daCapo::initializeFullmap()
           ipix_tmp[i]=pixelIndexFull[i];
 
       MPI::COMM_WORLD.Bcast(ipix_tmp.data(), npix_tmp, MPI_INT, irank);
-      MPI::COMM_WORLD.Barrier();
+      MPI_BARRIER;
 
       int m=0;
       for (int i=0; i<sendcnt[irank]; i++)
@@ -297,17 +306,36 @@ daCapo::constructCCmatrix(const std::vector<Dipole_fit_t> & binnedData)
       int nbf = static_cast<int>(pixelIndexFull.size());
 
       MPI::COMM_WORLD.Bcast(&nbf, 1, MPI_INT, irank);
-      MPI::COMM_WORLD.Barrier();
+      MPI_BARRIER;
 
       std::vector<double> cbuf(nbf, 0.);
       for (int i=0; i<sendcnt[irank]; i++)
         cbuf[pixelIndexFullMap[offset+i]] = ccLoc[offset+i];
 
-      MPI::COMM_WORLD.Reduce (cbuf.data(), ccFull.data(), static_cast<int>(cbuf.size()),
-                              MPI_DOUBLE, MPI_SUM, irank);
-      MPI::COMM_WORLD.Barrier();
+      if(! cbuf.empty()) {
+        MPI::COMM_WORLD.Reduce (cbuf.data(), ccFull.data(), static_cast<int>(cbuf.size()),
+                                MPI_DOUBLE, MPI_SUM, irank);
+      } else {
+        std::string msg;
+        if(binnedData.empty()) {
+            msg = (boost::format("Empty \"cbuf\" in daCapo::constructCCmatrix, "
+                                 "irank=%1%, sendcnt[irank]=%2%")
+                   % irank
+                   % sendcnt.at(irank)).str();
+        } else {
+            msg = (boost::format("Empty \"cbuf\" in daCapo::constructCCmatrix, "
+                                 "pID range is [%1%, %2%], irank=%3%, "
+                                 "sendcnt[irank]=%4%")
+                   % binnedData.front().pointingID
+                   % binnedData.back().pointingID
+                   % irank
+                   % sendcnt.at(irank)).str();
+        }
+        log->warning(msg);
+      }
+      MPI_BARRIER;
 
-      offset += sendcnt[irank];
+      offset += sendcnt.at(irank);
     }
 
   for (size_t ip=0; ip<pixelIndexFull.size(); ip++)
@@ -335,7 +363,7 @@ daCapo::updateDipolenorm()
     }
 
   MPI::COMM_WORLD.Allreduce(MPI::IN_PLACE, dipolenorm.data(), static_cast<int>(dipolenorm.size()), MPI_DOUBLE, MPI_SUM);
-  MPI::COMM_WORLD.Barrier();
+  MPI_BARRIER;
 
   invert2_eig(dipolenorm);
 }
@@ -418,19 +446,21 @@ daCapo::locToFullmap()
     {
       int npix_buff = static_cast<int>(pixelIndexFull.size());
       MPI::COMM_WORLD.Bcast(&npix_buff, 1, MPI_INT, irank);
-      MPI::COMM_WORLD.Barrier();
+      MPI_BARRIER;
 
       std::vector<double> mbuff(npix_buff, 0.);
       for (int i=0; i<sendcnt[irank]; i++)
         mbuff[pixelIndexFullMap[offset+i]]=localMap[offset+i];
 
-      MPI::COMM_WORLD.Reduce (mbuff.data(), fullMap.data(), static_cast<int>(mbuff.size()),
-                              MPI_DOUBLE, MPI_SUM, irank);
-      MPI::COMM_WORLD.Barrier();
+      if(! mbuff.empty()) {
+        MPI::COMM_WORLD.Reduce (mbuff.data(), fullMap.data(), static_cast<int>(mbuff.size()),
+                                MPI_DOUBLE, MPI_SUM, irank);
+      }
+      MPI_BARRIER;
 
       offset +=sendcnt[irank];
   }
-  MPI::COMM_WORLD.Barrier();
+  MPI_BARRIER;
 }
 
 /**
@@ -450,7 +480,7 @@ daCapo::ccMultiply()
       else
         fullMap[ip]=HEALPIX_UNDEF;
     }
-  MPI::COMM_WORLD.Barrier();
+  MPI_BARRIER;
 }
 
 /**
@@ -475,9 +505,9 @@ daCapo::applyConstraint()
       }
 
   MPI::COMM_WORLD.Allreduce(&ddotmap1, &ddotmap1, 1, MPI_DOUBLE, MPI_SUM);
-  MPI::COMM_WORLD.Barrier();
+  MPI_BARRIER;
   MPI::COMM_WORLD.Allreduce(&ddotmap2, &ddotmap2, 1, MPI_DOUBLE, MPI_SUM);
-  MPI::COMM_WORLD.Barrier();
+  MPI_BARRIER;
 
   double d0 = ddotmap1;
   double d1 = ddotmap2;
@@ -489,7 +519,7 @@ daCapo::applyConstraint()
       double dm = ddotmap1 + constraintMap[ip]*ddotmap2;
       fullMap[ip] -= ccFull[ip]*dm;
     }
-  MPI::COMM_WORLD.Barrier();
+  MPI_BARRIER;
 }
 
 /**
@@ -510,7 +540,7 @@ daCapo::fullToLocmap()
     {
       int npix_buff=static_cast<int>(fullMap.size());
       MPI::COMM_WORLD.Bcast(&npix_buff, 1, MPI_INT, irank);
-      MPI::COMM_WORLD.Barrier();
+      MPI_BARRIER;
 
       std::vector<double> mbuff(npix_buff, 0.);
 
@@ -519,14 +549,14 @@ daCapo::fullToLocmap()
           mbuff[i]=fullMap[i];
 
       MPI::COMM_WORLD.Bcast(mbuff.data(), npix_buff, MPI_DOUBLE, irank);
-      MPI::COMM_WORLD.Barrier();
+      MPI_BARRIER;
 
       for (int i=0; i<sendcnt[irank]; i++)
         localMap[offset+i]=mbuff[pixelIndexFullMap[offset+i]];
 
       offset +=sendcnt[irank];
     }
-  MPI::COMM_WORLD.Barrier();
+  MPI_BARRIER;
 }
 
 /*
@@ -750,7 +780,7 @@ daCapo::iterativeCalibration(std::vector<Dipole_fit_t> & binnedData,
   double rz=r.Dotprod(z);
 
   MPI::COMM_WORLD.Allreduce(&rz, &rz, 1, MPI_DOUBLE, MPI_SUM);
-  MPI::COMM_WORLD.Barrier();
+  MPI_BARRIER;
 
   if (firstLoop == true)
     rzinit=rz;
@@ -768,7 +798,7 @@ daCapo::iterativeCalibration(std::vector<Dipole_fit_t> & binnedData,
 
       double pap=p.Dotprod(ap);
       MPI::COMM_WORLD.Allreduce(&pap, &pap, 1, MPI_DOUBLE, MPI_SUM);
-      MPI::COMM_WORLD.Barrier();
+      MPI_BARRIER;
 
       double alpha=rz/pap;
       ap.Scale(-alpha);
@@ -779,7 +809,7 @@ daCapo::iterativeCalibration(std::vector<Dipole_fit_t> & binnedData,
       rzo = rz;
       rz = r.Dotprod(z);
       MPI::COMM_WORLD.Allreduce(&rz, &rz, 1, MPI_DOUBLE, MPI_SUM);
-      MPI::COMM_WORLD.Barrier();
+      MPI_BARRIER;
 
       basevec phelp=p;
       phelp.Scale(alpha);
@@ -797,7 +827,7 @@ daCapo::iterativeCalibration(std::vector<Dipole_fit_t> & binnedData,
       p.Scale(beta);
       p.Add(z);
     }
-  MPI::COMM_WORLD.Barrier();
+  MPI_BARRIER;
 
   localMap.assign(localMap.size(), 0.);
   toiToLocmap(binnedData);
@@ -817,7 +847,7 @@ daCapo::iterativeCalibration(std::vector<Dipole_fit_t> & binnedData,
     }
 
   MPI::COMM_WORLD.Allreduce(&dmax, &dmax, 1, MPI_DOUBLE, MPI_MAX);
-  MPI::COMM_WORLD.Barrier();
+  MPI_BARRIER;
 
   // Set the new gain
   for (size_t point=0; point<binnedData.size(); point++)
@@ -887,7 +917,7 @@ run_da_capo(const Configuration & program_conf,
             break;
         }
     }
-    MPI::COMM_WORLD.Barrier();
+    MPI_BARRIER;
 
     {
         std::string pointings("[");

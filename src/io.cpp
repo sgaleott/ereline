@@ -311,9 +311,10 @@ load_subsampled_ref_and_hk_data(Sqlite_connection_t & ucds,
                                   % radiometer.radiometer).str());
 
     auto query =
-        boost::format("SELECT pointingID, mean_ref, hk.%1% AS temp"
-                      "FROM %2% JOIN lfi_hk_temperatures AS hk ON (pointingID)"
-                      "WHERE pointingID >= %3% AND pointingID <= %4% "
+        boost::format("SELECT %2%.pointingID as pID, mean_ref, hk.%1% AS temp "
+                      "FROM %2% JOIN lfi_hk_temperatures AS hk "
+                      "USING (pointingID) "
+                      "WHERE pID >= %3% AND pID <= %4% "
                       "AND mean_ref > 0 AND temp > 0")
         % hk_sensor_name
         % table_name
