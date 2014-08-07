@@ -10,10 +10,10 @@
 
 	/* This .json file describes how standard data files (e.g.
 	   pointings) should be retrieved */
-	"data_storage_layout": "./data_storage_dx11.json",
+	"data_storage_layout": "./maurizio_data_storage.json",
 
 	// This can be referred later in strings using {base_output_dir}
-	"base_output_dir": "/datastor/tomasi/my_tests/dx10",
+	"base_output_dir": "/home/tomasi/work/test_data/ereline",
 
 	"log_file": "ereline.log",
 
@@ -59,21 +59,21 @@
 
     "smooth_gains": {
 	"run": true,
+	"fast_variations": {
+	    "window_length": 300,
+	    "percent": 0.95
+	},
 	"hybrid_fit_first_pid": 1,
 	"hybrid_fit_last_pid": 45957,
-	"fast_variations": {
-	    "window_length": null,
-	    "percent": null
-	},
 	"smooth_window": {
 	    "near_dipole_min": 2400,
 	    "near_dipole_max": 600,
-	    "window_length": null
+	    "window_length": 300
 	},
-	"slow_var_percentile": null,
+	"slow_var_percentile": 0.99,
 	"dipole_range": {
-	    "min_value": null,
-	    "max_value": null
+	    "min_value": 3.4e-3,
+	    "max_value": 4.0e-3
 	}
     }
 }
