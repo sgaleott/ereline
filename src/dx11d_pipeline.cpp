@@ -106,28 +106,6 @@ read_ahf_info(Sqlite_connection_t & ucds,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const std::string
-dipole_fit_name(const Configuration & program_config,
-        const Lfi_radiometer_t & radiometer,
-        bool da_capo)
-{
-    std::string subdir;
-    if(da_capo) {
-        if(program_config.get<bool>("da_capo.use_mademoiselle", false))
-            subdir = "mademoiselle";
-        else
-            subdir = "da_capo";
-    } else
-        subdir = "dipole_fit";
-
-    return (boost::format("%s/%s/dipole_fit_table_%s.fits")
-            % program_config.getWithSubst("common.base_output_dir")
-            % subdir
-            % radiometer.shortName()).str();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 int
 inner_main(int argc, const char ** argv)
 {
