@@ -144,20 +144,17 @@ Delta_vv_t::hybridFit(const std::vector<double> & subData,
 std::vector<double>
 Delta_vv_t::eval(const std::vector<int> & pointingIDs) const
 {
-    std::vector<double> interpGain;
-    unsigned int locIdx=0;
-    for (unsigned int idx=0; idx<pointingIDs.size(); ++idx) {
-        if (locIdx==pid.size())
-            break;
-
+    std::vector<double> interpGain(pointingIDs.size());
+    size_t locIdx = 0;
+    for (size_t idx = 0; idx < pointingIDs.size(); ++idx) {
         if (pointingIDs[idx]==pid[locIdx]) {
-            interpGain.push_back(gain[locIdx]);
+            interpGain[idx] = gain[locIdx];
             ++locIdx;
         } else {
             if (locIdx>0)
-                interpGain.push_back(gain[locIdx-1]+((gain[locIdx]-gain[locIdx-1])/(pid[locIdx]-pid[locIdx-1])*(pointingIDs[idx]-pid[locIdx-1])));
+                interpGain[idx] = gain[locIdx-1]+((gain[locIdx]-gain[locIdx-1])/(pid[locIdx]-pid[locIdx-1])*(pointingIDs[idx]-pid[locIdx-1]));
             else
-                interpGain.push_back(gain[locIdx]+((gain[locIdx+1]-gain[locIdx])/(pid[locIdx+1]-pid[locIdx])*(pointingIDs[idx]-pid[locIdx])));
+                interpGain[idx] = gain[locIdx]+((gain[locIdx+1]-gain[locIdx])/(pid[locIdx+1]-pid[locIdx])*(pointingIDs[idx]-pid[locIdx]));
         }
     }
 
