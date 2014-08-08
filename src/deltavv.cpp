@@ -92,7 +92,7 @@ Delta_vv_t::hybridFit(const std::vector<double> & subData,
         gsl_matrix_set (data, idx, 1, locSensor[idx] - meanSensor);
 
         gsl_vector_set (loadVolt, idx, locData[idx] * locGains[idx]);
-        gsl_vector_set (weights, idx, abs(locDipole[idx]));
+        gsl_vector_set (weights, idx, std::fabs(locDipole[idx]));
     }
 
     // Fit
