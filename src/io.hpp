@@ -117,9 +117,9 @@ void load_differenced_data(const std::string & file_name,
 void load_subsampled_ref_and_hk_data(Sqlite_connection_t & ucds,
                                      const Lfi_radiometer_t & radiometer,
                                      const std::string & hk_sensor_name,
-                                     Range_t<int> pointing_range,
-                                     std::vector<int> pointing_id,
-                                     std::vector<double> hk_data,
-                                     std::vector<double> ref_data);
+                                     const Range_t<int> & pointing_range,
+                                     std::vector<int> & pointing_id,
+                                     std::vector<double> & ref_data,
+                                     std::vector<double> & hk_data);
 
 #endif

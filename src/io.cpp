@@ -252,10 +252,10 @@ void
 load_subsampled_ref_and_hk_data(Sqlite_connection_t & ucds,
                                 const Lfi_radiometer_t & radiometer,
                                 const std::string & hk_sensor_name,
-                                Range_t<int> pointing_range,
-                                std::vector<int> pointing_id,
-                                std::vector<double> ref_data,
-                                std::vector<double> hk_data)
+                                const Range_t<int> & pointing_range,
+                                std::vector<int> & pointing_id,
+                                std::vector<double> & ref_data,
+                                std::vector<double> & hk_data)
 {
     const std::string table_name((boost::format("sci%1%%2%_weighted")
                                   % radiometer.horn
@@ -275,8 +275,8 @@ load_subsampled_ref_and_hk_data(Sqlite_connection_t & ucds,
     Sqlite_statement_t statement(ucds, query.str().c_str());
 
     int result = statement.step();
-    pointing_id.resize(0);
-    ref_data.resize(0);
+    pointing_id.clear();
+    ref_data.clear();
     while(result == SQLITE_ROW) {
         pointing_id.push_back(statement.column_int(0));
         ref_data.push_back(statement.column_double(1));
