@@ -9,6 +9,7 @@
 #include <cmath>
 
 #include "deltavv.hpp"
+#include "logging.hpp"
 #include "misc.hpp"
 #include "mpi_processes.hpp"
 
@@ -24,13 +25,29 @@ void
 Delta_vv_t::hybridFit(const std::vector<double> & subData,
                       const std::vector<double> & subSensor)
 {
-    // Remove wrong data
+    Logger * log = Logger::get_instance();
+
+    log->debug(boost::format("Entering function %1%")
+              % __PRETTY_FUNCTION__);
+    log->increase_indent();
+
+    // These constants are used to flag "bad" data
     const double stdDevData = computeVariance(subData);
     const double meanSubData = computeMean(subData);
     const double stdDevSensor = computeVariance(subSensor);
     const double meanSubSensor = computeMean(subSensor);
 
+    log->debug(boost::format("stdDevData = %1%, meanSubData = %2%, "
+                             "stdDevSensor = %3%, meanSubSensor = %4%")
+               % stdDevData
+               % meanSubData
+               % stdDevSensor
+               % meanSubSensor);
+
     // Mask missing pid
+    log->debug("Going to mask those pIDs for which gains are too «strange»");
+    log->increase_indent();
+
     std::vector<double> locData;
     std::vector<double> locGains;
     std::vector<double> locDipole;
@@ -41,13 +58,21 @@ Delta_vv_t::hybridFit(const std::vector<double> & subData,
             ||(subSensor[idx]>(meanSubSensor+5*stdDevSensor))||(subSensor[idx]<(meanSubSensor-5*stdDevSensor))
             ||(std::isnan(subData[idx]))||(subData[idx]==0)
             ||(subData[idx]>(meanSubData+5*stdDevData))||(subData[idx]<(meanSubData-5*stdDevData)))
+        {
+            log->debug(boost::format("Skipping pid %1%")
+                       % pid[idx]);
             continue;
+        }
 
         locData.push_back(subData[idx]);
         locGains.push_back(gain[idx]);
         locDipole.push_back(dipole[idx]);
         locSensor.push_back(subSensor[idx]);
     }
+    log->decrease_indent();
+    log->debug(boost::format("Done, %1% elements kept for the fit")
+               % locData.size());
+
     double meanSensor = computeMean(locSensor);
 
     // Multi-parameters fitting
@@ -62,11 +87,11 @@ Delta_vv_t::hybridFit(const std::vector<double> & subData,
     coeff = gsl_vector_alloc (2);
     cov = gsl_matrix_alloc (2, 2);
 
-    for(size_t idx=0; idx<locData.size(); idx++) {
+    for(size_t idx = 0; idx < locData.size(); idx++) {
         gsl_matrix_set (data, idx, 0, 1.0);
-        gsl_matrix_set (data, idx, 1, locSensor[idx]-meanSensor);
+        gsl_matrix_set (data, idx, 1, locSensor[idx] - meanSensor);
 
-        gsl_vector_set (loadVolt, idx, locData[idx]*locGains[idx]);
+        gsl_vector_set (loadVolt, idx, locData[idx] * locGains[idx]);
         gsl_vector_set (weights, idx, abs(locDipole[idx]));
     }
 
@@ -77,6 +102,12 @@ Delta_vv_t::hybridFit(const std::vector<double> & subData,
     gsl_multifit_wlinear (data, weights, loadVolt, coeff, cov,
                           &chisq, work);
     gsl_multifit_linear_free (work);
+
+    log->debug(boost::format("Interpolation coefficients: c_0 = %1%, "
+                             "c_1 = %2%, \u03c7\u00b2 = %3%")
+               % gsl_vector_get(coeff, 0)
+               % gsl_vector_get(coeff, 1)
+               % chisq);
 
     // Save results
     std::vector<double> returnGains;
@@ -102,6 +133,10 @@ Delta_vv_t::hybridFit(const std::vector<double> & subData,
 
     gain.swap(returnGains);
     pid.swap(returnPids);
+
+    log->decrease_indent();
+    log->debug(boost::format("Quitting function %1%")
+              % __PRETTY_FUNCTION__);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
