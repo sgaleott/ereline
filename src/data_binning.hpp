@@ -17,6 +17,7 @@ struct Binned_data_t
     int quality_flag;
     int nside;
     int pointing_id;
+    int od;
 
     double max_dipole;
     double min_dipole;
@@ -26,12 +27,16 @@ struct Binned_data_t
     std::vector<double> pix_data_sum;
     std::vector<float> pix_model_mean;
 
+    Binned_data_t() { }
+
     Binned_data_t(int a_quality_flag,
                   int a_nside,
-                  int a_pointing_id) :
+                  int a_pointing_id,
+                  int a_od) :
         quality_flag(a_quality_flag),
         nside(a_nside),
         pointing_id(a_pointing_id),
+        od(a_od),
         max_dipole(),
         min_dipole() { }
 

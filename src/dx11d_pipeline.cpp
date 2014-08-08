@@ -153,12 +153,18 @@ inner_main(int argc, const char ** argv)
                   % radiometer.shortName());
 
         Data_binning_results_t binned_data;
-        run_data_binning(ucds,
-                         radiometer,
-                         program_config,
-                         storage_config,
-                         list_of_pointings,
-                         binned_data);
+        if(program_config.get<bool>("bin_data.run")) {
+            run_data_binning(ucds,
+                             radiometer,
+                             program_config,
+                             storage_config,
+                             list_of_pointings,
+                             binned_data);
+            if(mpi_rank == 0 || mpi_rank == 1)
+                binned_data.save_to_disk(program_config);
+        } else
+            binned_data.load_from_disk(radiometer,
+                                       program_config);
 
         Dipole_fit_results_t dipole_fit_results;
         run_dipole_fit(ucds,

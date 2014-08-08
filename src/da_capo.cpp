@@ -977,6 +977,7 @@ run_da_capo(const Configuration & program_conf,
         real_radiometer = user_rad;
     else
         real_radiometer = user_rad.twinRadiometer();
+    da_capo_results.radiometer = real_radiometer;
 
     gain_table.mergeResults();
     gain_table.selectRadiometerGains(mpi_rank % 2, 2,

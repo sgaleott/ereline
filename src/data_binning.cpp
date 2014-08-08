@@ -306,7 +306,8 @@ process_one_od(const Configuration & program_conf,
         auto idx_range =
             find_boundaries_in_obt_times(pointings.obt_time, obt_range);
 
-        Binned_data_t binned_data(quality_flag, mask.nside, cur_pid->id);
+        Binned_data_t binned_data(quality_flag, mask.nside, 
+                                  cur_pid->id, cur_pid->od);
         if(project_pid_into_map(datadiff, 
                                 pointings, 
                                 convolved_dipole, 
@@ -315,14 +316,6 @@ process_one_od(const Configuration & program_conf,
                                 binned_data))
         {
             binned_pids.push_back(binned_data);
-
-            std::string file_path(binned_data_file_name(program_conf,
-                                                        radiometer,
-                                                        cur_pid->od,
-                                                        cur_pid->id));
-
-            save_binned_data(ensure_path_exists(file_path), radiometer,
-                             binned_data);
         } else {
             log->warning(boost::format("Not enough pixels covered at NSIDE %1% "
                                        "for pID %2% (OD %3%), radiometer %4%")
@@ -348,12 +341,14 @@ void run_data_binning(Sqlite_connection_t & ucds,
     Logger * log = Logger::get_instance();
     const int mpi_size = MPI::COMM_WORLD.Get_size();
     const int mpi_rank = MPI::COMM_WORLD.Get_rank();
+    result.mpi_size = mpi_size;
 
     log->info("Starting module binData");
     log->increase_indent();
 
     Lfi_radiometer_t real_radiometer(
         radiometer_to_use(mpi_rank, rad, program_conf, storage_conf));
+    result.radiometer = real_radiometer;
 
     // Load all the inputs needed by this module
     load_map(program_conf.getWithSubst("bin_data.mask"), 1, result.mask);
@@ -435,8 +430,6 @@ void run_data_binning(Sqlite_connection_t & ucds,
                % data_range.od_range.start
                % data_range.od_range.end
                % result.binned_pids.size());
-
-    // TODO: here we should save the binned pids...
 
     log->decrease_indent();
     log->info("Module binData completed.");

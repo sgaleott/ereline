@@ -9,6 +9,7 @@ dx11d_pipeline_SOURCES = \
 	configuration.cpp \
 	ahf_info.cpp \
 	data_binning.cpp \
+	data_binning_results.cpp \
 	dipole_parameters.cpp \
 	mpi_processes.cpp \
 	rotmatrix.cpp \

@@ -47,6 +47,8 @@ template<> inline int fitsType <float>  () { return TFLOAT;    }
 template<> inline int fitsType <double> () { return TDOUBLE;   }
 template<> inline int fitsType <bool>   () { return TLOGICAL;  }
 template<> inline int fitsType <std::string> () { return TSTRING;   }
+template<> inline int fitsType <char *> () { return TSTRING;   }
+template<> inline int fitsType <const char *> () { return TSTRING;   }
 
 template<typename T> inline std::string fitsTypeC();
 template<> inline std::string fitsTypeC <int8>   () { return "B"; }
@@ -62,7 +64,6 @@ template<> inline std::string fitsTypeC <uint64> () { return "K"; }
 template<> inline std::string fitsTypeC <float>  () { return "E"; }
 template<> inline std::string fitsTypeC <double> () { return "D"; }
 template<> inline std::string fitsTypeC <bool>   () { return "L"; }
-template<> inline std::string fitsTypeC <std::string> () { return "A"; }
 
 class FitsObject
 {
@@ -88,7 +89,7 @@ public:
   void close();
 
   /* Go to specific HDU */
-  void gotoHDU(const int& hduNumber);
+  void gotoHDU(int hduNumber);
 
 
   /* Insert a new binary table */
@@ -280,6 +281,7 @@ FitsObject::writeElement (const int& colNum,
 
 
 /* Read a keyword in current HDU header */
+#include <iostream>
 template <typename T> void
 FitsObject::getKey(const std::string& keyName, T& keyValue)
 {
@@ -291,6 +293,7 @@ FitsObject::getKey(const std::string& keyName, T& keyValue)
   if (status != 0)
     fits_report_error(stderr, status);
 
+#error This is a shit: "temp"/"tmp" names, and this does not work if strlen(temp) == 1
   // if the key is a string i need to remove '
   std::stringstream tmp (std::string(temp+1,strlen(temp)-2));
   // if key is not a string, do not remove any char

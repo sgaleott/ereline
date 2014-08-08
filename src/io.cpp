@@ -195,54 +195,6 @@ void save_tod(const std::string & file_name,
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-save_binned_data(FitsObject & file,
-                 const Lfi_radiometer_t & radiometer,
-                 const Binned_data_t & bin,
-                 const std::string & comment)
-{
-    std::vector<fitscolumn> columns {
-        { "PIXIDX", "", fitsTypeC<int>(), 1 },
-        { "PIXHITS", "", fitsTypeC<int>(), 1 },
-        { "DATASUM", "", fitsTypeC<double>(), 1 },
-        { "MODAVG", "", fitsTypeC<float>(), 1 } };
-    file.insertBINtable(columns, radiometer.shortName());
-    file.writeColumn(1, bin.pix_index);
-    file.writeColumn(2, bin.pix_num_of_hits);
-    file.writeColumn(3, bin.pix_data_sum);
-    file.writeColumn(4, bin.pix_model_mean);
-
-    file.setKey("NSIDE", bin.nside);
-    file.setKey("PID", bin.pointing_id);
-    file.setKey("FLAG", bin.quality_flag);
-    file.setKey("DIPMIN", bin.min_dipole);
-    file.setKey("DIPMAX", bin.max_dipole);
-
-    if(! comment.empty()) {
-        file.setComment(comment);
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void
-save_binned_data(const std::string & file_name,
-                 const Lfi_radiometer_t & radiometer,
-                 const Binned_data_t & bin,
-                 const std::string & comment)
-{
-    Logger * log = Logger::get_instance();
-    log->info(boost::format("Going to write a binned pID into %1%")
-              % file_name);
-
-    FitsObject file;
-    file.create(file_name, true);
-
-    save_binned_data(file, radiometer, bin, comment);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void
 load_pointings(const std::string & file_name,
                PointingData & pointings)
 {

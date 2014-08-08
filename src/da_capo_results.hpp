@@ -4,6 +4,7 @@
 #include "gain_table.hpp"
 
 struct Da_capo_results_t {
+    Lfi_radiometer_t radiometer;
     Gain_table_t gain_table;
 };
 

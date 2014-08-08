@@ -17,7 +17,7 @@ FitsObject::create (const std::string& fileName, bool overwrite)
 {
   int status=0;
   std::string name=fileName;
-  if (overwrite == true && name[0] != '!')
+  if (overwrite && name[0] != '!')
     name.insert(0,"!");
 
   if (fits_create_file(&ptr, const_cast<char*>(name.c_str()), &status))
@@ -69,7 +69,7 @@ FitsObject::close()
  * Go to specific HDU
  */
 void
-FitsObject::gotoHDU(const int& hduNumber)
+FitsObject::gotoHDU(int hduNumber)
 {
   int status=0;
   int hduType=0;
