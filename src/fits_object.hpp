@@ -12,7 +12,7 @@
 
 #include <vector>
 #include <string>
-#include <sstream>
+#include <stdexcept>
 #include <typeinfo>
 #include <iomanip>
 #include <cstring>
@@ -64,6 +64,14 @@ template<> inline std::string fitsTypeC <uint64> () { return "K"; }
 template<> inline std::string fitsTypeC <float>  () { return "E"; }
 template<> inline std::string fitsTypeC <double> () { return "D"; }
 template<> inline std::string fitsTypeC <bool>   () { return "L"; }
+
+inline void
+throw_fits_exception(int status)
+{
+    char msg[80];
+    fits_get_errstatus(status, &msg[0]);
+    throw std::runtime_error(msg);
+}
 
 class FitsObject
 {
@@ -147,16 +155,20 @@ public:
                                           const int64& offset);
 
   /* Template function to get keyName of any type */
-  template <typename T> void getKey(const std::string& keyName, T& keyValue);
+  void getKey(const std::string& keyName, int & keyValue);
+  void getKey(const std::string& keyName, double & keyValue);
+  void getKey(const std::string& keyName, std::string & keyValue);
 
   /* Template function to set keyName of any type. */
-  template <typename T> void setKey(const std::string& keyName,
-                                    const T& keyValue,
-                                    const std::string& comment);
-  template <typename T> void setKey(const std::string& keyName, const T& keyValue)
-  { setKey(keyName, keyValue, ""); };
-
-
+  void setKey(const std::string& keyName,
+              int keyValue,
+              const std::string& comment = "");
+  void setKey(const std::string& keyName,
+              double keyValue,
+              const std::string& comment = "");
+  void setKey(const std::string& keyName,
+              const std::string & keyValue,
+              const std::string& comment = "");
 };
 
 /* Read the data from column in the current HDU */
@@ -278,62 +290,4 @@ FitsObject::writeElement (const int& colNum,
     fits_report_error (stderr, status);
 }
 
-
-
-/* Read a keyword in current HDU header */
-#include <iostream>
-template <typename T> void
-FitsObject::getKey(const std::string& keyName, T& keyValue)
-{
-  int status=0;
-
-  char *temp=new char[FLEN_CARD];
-  char *comment=NULL;
-  fits_read_keyword (ptr, const_cast<char*>(keyName.c_str()), temp, comment, &status);
-  if (status != 0)
-    fits_report_error(stderr, status);
-
-#error This is a shit: "temp"/"tmp" names, and this does not work if strlen(temp) == 1
-  // if the key is a string i need to remove '
-  std::stringstream tmp (std::string(temp+1,strlen(temp)-2));
-  // if key is not a string, do not remove any char
-  if (temp[0] != '\'')
-    {
-      tmp.str("");
-      tmp << temp;
-    }
-
-  // conversion
-  tmp >> keyValue;
-  delete [] temp;
-}
-
-/* Write a keyword in current HDU header
- * - specialized function for string in .cpp file
- */
-template <typename T> void
-FitsObject::setKey (const std::string& keyName, const T& keyValue, const std::string& comment)
-{
-  int status = 0;
-
-  T tmpVal;
-  std::stringstream tmp;
-  tmp << keyValue;
-  tmp >> tmpVal;
-
-  fits_update_key (ptr,
-                   fitsType<T>(),
-                   const_cast <char*> (keyName.c_str()),
-                   &tmpVal,
-                   const_cast <char*> (comment.c_str()),
-                   &status);
-
-  if (status != 0)
-    fits_report_error(stderr, status);
-}
-
-
-
-
 #endif
-/*EoF*/

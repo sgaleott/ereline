@@ -21,7 +21,7 @@ FitsObject::create (const std::string& fileName, bool overwrite)
     name.insert(0,"!");
 
   if (fits_create_file(&ptr, const_cast<char*>(name.c_str()), &status))
-    fits_report_error(stderr, status);
+    throw_fits_exception(status);
 }
 
 /*
@@ -63,7 +63,68 @@ FitsObject::close()
   ptr=NULL;
 }
 
+void
+FitsObject::getKey(const std::string& keyName, int & keyValue)
+{
+    int status = 0;
+    if(fits_read_key(ptr, TINT, keyName.c_str(), &keyValue, NULL, &status))
+        throw_fits_exception(status);
+}
 
+void
+FitsObject::getKey(const std::string& keyName, double & keyValue)
+{
+    int status = 0;
+    if(fits_read_key(ptr, TDOUBLE, keyName.c_str(), &keyValue, NULL, &status))
+        throw_fits_exception(status);
+}
+
+void
+FitsObject::getKey(const std::string& keyName, std::string & keyValue)
+{
+    int status = 0;
+    char keyValueAsciiz[FLEN_VALUE + 1];
+    if(fits_read_key(ptr, TDOUBLE, keyName.c_str(), &keyValueAsciiz[0],
+                     NULL, &status))
+        throw_fits_exception(status);
+
+    keyValue = keyValueAsciiz;
+}
+
+void
+FitsObject::setKey(const std::string& keyName,
+                   int keyValue,
+                   const std::string& comment)
+{
+    int status = 0;
+    if(fits_update_key(ptr, TINT, keyName.c_str(),
+                       &keyValue, comment.c_str(), &status))
+        throw_fits_exception(status);
+}
+
+void
+FitsObject::setKey(const std::string& keyName,
+                   double keyValue,
+                   const std::string& comment)
+{
+    int status = 0;
+    if(fits_update_key(ptr, TDOUBLE, keyName.c_str(),
+                       &keyValue, comment.c_str(), &status))
+        throw_fits_exception(status);
+}
+
+void
+FitsObject::setKey(const std::string& keyName,
+                   const std::string & keyValue,
+                   const std::string& comment)
+{
+    int status = 0;
+    const char * keyValueAsciiz = keyValue.c_str();
+    if(fits_update_key(ptr, TSTRING, keyName.c_str(),
+                       const_cast<char*>(keyValueAsciiz),
+                       comment.c_str(), &status))
+        throw_fits_exception(status);
+}
 
 /*
  * Go to specific HDU
@@ -129,7 +190,7 @@ FitsObject::setComment(const std::string& comment)
   int status=0;
 
   if (fits_write_comment (ptr, const_cast<char*>(comment.c_str()), &status))
-    fits_report_error(stderr, status);
+    throw_fits_exception(status);
 
   // fix the fitsfile
   writeChecksum();
@@ -145,30 +206,7 @@ FitsObject::getChunkSize()
   int status=0;
   long int rows=0;
   if (fits_get_rowsize(ptr, &rows, &status))
-    fits_report_error(stderr, status);
+    throw_fits_exception(status);
 
   return rows;
 }
-
-
-/*
- * Set keyword (string keyword case)
- */
-template <> void
-FitsObject::setKey <std::string> (const std::string& keyName,
-                                  const std::string& keyValue,
-                                  const std::string& comment)
-{
-  int status=0;
-
-  fits_update_key (ptr,
-                   fitsType<std::string>(),
-                   const_cast <char*> (keyName.c_str()),
-                   const_cast <char*> (keyValue.c_str()),
-                   const_cast <char*> (comment.c_str()),
-                   &status);
-  if (status != 0)
-    fits_report_error(stderr, status);
-}
-
-/*EoF*/
