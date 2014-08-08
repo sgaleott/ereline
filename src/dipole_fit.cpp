@@ -1,3 +1,5 @@
+#include <mpi.h>
+
 #include "dipole_fit.hpp"
 
 #include "configuration.hpp"
@@ -18,7 +20,6 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <mpi.h>
 
 extern "C" {
 #include "chealpix.h"

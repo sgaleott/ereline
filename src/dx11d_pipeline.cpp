@@ -1,3 +1,5 @@
+#include <mpi.h>
+
 #include "configuration.hpp"
 #include "logging.hpp"
 #include "dipole_fit.hpp"
@@ -13,8 +15,6 @@
 #include "io.hpp"
 
 #include <iostream>
-
-#include <mpi.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 

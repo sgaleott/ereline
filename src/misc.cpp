@@ -2,12 +2,13 @@
  * Miscellaneous functions
  */
 
+#include <mpi.h>
+
 #include <cmath>
 #include <stdlib.h>
 #include <stdexcept>
 #include <numeric>
 #include <iomanip>
-#include <mpi.h>
 
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>

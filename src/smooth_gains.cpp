@@ -1,3 +1,5 @@
+#include <mpi.h>
+
 #include "smooth_gains.hpp"
 #include "configuration.hpp"
 #include "dipole_fit_results.hpp"
@@ -7,8 +9,6 @@
 #include "io.hpp"
 #include "logging.hpp"
 #include "misc.hpp"
-
-#include <mpi.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -127,12 +127,20 @@ run_smooth_gains(Sqlite_connection_t & ucds,
         real_radiometer = rad;
     else
         real_radiometer = rad.twinRadiometer();
+    log->info(boost::format("I am going to process radiometer %1%")
+              % real_radiometer.shortName());
 
     // Retrieve the parameters used for the smoothing functions from the
     // configuration file provided by the user
     Smoother_parameters_t smoother_params;
     read_smoother_parameters(program_conf, smoother_params);
 
+    log->info(boost::format("Now I am going to fill the missing fits in "
+                            "the raw calibration table with zeroes "
+                            "(so far there are %1% pointing periods "
+                            "and %2% raw calibration values)")
+              % list_of_pointings.size()
+              % fit_results.dipole_fits.size());
     Gain_table_t outRawTable;
     Delta_vv_t smoother;
     Gain_table_t outMinMaxTable;
@@ -175,7 +183,8 @@ run_smooth_gains(Sqlite_connection_t & ucds,
                                          fit_results.pids_per_process);
 
     if (mpi_rank < 2) {
-        save_gain_table(ensure_path_exists(dipole_table_file_path(program_conf, real_radiometer)),
+        save_gain_table(ensure_path_exists(dipole_table_file_path(program_conf, 
+                                                                  real_radiometer)),
                         real_radiometer,
                         outMinMaxTable);
     }
@@ -184,20 +193,41 @@ run_smooth_gains(Sqlite_connection_t & ucds,
 
     /*************************DVV****************************/
 
+    log->info("Computing the hybrid (improved \u03b4V/V) calibration model");
+    log->increase_indent();
+
     // Load Reference Data
     std::vector<int> sub_pid;
     std::vector<double> ref_data, hk_data;
     load_subsampled_data(ucds, program_conf, real_radiometer,
                          sub_pid, ref_data, hk_data);
+    log->debug(boost::format("#ref_data = %1%, ref_data[0] = %2%, ref_Data[-1] = %3%")
+               % ref_data.size() % ref_data.front() % ref_data.back());
+    log->debug(boost::format("#hk_data = %1%, hk_data[0] = %2%, hk_Data[-1] = %3%")
+               % hk_data.size() % hk_data.front() % hk_data.back());
     smoother.hybridFit(ref_data, hk_data);
 
-    std::vector<int> pid = outRawTable.pointingIds;
-    std::vector<double> interpGain = smoother.eval(pid);
+    const std::vector<int> pid(outRawTable.pointingIds);
+    const std::vector<double> interpGain(smoother.eval(pid));
     const double meanGain = computeMean(interpGain);
 
+    if(interpGain.size() > 1) {
+        log->debug(boost::format("Hybrid gains computed: #interpGain = %1%, "
+                                 "interpGain = [%2%, %3%, ..., %4%]")
+                   % interpGain.size()
+                   % interpGain.at(0)
+                   % interpGain.at(1)
+                   % interpGain.back());
+    }
+
     MPI::COMM_WORLD.Barrier();
+    log->decrease_indent();
+    log->info("Hybrid calibration constants computed");
 
     /********************SAVE DVV GTABLE*********************/
+
+    log->info("Extracting the \u03b4V/V table");
+    log->increase_indent();
 
     Gain_table_t outHybridTable;
     for (auto const & cur_pointing : list_of_pointings)
@@ -205,12 +235,12 @@ run_smooth_gains(Sqlite_connection_t & ucds,
         double gain = meanGain;
         const int locPid = cur_pointing.id;
         auto pidIter = lower_bound(pid.begin(), pid.end(), locPid);
-        if (pidIter != pid.end())
+        if (pidIter != pid.end()) {
             gain = interpGain.at(pidIter - pid.begin());
+        }
 
         outHybridTable.append(Gain_state_t { locPid, gain, 0.0 });
     }
-
     MPI::COMM_WORLD.Barrier();
 
     // Save gain table
@@ -219,16 +249,28 @@ run_smooth_gains(Sqlite_connection_t & ucds,
                                          fit_results.pids_per_process);
 
     MPI::COMM_WORLD.Barrier();
+    log->decrease_indent();
+    log->info(boost::format("\u03b4V/V table computed, %1% values collected")
+              % outHybridTable.gain.size());
 
     /*************************OSGTV***************************/
 
+    log->info("OSGTV section starts here");
+    log->increase_indent();
+
     // Zeroing Hybrid Table for Fast Variations
+    log->debug("Calculating the high-frequency part of the curve\u2026");
     const std::vector<double> zeroedHybrid(
         outHybridTable.zeroing(smoother_params.hybrid_window_len,
                                smoother_params.hybrid_percent,
                                smoother.dipole));
+    log->debug(boost::format("\u2026done, %1% values computed: [%1%, \u2026, %2%]")
+               % zeroedHybrid.size()
+               % zeroedHybrid.front()
+               % zeroedHybrid.back());
 
     // Smooth Raw Gains for Slow variations
+    log->debug("Smoothing the raw gains\u2026");
     const std::vector<double> smoothedRaw(
         outRawTable.gainSmoothing(smoother_params.window_len_dipole.start,
                                   smoother_params.window_len_dipole.end,
@@ -237,20 +279,33 @@ run_smooth_gains(Sqlite_connection_t & ucds,
                                   smoother_params.dipole_range.start,
                                   smoother_params.dipole_range.end,
                                   smoother.dipole));
+    log->debug(boost::format("\u2026done, %1% values computed: [%1%, \u2026, %2%]")
+               % smoothedRaw.size()
+               % smoothedRaw.front()
+               % smoothedRaw.back());
 
     // Smoothed Gains
+    log->debug("Summing the high-frequency and low-frequency components\u2026");
     const std::vector<double> smoothedGains =
         sumVectors(smoothedRaw, zeroedHybrid);
+    log->debug("\u2026done");
 
     // Smooth offset
+    log->debug("Smoothing the offsets\u2026");
     const std::vector<double> smoothedOffsets(
         outRawTable.offsetSmoothing(smoother_params.window_len_dipole.start,
                                     smoother_params.window_len_dipole.end,
                                     smoother_params.dipole_range.start,
                                     smoother_params.dipole_range.end,
                                     smoother.dipole));
+    log->debug(boost::format("\u2026done, %1% values computed: [%1%, \u2026, %2%]")
+               % smoothedOffsets.size()
+               % smoothedOffsets.front()
+               % smoothedOffsets.back());
 
     MPI::COMM_WORLD.Barrier();
+    log->decrease_indent();
+    log->info("OSGTV section ends here");
 
     /****************SAVE GAINS AND REDUCED******************/
 

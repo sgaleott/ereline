@@ -1,4 +1,5 @@
 #include <mpi.h>
+
 #include "mademoiselle.hpp"
 #include "configuration.hpp"
 #include "da_capo_results.hpp"

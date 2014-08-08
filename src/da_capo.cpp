@@ -1,3 +1,5 @@
+#include <mpi.h>
+
 #include "da_capo.hpp"
 #include "da_capo_results.hpp"
 #include "dipole_fit_results.hpp"
@@ -6,7 +8,6 @@
 #include "configuration.hpp"
 #include "logging.hpp"
 
-#include <mpi.h>
 #include <algorithm>
 #include <iomanip>
 #include <cmath>

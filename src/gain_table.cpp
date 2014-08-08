@@ -1,12 +1,13 @@
+#include <mpi.h>
+
 #include "gain_table.hpp"
+#include "logging.hpp"
 #include "misc.hpp"
 #include "mpi_processes.hpp"
 
 #include <algorithm>
 #include <iomanip>
 #include <numeric>
-
-#include <mpi.h>
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_fft_real.h>
@@ -491,52 +492,62 @@ Gain_table_t::gainSmoothing(int windowLenMinima, int windowLenMaxima,
 std::vector<double>
 Gain_table_t::zeroing(int windowLen, double percent, std::vector<double> & dipole)
 {
-  std::vector<double> paddedRaw;
-  for (size_t idx=windowLen/2; idx>0; --idx)
-    {
-      paddedRaw.push_back(gain[idx]);
+    Logger * log = Logger::get_instance();
+    if(gain.size() < 2 * windowLen) {
+        const std::string msg =
+            (boost::format("too few calibration constants (%1%) for the "
+                           "smoothing filter to work, as the requested "
+                           "window size is %2%")
+             % gain.size() % windowLen).str();
+        log->error(msg);
+        throw std::runtime_error(msg);
     }
-  for (size_t idx=0; idx<gain.size(); ++idx)
+    std::vector<double> paddedRaw;
+    for (size_t idx=windowLen/2; idx>0; --idx)
     {
-      paddedRaw.push_back(gain[idx]);
+        paddedRaw.push_back(gain.at(idx));
     }
-  for (int idx=0; idx<=windowLen/2; ++idx)
+    for (size_t idx=0; idx<gain.size(); ++idx)
     {
-      paddedRaw.push_back(gain[gain.size()-idx-2]);
+        paddedRaw.push_back(gain.at(idx));
     }
-
-  std::vector<double> locVariance;
-  for (size_t extIdx=0; extIdx<gain.size(); extIdx++)
+    for (int idx=0; idx<=windowLen/2; ++idx)
     {
-      std::vector<double> localGain;
-      for (int intIdx=-windowLen/2; intIdx<=windowLen/2; intIdx++)
-        localGain.push_back(paddedRaw[extIdx+windowLen/2+intIdx]);
-
-      locVariance.push_back(computeVariance(localGain));
-    }
-
-  std::vector<double> sortedVariance = locVariance;
-  sort(sortedVariance.begin(),sortedVariance.end());
-  double mulFactor = sortedVariance[static_cast<int>(percent*static_cast<double>(sortedVariance.size()))]*windowLen;
-
-  for (size_t idx=0; idx<gain.size(); idx++)
-    {
-      int locWindowLen = static_cast<int>(mulFactor/locVariance[idx]);
-      if (locWindowLen > windowLen)
-        windowVector.push_back(windowLen);
-      else
-        windowVector.push_back(locWindowLen);
+        paddedRaw.push_back(gain.at(gain.size()-idx-2));
     }
 
-  // Weighted Moving Average
-  std::vector<double> windowedG = variableWMA(windowVector, dipole);
+    std::vector<double> locVariance;
+    for (size_t extIdx=0; extIdx<gain.size(); extIdx++)
+    {
+        std::vector<double> localGain;
+        for (int intIdx=-windowLen/2; intIdx<=windowLen/2; intIdx++)
+            localGain.push_back(paddedRaw.at(extIdx+windowLen/2+intIdx));
 
-  // Subtract windowed
-  std::vector<double> retVec;
-  for (size_t idx=0; idx<windowedG.size(); ++idx)
-    retVec.push_back(gain[idx]-windowedG[idx]);
+        locVariance.push_back(computeVariance(localGain));
+    }
 
-  return retVec;
+    std::vector<double> sortedVariance = locVariance;
+    sort(sortedVariance.begin(),sortedVariance.end());
+    double mulFactor = sortedVariance.at(static_cast<int>(percent*sortedVariance.size()))*windowLen;
+
+    for (size_t idx=0; idx<gain.size(); idx++)
+    {
+        int locWindowLen = static_cast<int>(mulFactor/locVariance[idx]);
+        if (locWindowLen > windowLen)
+            windowVector.push_back(windowLen);
+        else
+            windowVector.push_back(locWindowLen);
+    }
+
+    // Weighted Moving Average
+    std::vector<double> windowedG = variableWMA(windowVector, dipole);
+
+    // Subtract windowed
+    std::vector<double> retVec;
+    for (size_t idx=0; idx<windowedG.size(); ++idx)
+        retVec.push_back(gain.at(idx)-windowedG.at(idx));
+
+    return retVec;
 }
 
 std::vector<double>
