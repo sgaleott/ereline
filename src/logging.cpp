@@ -1,10 +1,9 @@
 #include "logging.hpp"
 #include "configuration.hpp"
+#include <ctime>
 #include <iostream>
 #include <fstream>
 
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/format.hpp>
 
 bool Logger::exist_instance_flag = false;
@@ -28,9 +27,17 @@ Logger::get_instance()
 static std::string
 current_date_and_time()
 {
-    boost::posix_time::ptime now(boost::date_time::second_clock<boost::posix_time::ptime>::universal_time());
+    time_t t = std::time(NULL);
+    struct tm * tmp = std::localtime(&t);
+    if (tmp == NULL)
+        std::runtime_error("unable to call \"std::localtime\"");
 
-    return boost::posix_time::to_iso_extended_string(now);
+    char datetime_str[64];
+    if(std::strftime(datetime_str, sizeof(datetime_str) - 1,
+                     "%FT%T", tmp) == 0)
+        std::runtime_error("unable to call \"std::strftime\"");
+
+    return std::string(datetime_str);
 }
 
 ////////////////////////////////////////////////////////////////////////
