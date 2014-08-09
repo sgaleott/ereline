@@ -10,21 +10,65 @@
 #include "squeezer.hpp"
 
 #include <sstream>
-#include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+////////////////////////////////////////////////////////////////////////////////
+
+static std::string 
+get_dir_name(const std::string & source)
+{
+    std::string result(source);
+    auto last_slash = std::find(result.rbegin(), result.rend(), '/');
+    if(last_slash == result.rend())
+        return "";
+
+    result.erase(last_slash.base(), result.end());
+    return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// Code taken from
+// http://niallohiggins.com/2009/01/08/mkpath-mkdir-p-alike-in-c-for-unix/
+static int
+mkdir_p(const char *pathname, mode_t mode)
+{
+  char parent[PATH_MAX], *p;
+  /* make a parent directory path */
+  std::strncpy(parent, pathname, sizeof(parent));
+  parent[sizeof(parent) - 1] = '\0';
+  for(p = parent + strlen(parent); *p != '/' && p != parent; p--);
+  *p = '\0';
+  /* try make parent directory */
+  if(p != parent && mkdir_p(parent, mode) != 0)
+    return -1;
+  /* make this one if parent has been made */
+  if(mkdir(pathname, mode) == 0)
+    return 0;
+  /* if it already exists that is fine */
+  if(errno == EEXIST)
+    return 0;
+  return -1;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const std::string &
 ensure_path_exists(const std::string & path)
 {
-    boost::filesystem::path p(path);
-    boost::filesystem::path dirname = p.parent_path();
+    Logger * log = Logger::get_instance();
+    auto dir_name = get_dir_name(path);
 
-    boost::system::error_code err;
-    boost::filesystem::create_directories(dirname, err);
-    if(err.value() != 0) {
-        throw std::runtime_error(err.message());
+    auto code = mkdir_p(dir_name.c_str(), 0755);
+    if(mkdir_p(dir_name.c_str(), 0755) != 0) {
+        std::string msg =
+            (boost::format("Unable to create the path \"%1%\"")
+             % dir_name).str();
+        log->error(msg);
+        throw std::runtime_error(msg);
     }
 
     return path;
