@@ -30,9 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#ifdef ENABLE_FITSIO
-#include "fitsio.h"
-#endif
+#include <fitsio.h>
 #include "chealpix.h"
 
 static const double twothird=2.0/3.0;
@@ -929,8 +927,6 @@ void ring2nest64(hpint64 nside, hpint64 ipring, hpint64 *ipnest)
   *ipnest = xyf2nest64 (nside, ix, iy, face_num);
   }
 
-#ifdef ENABLE_FITSIO
-
 static void printerror (int status)
   {
   if (status==0) return;
@@ -1073,5 +1069,3 @@ void write_healpix_map (const float *signal, long nside, const char *filename,
   fits_close_file(fptr, &status);
   printerror(status);
   }
-
-#endif
