@@ -27,7 +27,8 @@ dx11d_pipeline_SOURCES = \
 	datatypes.cpp \
 	sqlite3xx.cpp \
 	squeezer.cpp \
-	misc.cpp
+	misc.cpp \
+	Healpix_3.11/chealpix.c
 
 AM_CPPFLAGS = $(BOOST_CPPFLAGS) $(SQLITE3_CFLAGS)
 LDADD = $(SQLITE3_LDFLAGS) $(BOOST_SYSTEM_LIB) $(BOOST_FILESYSTEM_LIB)

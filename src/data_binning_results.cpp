@@ -10,7 +10,7 @@
 #include <algorithm>
 
 extern "C" {
-#include "chealpix.h"
+#include "Healpix_3.11/chealpix.h"
 };
 
 const size_t MAX_PATH_LENGTH = 1024;

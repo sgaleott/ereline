@@ -23,7 +23,7 @@
 #include <limits>
 
 extern "C" {
-#include "chealpix.h"
+#include "Healpix_3.11/chealpix.h"
 }
 
 /* Return "true" if there were at least two pixels that have been hit

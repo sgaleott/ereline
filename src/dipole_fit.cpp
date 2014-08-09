@@ -22,7 +22,7 @@
 #include <iostream>
 
 extern "C" {
-#include "chealpix.h"
+#include "Healpix_3.11/chealpix.h"
 }
 
 bool
