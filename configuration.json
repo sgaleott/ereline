@@ -4,20 +4,16 @@
 	"last_od": 563,
 	"radiometer": ["LFI18M", "LFI18S", "LFI23M", "LFI23S"],
 
-	// These are the beams to use
 	"beam_alm_x": null,
 	"beam_alm_y": null,
 
-	/* This .json file describes how standard data files (e.g.
-	   pointings) should be retrieved */
 	"data_storage_layout": "./maurizio_data_storage.json",
 
-	// This can be referred later in strings using {base_output_dir}
 	"base_output_dir": "/home/tomasi/work/test_data/ereline",
 
 	"log_file": "ereline.log",
 
-	"log_level": 4 // 1: ERROR, 2: WARNING, 3: INFO, 4: DEBUG
+	"log_level": 4
     },
 
     "apply_r": {
