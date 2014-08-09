@@ -6,9 +6,8 @@
 #include <stdexcept>
 #include <string>
 
-#include <boost/property_tree/ptree.hpp>
 #include <boost/format.hpp>
-#include <boost/optional.hpp>
+#include "rapidjson/document.h"
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -21,8 +20,43 @@ public:
 
 ////////////////////////////////////////////////////////////////////////
 
+template<typename T> inline T 
+conf_getter(const rapidjson::Value & value);
+
+template<> inline bool
+conf_getter<bool>(const rapidjson::Value & value)
+{
+    return value.GetBool();
+}
+
+template<> inline std::string 
+conf_getter<std::string>(const rapidjson::Value & value)
+{
+    return value.GetString();
+}
+
+template<> inline int
+conf_getter<int>(const rapidjson::Value & value)
+{
+    return value.GetInt();
+}
+
+template<> inline unsigned
+conf_getter<unsigned>(const rapidjson::Value & value)
+{
+    return value.GetUint();
+}
+
+template<> inline double
+conf_getter<double>(const rapidjson::Value & value)
+{
+    return value.GetDouble();
+}
+
+////////////////////////////////////////////////////////////////////////
+
 struct Configuration {
-    boost::property_tree::ptree ptree;
+    rapidjson::Document document;
     std::map<std::string, std::string> fallbacks;
     std::map<std::string, std::string> variables;
 
@@ -34,14 +68,21 @@ struct Configuration {
 
     void set_variable(const std::string & name,
                       const std::string & value);
-    void fill_with_standard_variables(const std::string & start_path);
+    void fill_with_standard_variables(const rapidjson::Value & start,
+                                      const std::string & start_path);
 
     std::string substitute_variables(const std::string & str) const;
 
+    rapidjson::Value::ConstMemberIterator
+    find_member_from_key(const rapidjson::Value & start,
+                         const std::string & key) const;
+
     template<typename T> T get(const std::string & key) const
     {
-        boost::optional<T> value = ptree.get_optional<T>(key);
-        if(! value)
+        const rapidjson::Value::ConstMemberIterator & member =
+            find_member_from_key(document, key);
+
+        if(member == document.MemberEnd())
         {
             auto alternative = fallbacks.find(key);
             if(alternative != fallbacks.end())
@@ -50,12 +91,12 @@ struct Configuration {
                 return get<T>(alternative->second);
             } else {
                 auto msg =
-                    boost::format("Unable to find the path %1%")
+                    boost::format("Unable to find %1% in the configuration file")
                     % key;
                 throw Configuration_error(boost::str(msg));
             }
         } else {
-            return value.get();
+            return conf_getter<T>(member->value);
         }
     }
     template<typename T> T get(const std::string & key, T default_val) const

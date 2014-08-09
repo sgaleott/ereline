@@ -144,10 +144,18 @@ inner_main(int argc, const char ** argv)
     std::vector<Pointing_t> list_of_pointings;
     read_ahf_info(ucds, program_config, list_of_pointings);
 
-    const auto radiometer_nodes =
-        program_config.ptree.get_child("common.radiometer");
-    for(const auto & cur_node : radiometer_nodes) {
-        Lfi_radiometer_t radiometer(cur_node.second.get<std::string>(""));
+    std::vector<std::string> radiometers_to_analyze;
+    const auto & radiometer_nodes = program_config.document["common"]["radiometer"];
+    if(radiometer_nodes.IsString()) {
+        radiometers_to_analyze.push_back(radiometer_nodes.GetString());
+    } else {
+        for(rapidjson::SizeType idx = 0; idx < radiometer_nodes.Size(); ++idx) {
+            radiometers_to_analyze.push_back(radiometer_nodes[idx].GetString());
+        }
+    }
+
+    for(auto const & cur_radiometer_name : radiometers_to_analyze) {
+        Lfi_radiometer_t radiometer(cur_radiometer_name);
 
         log->info(boost::format("Processing radiometer %1%")
                   % radiometer.shortName());

@@ -3,8 +3,9 @@
 #include "datatypes.hpp"
 #include "logging.hpp"
 
-#include <boost/property_tree/json_parser.hpp>
+#include <fstream>
 #include <boost/format.hpp>
+#include "rapidjson/error/en.h"
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -33,8 +34,33 @@ Configuration::~Configuration()
 void
 Configuration::read_from_json(std::istream & input_stream)
 {
-    read_json(input_stream, ptree);
-    fill_with_standard_variables("");
+    std::string text;
+    while(input_stream.good()) {
+        std::string cur_line;
+        std::getline(input_stream, cur_line);
+        text += cur_line;
+    }
+    document.Parse(text.c_str());
+    if(document.HasParseError()) {
+        const size_t error_pos = document.GetErrorOffset();
+        size_t start_pos, len;
+        if(error_pos > 10)
+            start_pos = error_pos - 10;
+        else
+            start_pos = 0;
+
+        len = text.size() - start_pos;
+        if(len > 20)
+            len = 20;
+
+        std::string msg =
+            (boost::format("Error parsing the JSON parameter file: %1% near «%2%»")
+             % rapidjson::GetParseError_En(document.GetParseError())
+             % text.substr(start_pos, len)).str();
+        throw std::runtime_error(msg);
+    }
+
+    fill_with_standard_variables(document, "");
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -42,30 +68,75 @@ Configuration::read_from_json(std::istream & input_stream)
 void
 Configuration::read_from_json(const std::string & file_name)
 {
-    read_json(file_name, ptree);
-    fill_with_standard_variables("");
+    std::ifstream is(file_name);
+    read_from_json(is);
+}
+
+////////////////////////////////////////////////////////////////////////
+
+// Look for a member of the JSON document using a dotted-path syntax
+rapidjson::Value::ConstMemberIterator
+Configuration::find_member_from_key(const rapidjson::Value & start,
+                                    const std::string & key) const
+{
+    if(! start.IsObject())
+        return start.MemberEnd();
+
+    std::string s(key);
+    const std::string delimiter(".");
+
+    size_t pos = s.find(delimiter);
+    std::string token;
+    if(pos == std::string::npos) {
+        token = s;
+        s = "";
+    } else {
+        token = s.substr(0, pos);
+        s.erase(0, pos + delimiter.length());
+    }
+
+    const auto & sub_element = start.FindMember(token.c_str());
+    if(s.empty() || sub_element == start.MemberEnd())
+        return sub_element;
+
+    if(sub_element->value.IsObject()) {
+        auto result = find_member_from_key(sub_element->value, s);
+        if(result == sub_element->value.MemberEnd())
+            return start.MemberEnd();
+        else
+            return result;
+    }
+
+    return start.MemberEnd();
 }
 
 ////////////////////////////////////////////////////////////////////////
 
 void
-Configuration::fill_with_standard_variables(const std::string & start_path)
+Configuration::fill_with_standard_variables(const rapidjson::Value & start,
+                                            const std::string & start_path)
 {
-    boost::property_tree::ptree children = ptree.get_child(start_path);
+    if(! start.IsObject())
+        return;
 
-    for(const auto & kv : children)
+    for (auto itr = start.MemberBegin();
+         itr != start.MemberEnd(); 
+         ++itr) 
     {
-        if(kv.first.empty())
-            break;
-
-        std::string cur_path;
+        std::string sub_path;
         if(start_path.empty())
-            cur_path = kv.first;
+            sub_path = itr->name.GetString();
         else
-            cur_path = start_path + "." + kv.first;
+            sub_path = 
+                (boost::format("%s.%s") 
+                 % start_path 
+                 % itr->name.GetString()).str();
 
-        set_variable(cur_path, ptree.get<std::string>(cur_path));
-        fill_with_standard_variables(cur_path);
+        if(itr->value.IsString()) {
+            set_variable(sub_path, itr->value.GetString());
+        } else if(itr->value.IsObject()) {
+            fill_with_standard_variables(itr->value, sub_path);
+        }
     }
 }
 

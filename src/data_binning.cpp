@@ -234,7 +234,7 @@ process_one_od(const Configuration & program_conf,
 {
     Logger * log = Logger::get_instance();
     const uint32_t quality_flag =
-        program_conf.get<uint32_t>("bin_data.quality_flag", 6111248);
+        program_conf.get<unsigned>("bin_data.quality_flag", 6111248);
     const bool debug_flag = program_conf.get<bool>("bin_data.debug", false);
 
     const std::string pnt_file_path(pointings_file_path(storage_conf));
