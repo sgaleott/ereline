@@ -84,7 +84,7 @@ FitsObject::getKey(const std::string& keyName, std::string & keyValue)
 {
     int status = 0;
     char keyValueAsciiz[FLEN_VALUE + 1];
-    if(fits_read_key(ptr, TDOUBLE, keyName.c_str(), &keyValueAsciiz[0],
+    if(fits_read_key(ptr, TSTRING, keyName.c_str(), &keyValueAsciiz[0],
                      NULL, &status))
         throw_fits_exception(status);
 
