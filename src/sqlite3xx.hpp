@@ -11,7 +11,7 @@ struct Sqlite_connection_t {
     sqlite3 * conn;
     std::string file_name;
     Sqlite_connection_t(const char * a_file_name);
-    ~Sqlite_connection_t() noexcept;
+    ~Sqlite_connection_t();
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -26,7 +26,7 @@ struct Sqlite_statement_t {
     Sqlite_statement_t(Sqlite_connection_t & a_db,
                        const char * a_sql,
                        int num_of_bytes = -1);
-    ~Sqlite_statement_t() noexcept;
+    ~Sqlite_statement_t();
 
     int step();
 

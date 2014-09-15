@@ -10,9 +10,9 @@ struct DifferencedData;
 
 class SqueezerError : public std::runtime_error {
 public:
-    SqueezerError(const std::string & a_description) noexcept
+    SqueezerError(const std::string & a_description)
     : std::runtime_error(a_description) { }
-    SqueezerError(const boost::format & a_description) noexcept
+    SqueezerError(const boost::format & a_description)
     : std::runtime_error(a_description.str()) { }
 };
 

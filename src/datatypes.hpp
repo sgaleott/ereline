@@ -11,12 +11,12 @@ class ConfigurationError : public std::exception {
     std::string description;
 
 public:
-    ConfigurationError(const std::string & a_description) noexcept
+    ConfigurationError(const std::string & a_description)
         : description(a_description) { }
-    ConfigurationError(const boost::format & a_description) noexcept
+    ConfigurationError(const boost::format & a_description)
         : description(a_description.str()) { }
 
-    const char * what() noexcept { return description.c_str(); }
+    const char * what() { return description.c_str(); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,12 +25,12 @@ class IoError : public std::exception {
     std::string description;
 
 public:
-    IoError(const std::string & a_description) noexcept
+    IoError(const std::string & a_description)
         : description(a_description) { }
-    IoError(const boost::format & a_description) noexcept
+    IoError(const boost::format & a_description)
         : description(a_description.str()) { }
 
-    const char * what() noexcept { return description.c_str(); }
+    const char * what() { return description.c_str(); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
