@@ -27,10 +27,10 @@ Planck_velocity_t::Planck_velocity_t (const std::string & file_name,
     int numOfRows;
     velocityFile.getKey("NAXIS2", numOfRows);
 
-    velocityFile.getColumn("SCET", scet, 1, numOfRows);
-    velocityFile.getColumn("XVEL", xvel, 1, numOfRows);
-    velocityFile.getColumn("YVEL", yvel, 1, numOfRows);
-    velocityFile.getColumn("ZVEL", zvel, 1, numOfRows);
+    velocityFile.getColumn(1, scet, 1, numOfRows);
+    velocityFile.getColumn(2, xvel, 1, numOfRows);
+    velocityFile.getColumn(3, yvel, 1, numOfRows);
+    velocityFile.getColumn(4, zvel, 1, numOfRows);
 }
 
 // Return velocity at given SCET
