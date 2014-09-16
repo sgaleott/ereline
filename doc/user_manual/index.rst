@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Ereline's documentation!
-===================================
+Ereline User's Manual
+=====================
 
 Contents:
 
@@ -13,6 +13,10 @@ Contents:
 
    intro
    tutorial
+   configuration_file
+   logging
+   file_formats
+   modules_overview
    developer_guide
 
 

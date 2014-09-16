@@ -10,6 +10,7 @@ scientific results, i.e., frequency maps of the sky and power spectra.
 
 Ereline is a collection of C++ codes and a set of files that describe
 the instrument. It does not include the full data released by the
-Planck collaboration, as its main purpose is to assess the performance
-and quality of the pipeline elaboration by means of simulations, not
-to do analysis on real data.
+Planck collaboration, as this should be downloaded separately using
+the official `ESA Planck homepage
+<http://www.rssd.esa.int/index.php?project=Planck>`_.
+
