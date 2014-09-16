@@ -10,10 +10,10 @@
 ////////////////////////////////////////////////////////////////////////
 
 void
-init_fallbacks(std::map<std::string, std::string> & ass)
+init_fallbacks(std::map<std::string, std::string> & associations)
 {
-    ass["da_capo.input_gains"] = "dipole_fit.output_gains";
-    ass["smooth_gains.input_gains"] = "da_capo.output_gains";
+    associations["da_capo.input_gains"] = "dipole_fit.output_gains";
+    associations["smooth_gains.input_gains"] = "da_capo.output_gains";
 }
 
 ////////////////////////////////////////////////////////////////////////
