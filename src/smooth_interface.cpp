@@ -6,17 +6,23 @@ int smoothGains(int npids,
                 int * pid,
                 double * gain,
                 double * dipole,
-                double * outputGain)
+                double * outputGain,
+                int windowLenMinima,
+                int windowLenMaxima,
+                int windowLenSlowSmoothing,
+                double percentSlowVariations,
+                double minRangeDipole,
+                double maxRangeDipole)
 {
 // horn|rad|smooth_window_near_dipole_min|smooth_window_near_dipole_max|smooth_window_length|fast_variations_window_length|slow_var_percentile|fast_variations_percentile|dipole_range_min_value|dipole_range_max_value
 // 19|1|1800|400|150|300|0.995|0.95|0.003|0.0035
 
-    int windowLenMinima = 1800;
-    int windowLenMaxima = 400;
-    int windowLenSlowSmoothing = 150;
-    double percentSlowVariations = 0.995;
-    double minRangeDipole = 3.0e-3;
-    double maxRangeDipole = 3.5e-3;
+//    int windowLenMinima = 1800;
+//    int windowLenMaxima = 400;
+//    int windowLenSlowSmoothing = 150;
+//    double percentSlowVariations = 0.995;
+//    double minRangeDipole = 3.0e-3;
+//    double maxRangeDipole = 3.5e-3;
     std::vector<double> dipoleVec;
 
     std::cout << pid[0] << std::endl;
