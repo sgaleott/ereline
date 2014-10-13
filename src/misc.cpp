@@ -2,8 +2,6 @@
  * Miscellaneous functions
  */
 
-#include <mpi.h>
-
 #include <cmath>
 #include <stdlib.h>
 #include <stdexcept>
@@ -122,19 +120,6 @@ int getDetectorIdasInt(const std::string & detectorId)
   int detector = stringToData<int>(detectorId.substr(8,1));
 
   return horn+rad+detector;
-}
-
-void mpiError (int rankMPI, int start, int stop)
-{
-  int error = 0;
-  if (start>=stop)
-    {
-      cout << rankMPI << ": too many processes for the requested time range" << endl;
-      error=1;
-    }
-
-  MPI::COMM_WORLD.Allreduce(&error, &error, 1, MPI::INT, MPI::SUM);
-  MPI::COMM_WORLD.Barrier();
 }
 
 double computeMean(const std::vector<double> & input)

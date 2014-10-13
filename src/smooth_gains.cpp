@@ -171,16 +171,6 @@ run_smooth_gains(Sqlite_connection_t & ucds,
 
     MPI::COMM_WORLD.Barrier();
 
-    // Merge Results and Select Gains
-    outRawTable.mergeResults();
-    outRawTable.selectRadiometerGains(real_radiometer.radiometer, 2,
-                                      fit_results.pids_per_process);
-    smoother.mergeResults();
-    smoother.selectRadiometerGains(real_radiometer.radiometer, 2,
-                                   fit_results.pids_per_process);
-    outMinMaxTable.mergeResults();
-    outMinMaxTable.selectRadiometerGains(real_radiometer.radiometer, 2,
-                                         fit_results.pids_per_process);
 
     if (mpi_rank < 2) {
         save_gain_table(ensure_path_exists(dipole_table_file_path(program_conf, 
@@ -242,11 +232,6 @@ run_smooth_gains(Sqlite_connection_t & ucds,
         outHybridTable.append(Gain_state_t { locPid, gain, 0.0 });
     }
     MPI::COMM_WORLD.Barrier();
-
-    // Save gain table
-    outHybridTable.mergeResults();
-    outHybridTable.selectRadiometerGains(real_radiometer.radiometer, 2,
-                                         fit_results.pids_per_process);
 
     MPI::COMM_WORLD.Barrier();
     log->decrease_indent();
@@ -323,14 +308,6 @@ run_smooth_gains(Sqlite_connection_t & ucds,
     }
 
     MPI::COMM_WORLD.Barrier();
-
-    // Merge Results and Select Gains
-    smooth_results.gain_table.mergeResults();
-    smooth_results.gain_table.selectRadiometerGains(real_radiometer.radiometer, 2,
-                                                    fit_results.pids_per_process);
-    smooth_results.slow_table.mergeResults();
-    smooth_results.slow_table.selectRadiometerGains(real_radiometer.radiometer, 2,
-                                                    fit_results.pids_per_process);
 
     if (mpi_rank < 2)
     {
