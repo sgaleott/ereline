@@ -488,14 +488,6 @@ Gain_table_t::gainSmoothing(int windowLenMinima, int windowLenMaxima,
 std::vector<double>
 Gain_table_t::zeroing(int windowLen, double percent, std::vector<double> & dipole)
 {
-    if(gain.size() < 2 * windowLen) {
-        const std::string msg =
-            (boost::format("too few calibration constants (%1%) for the "
-                           "smoothing filter to work, as the requested "
-                           "window size is %2%")
-             % gain.size() % windowLen).str();
-        throw std::runtime_error(msg);
-    }
     std::vector<double> paddedRaw;
     for (size_t idx=windowLen/2; idx>0; --idx)
     {

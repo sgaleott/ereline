@@ -223,6 +223,4 @@ closest_fp_sensor_to_radiometer (const Lfi_radiometer_t & rad)
         case 28: return "feu_cold_plate_right_inner";
     }
 
-    throw std::runtime_error((boost::format("Invalid horn number: %1%")
-                              % rad.horn).str());
 }

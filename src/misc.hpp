@@ -8,8 +8,6 @@
 #include <vector>
 #include <algorithm>
 
-#include <boost/format.hpp>
-
 typedef signed char int8;
 typedef unsigned char uint8;
 typedef signed short int16;
@@ -136,10 +134,6 @@ template<typename T> std::vector<T>
 sumVectors (const std::vector<T> add1,
             const std::vector<T> add2)
 {
-  if (add1.size() != add2.size())
-      throw std::runtime_error((boost::format("Error: the vectors must have the same size: %d / %d")
-                                % add1.size() % add2.size()).str());
-
   std::vector<T> retVec(add1.size());
   for (size_t idx = 0; idx < retVec.size(); ++idx)
     retVec[idx] = add1[idx] + add2[idx];
