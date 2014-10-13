@@ -7,3 +7,6 @@ config.h
 config/depcomp
 configure
 config.log
+*swp
+*swo
+*pyc
