@@ -3,11 +3,12 @@ import numpy as np
 import pandas as pd
 
 import os
+import os.path
 FOLDER = os.path.dirname(__file__)
 
-smoothlib = ctypes.CDLL("./libsmooth_interface.so")
+smoothlib = ctypes.CDLL(os.path.join(FOLDER, "libsmooth_interface.so"))
 
-smoothGainsName = get_ipython().getoutput(u'nm -D libsmooth_interface.so | grep smoothGains')
+smoothGainsName = get_ipython().getoutput('nm -D ' + os.path.join(FOLDER, 'libsmooth_interface.so') + '| grep smoothGains')
 smoothGainsName = smoothGainsName[0].split()[2]
 
 smoothGains = smoothlib[smoothGainsName]
@@ -19,7 +20,7 @@ import pyfits
 
 def smooth(raw_gains, chtag):
 
-    dip = pd.read_csv(FOLDER + "dip_%s.csv" % chtag).set_index("pointingID")
+    dip = pd.read_csv(os.path.join(FOLDER, "dip_%s.csv" % chtag)).set_index("pointingID")
 
     # input arrays
     dipole = np.array(dip.deltaT.reindex(raw_gains.index).fillna(method="ffill").fillna(method="bfill")).astype(np.float64)
@@ -31,7 +32,7 @@ def smooth(raw_gains, chtag):
     smoothed_gains[:] = 0.
 
     # channel parameters
-    smoothing_parameters = pd.read_csv(FOLDER + "smoothing_parameters.csv").set_index(["horn", "rad"])
+    smoothing_parameters = pd.read_csv(os.path.join(FOLDER, "smoothing_parameters.csv")).set_index(["horn", "rad"])
 
     horn = int(chtag[3:5])
     rad = 0 if chtag.endswith("M") else 1
