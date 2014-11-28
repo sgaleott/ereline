@@ -4,7 +4,10 @@ import pandas as pd
 
 import os
 import os.path
+
 FOLDER = os.path.dirname(__file__)
+if not FOLDER:
+    FOLDER = "./"
 
 smoothlib = ctypes.CDLL(os.path.join(FOLDER, "libsmooth_interface.so"))
 
@@ -43,8 +46,6 @@ def smooth(raw_gains, chtag):
     percentSlowVariations = np.float64(smoothing_parameters.ix[horn, rad].slow_var_percentile)
     minRangeDipole = np.float64(smoothing_parameters.ix[horn, rad].dipole_range_min_value)
     maxRangeDipole = np.float64(smoothing_parameters.ix[horn, rad].dipole_range_max_value)
-
-    print maxRangeDipole
 
     smoothGains(len(raw_gains),
             pids.ctypes.data_as(c_int_p),
