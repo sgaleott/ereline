@@ -11,7 +11,7 @@ if not FOLDER:
 
 smoothlib = ctypes.CDLL(os.path.join(FOLDER, "libsmooth_interface.so"))
 
-smoothGainsName = get_ipython().getoutput('nm -D ' + os.path.join(FOLDER, 'libsmooth_interface.so') + '| grep smoothGains')
+smoothGainsName = ["0000000000020be4 T _Z11smoothGainsiPiPdS0_S0_iiiddd"]
 smoothGainsName = smoothGainsName[0].split()[2]
 
 smoothGains = smoothlib[smoothGainsName]
