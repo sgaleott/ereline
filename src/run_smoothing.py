@@ -19,8 +19,6 @@ smoothGains = smoothlib[smoothGainsName]
 c_float_p = ctypes.POINTER(ctypes.c_double)
 c_int_p = ctypes.POINTER(ctypes.c_int64)
 
-import pyfits
-
 def smooth(raw_gains, chtag):
 
     dip = pd.read_csv(os.path.join(FOLDER, "dip_%s.csv" % chtag)).set_index("pointingID")
