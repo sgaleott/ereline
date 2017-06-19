@@ -7,6 +7,8 @@ int smoothGains(int npids, int * pid, double * gain, double * dipole, double * o
                 int windowLenSlowSmoothing,
                 double percentSlowVariations,
                 double minRangeDipole,
-                double maxRangeDipole);
+                double maxRangeDipole,
+                int * jumps,
+                int nJumps);
 
 #endif
