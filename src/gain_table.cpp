@@ -2,7 +2,6 @@
 #include "gain_table.hpp"
 #include "logging.hpp"
 #include "misc.hpp"
-#include "mpi_processes.hpp"
 
 #include <algorithm>
 #include <iomanip>
@@ -50,7 +49,7 @@ Gain_table_t::setWindowVector (std::vector<int> & a_windowVector)
 void
 Gain_table_t::mergeResults()
 {
-    merge_tables(pointingIds, gain, offset);
+    //merge_tables(pointingIds, gain, offset);
 }
 
 std::vector<double>
@@ -621,14 +620,12 @@ Gain_table_t::gainSmoothing(int windowLenMinima, int windowLenMaxima,
 std::vector<double>
 Gain_table_t::zeroing(int windowLen, double percent, std::vector<double> & dipole)
 {
-    Logger * log = Logger::get_instance();
     if(gain.size() < 2 * windowLen) {
         const std::string msg =
             (boost::format("too few calibration constants (%1%) for the "
                            "smoothing filter to work, as the requested "
                            "window size is %2%")
              % gain.size() % windowLen).str();
-        log->error(msg);
         throw std::runtime_error(msg);
     }
     std::vector<double> paddedRaw;
