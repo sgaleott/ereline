@@ -12,7 +12,9 @@ int smoothGains(int npids,
                 int windowLenSlowSmoothing,
                 double percentSlowVariations,
                 double minRangeDipole,
-                double maxRangeDipole)
+                double maxRangeDipole,
+                int * jumps,
+                int nJumps,)
 {
 // horn|rad|smooth_window_near_dipole_min|smooth_window_near_dipole_max|smooth_window_length|fast_variations_window_length|slow_var_percentile|fast_variations_percentile|dipole_range_min_value|dipole_range_max_value
 // 19|1|1800|400|150|300|0.995|0.95|0.003|0.0035
@@ -24,6 +26,7 @@ int smoothGains(int npids,
 //    double minRangeDipole = 3.0e-3;
 //    double maxRangeDipole = 3.5e-3;
     std::vector<double> dipoleVec;
+    std::vector<int> jumpsVec(jumps, jumps + nJumps);
 
     std::cout << pid[0] << std::endl;
     std::cout << pid[1] << std::endl;
@@ -39,8 +42,7 @@ int smoothGains(int npids,
         dipoleVec.push_back(dipole[i]);
     }
     std::vector<double> outputGainVec = outRawTable.gainSmoothing(windowLenMinima, windowLenMaxima,
-            windowLenSlowSmoothing, percentSlowVariations,
-            minRangeDipole, maxRangeDipole, dipoleVec);
+            minRangeDipole, maxRangeDipole, jumpsVec, dipoleVec);
     for (int i = 0; i < npids; i++)
     {
         outputGain[i] = outputGainVec[i];
