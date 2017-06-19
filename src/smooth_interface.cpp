@@ -14,7 +14,7 @@ int smoothGains(int npids,
                 double minRangeDipole,
                 double maxRangeDipole,
                 int * jumps,
-                int nJumps,)
+                int nJumps)
 {
 // horn|rad|smooth_window_near_dipole_min|smooth_window_near_dipole_max|smooth_window_length|fast_variations_window_length|slow_var_percentile|fast_variations_percentile|dipole_range_min_value|dipole_range_max_value
 // 19|1|1800|400|150|300|0.995|0.95|0.003|0.0035
