@@ -61,9 +61,13 @@ struct Gain_table_t {
   std::vector<double> offsetSmoothing(int windowLenMinima, int windowLenMaxima,
                                  double minRangeDipole, double maxRangeDipole, std::vector<double> & dipole);
   std::vector<double> gainSmoothing(int windowLenMinima, int windowLenMaxima,
-                               int windowLenSlowSmoothing, double percentSlowVariations,
-                               double minRangeDipole, double maxRangeDipole,
-                               std::vector<double> & dipole);
+				    int windowLenSlowSmoothing, double percentSlowVariations,
+				    double minRangeDipole, double maxRangeDipole,
+				    std::vector<double> & dipole);
+  std::vector<double> gainSmoothing(int windowLenMinima, int windowLenMaxima,
+				    double minRangeDipole, double maxRangeDipole,
+				    std::vector<int> & gainJumps,
+				    std::vector<double> & dipole);
   std::vector<double> zeroing(int windowLen, double percent, std::vector<double> & dipole);
 
   void selectRadiometerGains(int detectorIdIdx,

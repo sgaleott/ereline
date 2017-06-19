@@ -1,5 +1,9 @@
+#include <mpi.h>
+
 #include "gain_table.hpp"
+#include "logging.hpp"
 #include "misc.hpp"
+#include "mpi_processes.hpp"
 
 #include <algorithm>
 #include <iomanip>
@@ -47,7 +51,7 @@ Gain_table_t::setWindowVector (std::vector<int> & a_windowVector)
 void
 Gain_table_t::mergeResults()
 {
-    //merge_tables(pointingIds, gain, offset);
+    merge_tables(pointingIds, gain, offset);
 }
 
 std::vector<double>
@@ -486,8 +490,148 @@ Gain_table_t::gainSmoothing(int windowLenMinima, int windowLenMaxima,
 }
 
 std::vector<double>
+Gain_table_t::gainSmoothing(int windowLenMinima, int windowLenMaxima,
+			    double minRangeDipole, double maxRangeDipole,
+			    std::vector<int> & gainJumps,
+			    std::vector<double> & dipole)
+{
+  std::vector<int> dipoleWindowVector = createWindowsVector(windowLenMinima, windowLenMaxima, minRangeDipole, maxRangeDipole, dipole);
+  
+  // Use sudden jumps from configuration file
+  std::vector<size_t> startIdx;
+  std::vector<size_t> endIdx;
+  startIdx.push_back(gainJumps[0]);
+  for (size_t idx=1; idx<gainJumps.size(); idx++)
+    {
+      startIdx.push_back(gainJumps[idx]);
+      endIdx.push_back(gainJumps[idx-1]);
+    }
+  endIdx.push_back(gain.size()-1);
+
+  // Smooth gains for each interval between jumps
+  std::vector<double> windowedG = std::vector<double>(dipoleWindowVector.size(), 0.);
+  for (size_t idx=0; idx<startIdx.size(); idx++)
+    {
+      size_t len = endIdx[idx]-startIdx[idx]+1;
+
+      std::vector<int> sectorWinVector = std::vector<int>(len, 0);
+      std::vector<double> sectorDipole = std::vector<double>(len, 0.);
+      std::vector<double> sectorRaw = std::vector<double>(len, 0.);
+
+      // Fill sector windows, dipole and raw gains vectors
+      size_t secIdx = 0;
+      while ((secIdx < static_cast<size_t>(dipoleWindowVector[startIdx[idx]+secIdx]/2))&&(secIdx < len))
+        {
+          sectorWinVector[secIdx]=dipoleWindowVector[startIdx[idx]+secIdx]/2+static_cast<int>(secIdx);
+          sectorDipole[secIdx]=dipole[startIdx[idx]+secIdx];
+          sectorRaw[secIdx]=gain[startIdx[idx]+secIdx];
+          secIdx++;
+        }
+      while (secIdx < len-static_cast<size_t>(dipoleWindowVector[startIdx[idx]+secIdx]/2))
+        {
+          sectorWinVector[secIdx]=dipoleWindowVector[startIdx[idx]+secIdx];
+          sectorDipole[secIdx]=dipole[startIdx[idx]+secIdx];
+          sectorRaw[secIdx]=gain[startIdx[idx]+secIdx];
+          secIdx++;
+        }
+      while (secIdx < len)
+        {
+          sectorWinVector[secIdx]=dipoleWindowVector[startIdx[idx]+secIdx]/2+static_cast<int>(len-secIdx);
+          sectorDipole[secIdx]=dipole[startIdx[idx]+secIdx];
+          sectorRaw[secIdx]=gain[startIdx[idx]+secIdx];
+          secIdx++;
+        }
+
+      // Interpolate raw gains for zeros
+      std::vector<int> p2i;
+      std::vector<int> pC;
+      std::vector<double> g2i;
+      for (size_t lIdx=0; lIdx<sectorRaw.size(); lIdx++)
+        {
+          pC.push_back(pointingIds[startIdx[idx]+lIdx]);
+          if ((sectorRaw[lIdx] != 0)&&(!std::isinf(sectorRaw[lIdx])))
+            {
+              p2i.push_back(pointingIds[startIdx[idx]+lIdx]);
+              g2i.push_back(sectorRaw[lIdx]);
+            }
+        }
+
+      double data[sectorRaw.size()];
+      unsigned int locIdx=0;
+      for (unsigned int lIdx=0; lIdx<pC.size(); ++lIdx)
+        {
+          if (locIdx==p2i.size())
+            {
+              data[lIdx]=g2i[locIdx-1];
+              continue;
+            }
+
+          if (pC[lIdx]==p2i[locIdx])
+            {
+              data[lIdx]=g2i[locIdx];
+              ++locIdx;
+            }
+          else
+            {
+              if (locIdx>0)
+                data[lIdx]=g2i[locIdx-1]+((g2i[locIdx]-g2i[locIdx-1])/(p2i[locIdx]-p2i[locIdx-1])*(pC[lIdx]-p2i[locIdx-1]));
+              else
+                data[lIdx]=g2i[locIdx];
+            }
+        }
+
+      // Compute FFT of the RAW gains
+      gsl_fft_real_wavetable * real;
+      gsl_fft_halfcomplex_wavetable * hc;
+      gsl_fft_real_workspace * work;
+      work = gsl_fft_real_workspace_alloc (sectorRaw.size());
+      real = gsl_fft_real_wavetable_alloc (sectorRaw.size());
+      gsl_fft_real_transform (data, 1, sectorRaw.size(),
+                              real, work);
+      gsl_fft_real_wavetable_free (real);
+
+      // Low filtering (5 percent)
+      size_t tenPercent = static_cast<size_t>(0.05*static_cast<double>(sectorRaw.size()));
+      for (size_t lIdx=tenPercent; lIdx<sectorRaw.size(); lIdx++)
+        {
+          data[lIdx] = 0;
+        }
+
+      // Inverse FFT to find filtered gains
+      hc = gsl_fft_halfcomplex_wavetable_alloc (sectorRaw.size());
+      gsl_fft_halfcomplex_inverse (data, 1, sectorRaw.size(),
+                                   hc, work);
+      gsl_fft_halfcomplex_wavetable_free (hc);
+      gsl_fft_real_workspace_free (work);
+
+      std::vector<double> sectorGain;
+      for(size_t sectorIdx=0; sectorIdx<len; ++sectorIdx)
+        sectorGain.push_back(data[sectorIdx]);
+
+      // Smooth gains using filtered gains, variable windows and dipole variance
+      std::vector<double> sectorWMA = variableWMAlocal(sectorWinVector, sectorDipole, sectorGain);
+
+      // Store smoothed gains
+      for(size_t sectorIdx=0; sectorIdx<len; ++sectorIdx)
+        windowedG[startIdx[idx]+sectorIdx]=sectorWMA[sectorIdx];
+    }
+
+  return windowedG;
+}
+
+std::vector<double>
 Gain_table_t::zeroing(int windowLen, double percent, std::vector<double> & dipole)
 {
+    Logger * log = Logger::get_instance();
+    if(gain.size() < 2 * windowLen) {
+        const std::string msg =
+            (boost::format("too few calibration constants (%1%) for the "
+                           "smoothing filter to work, as the requested "
+                           "window size is %2%")
+             % gain.size() % windowLen).str();
+        log->error(msg);
+        throw std::runtime_error(msg);
+    }
     std::vector<double> paddedRaw;
     for (size_t idx=windowLen/2; idx>0; --idx)
     {
