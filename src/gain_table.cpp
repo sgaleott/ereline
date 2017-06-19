@@ -1,4 +1,3 @@
-#include <mpi.h>
 
 #include "gain_table.hpp"
 #include "logging.hpp"
