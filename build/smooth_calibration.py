@@ -1,5 +1,6 @@
 import pandas as pd
 import sys
+from run_smoothing import smooth
 
 filename = sys.argv[1]
 chtag = filename.split("_")[-1].split(".")[0]
