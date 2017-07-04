@@ -66,7 +66,7 @@ struct Gain_table_t {
 				    std::vector<double> & dipole);
   std::vector<double> gainSmoothing(int windowLenMinima, int windowLenMaxima,
 				    double minRangeDipole, double maxRangeDipole,
-				    std::vector<int> & gainJumps,
+				    std::vector<size_t> & gainJumps,
 				    std::vector<double> & dipole);
   std::vector<double> zeroing(int windowLen, double percent, std::vector<double> & dipole);
 

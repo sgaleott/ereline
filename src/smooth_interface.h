@@ -1,6 +1,9 @@
 #ifndef SMOOTH_INTERFACE_HPP
 #define SMOOTH_INTERFACE_HPP
 
+#include <cstdlib>
+#include <vector>
+
 int smoothGains(int npids, int * pid, double * gain, double * dipole, double * outputGain,
                 int windowLenMinima,
                 int windowLenMaxima,
@@ -8,7 +11,7 @@ int smoothGains(int npids, int * pid, double * gain, double * dipole, double * o
                 double percentSlowVariations,
                 double minRangeDipole,
                 double maxRangeDipole,
-                int * jumps,
+                size_t * jumps,
                 int nJumps);
 
 #endif

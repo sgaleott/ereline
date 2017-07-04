@@ -490,7 +490,7 @@ Gain_table_t::gainSmoothing(int windowLenMinima, int windowLenMaxima,
 std::vector<double>
 Gain_table_t::gainSmoothing(int windowLenMinima, int windowLenMaxima,
 			    double minRangeDipole, double maxRangeDipole,
-			    std::vector<int> & gainJumps,
+			    std::vector<size_t> & gainJumps,
 			    std::vector<double> & dipole)
 {
   std::vector<int> dipoleWindowVector = createWindowsVector(windowLenMinima, windowLenMaxima, minRangeDipole, maxRangeDipole, dipole);
@@ -502,7 +502,7 @@ Gain_table_t::gainSmoothing(int windowLenMinima, int windowLenMaxima,
   for (size_t idx=1; idx<gainJumps.size(); idx++)
     {
       startIdx.push_back(gainJumps[idx]);
-      endIdx.push_back(gainJumps[idx-1]);
+      endIdx.push_back(gainJumps[idx]-1);
     }
   endIdx.push_back(gain.size()-1);
 

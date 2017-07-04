@@ -13,7 +13,7 @@ int smoothGains(int npids,
                 double percentSlowVariations,
                 double minRangeDipole,
                 double maxRangeDipole,
-                int * jumps,
+                size_t * jumps,
                 int nJumps)
 {
 // horn|rad|smooth_window_near_dipole_min|smooth_window_near_dipole_max|smooth_window_length|fast_variations_window_length|slow_var_percentile|fast_variations_percentile|dipole_range_min_value|dipole_range_max_value
@@ -26,7 +26,7 @@ int smoothGains(int npids,
 //    double minRangeDipole = 3.0e-3;
 //    double maxRangeDipole = 3.5e-3;
     std::vector<double> dipoleVec;
-    std::vector<int> jumpsVec(jumps, jumps + nJumps);
+    std::vector<size_t> jumpsVec(jumps, jumps + nJumps);
 
     std::cout << pid[0] << std::endl;
     std::cout << pid[1] << std::endl;
