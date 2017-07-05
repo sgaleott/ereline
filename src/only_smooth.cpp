@@ -25,7 +25,7 @@ int main(int argc, const char ** argv)
 
     const int nJumps = 4;
 
-    int jumps[nJumps] = {0,3267,5044,36671};
+    size_t jumps[nJumps] = {0,3267,5044,36671};
     double outputGain[npids];
     smoothGains(npids, pid, gain, dipole, outputGain, windowLenMinima,windowLenMaxima,windowLenSlowSmoothing,percentSlowVariations,minRangeDipole,maxRangeDipole, jumps, nJumps);
 

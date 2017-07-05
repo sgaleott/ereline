@@ -28,12 +28,8 @@ int smoothGains(int npids,
     std::vector<double> dipoleVec;
     std::vector<size_t> jumpsVec(jumps, jumps + nJumps);
 
-    std::cout << pid[0] << std::endl;
-    std::cout << pid[1] << std::endl;
-    std::cout << gain[0] << std::endl;
-    std::cout << gain[1] << std::endl;
-    std::cout << dipole[0] << std::endl;
-    std::cout << dipole[1] << std::endl;
+    for (int i = 0; i < nJumps; i++)
+      std::cout << jumpsVec[i] << std::endl;
 
     Gain_table_t outRawTable;
     for (int i = 0; i < npids; i++)
@@ -42,7 +38,7 @@ int smoothGains(int npids,
         dipoleVec.push_back(dipole[i]);
     }
     std::vector<double> outputGainVec = outRawTable.gainSmoothing(windowLenMinima, windowLenMaxima,
-            minRangeDipole, maxRangeDipole, jumpsVec, dipoleVec);
+								  minRangeDipole, maxRangeDipole, jumpsVec, dipoleVec);
     for (int i = 0; i < npids; i++)
     {
         outputGain[i] = outputGainVec[i];

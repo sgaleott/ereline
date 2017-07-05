@@ -501,6 +501,9 @@ Gain_table_t::gainSmoothing(int windowLenMinima, int windowLenMaxima,
   startIdx.push_back(gainJumps[0]);
   for (size_t idx=1; idx<gainJumps.size(); idx++)
     {
+      if (gainJumps[idx] > dipoleWindowVector.size())
+	continue;
+      
       startIdx.push_back(gainJumps[idx]);
       endIdx.push_back(gainJumps[idx]-1);
     }
